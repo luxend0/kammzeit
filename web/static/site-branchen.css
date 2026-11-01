@@ -83,7 +83,7 @@
 .br-bars i { display: none; font-style: normal; }
 @media (max-width: 39.99rem) { .br-bars span { padding-inline: .4rem; } .br-bars b { display: none; } .br-bars i { display: inline; } }
 
-/* Barbershops: Terminbuch eines Samstags */
+/* Barbershops: Terminbuch eines Samstags, gleiche Optik für die Warteschlange (.br-num = Nummer statt Uhrzeit) */
 .br-book { margin: 0; padding: clamp(1rem, .8rem + 1vw, 1.5rem); }
 .br-book-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 .5rem; padding: 0 .25rem .75rem; border-bottom: 2px solid var(--br-sky-l); }
 .br-book-head b { font-size: 1.5rem; font-weight: 800; }
@@ -92,11 +92,11 @@
 .br-book li { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem; align-items: baseline; padding: .75rem; border-radius: 12px; }
 .br-book li + li { margin-top: .25rem; }
 .br-book li:not(.is-walkin, .is-free) { border-radius: 0; box-shadow: inset 0 -1px 0 var(--br-line); }
-.br-book time { color: var(--br-blue); font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.br-book time, .br-book .br-num { color: var(--br-blue); font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
 .br-book li span { font-weight: 700; }
 .br-book li small { display: block; color: var(--br-muted); font-size: .875rem; font-weight: 400; }
 .br-book .is-walkin { background: var(--br-sun); }
-.br-book .is-walkin time, .br-book .is-walkin small { color: var(--br-night); }
+.br-book .is-walkin time, .br-book .is-walkin .br-num, .br-book .is-walkin small { color: var(--br-night); }
 .br-book .is-free { border: 2px dashed var(--br-mint); }
 .br-book .is-free span { font-weight: 600; }
 
@@ -137,7 +137,7 @@
 .br-not > div { padding: 1.25rem 1.5rem; border: 2px dashed rgba(19, 41, 75, .28); border-radius: 20px; background: #fff; }
 .br-not h3 { margin: 0 0 .45rem; font-size: 1.1875rem; line-height: 1.3; }
 .br-not p { margin: 0; max-width: 34em; }
-.br-not .br-tag { margin-left: .35rem; vertical-align: .15em; }
+.br-not .br-tag, .br-scene .br-tag { margin-left: .35rem; vertical-align: .15em; }
 
 /* Querverweis auf andere Branchen */
 .br-also { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: 2.5rem; }

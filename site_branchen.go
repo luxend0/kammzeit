@@ -9,7 +9,7 @@ func (a *app) routesSiteBranchen(mux *http.ServeMux) {
 	a.addPage(mux, "/fuer/friseure", "branchen-friseure", "Online-Terminbuchung für Friseure - Kammzeit",
 		"Online-Terminbuchung für Friseursalons: Färben und Strähnen mit echter Dauer, Pausen je Mitarbeiter, Farbrezeptur in der Kundenkartei. Gratis für eine Person.")
 	a.addPage(mux, "/fuer/barbershops", "branchen-barbershops", "Online-Terminbuchung für Barbershops - Kammzeit",
-		"Terminbuchung für Barbershops: Termine im 15-Minuten-Raster, Laufkunden schnell im Kalender eintragen, Erinnerung gegen No-Shows. Gratis für einen Barber.")
+		"Terminbuchung für Barbershops: Termine im 15-Minuten-Raster, Warteschlange für Laufkunden per QR-Code, Erinnerung gegen No-Shows. Gratis für einen Barber.")
 	a.addPage(mux, "/fuer/kosmetik", "branchen-kosmetik", "Online-Terminbuchung für Kosmetikstudios - Kammzeit",
 		"Terminbuchung für Kosmetikstudios: Behandlungen mit 60 oder 90 Minuten, Vorlauf und Absagefrist nach deinen Regeln, Hauttyp-Notizen in der Kundenkartei.")
 	a.addPage(mux, "/fuer/nagelstudios", "branchen-nagelstudios", "Online-Terminbuchung für Nagelstudios - Kammzeit",
