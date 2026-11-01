@@ -1,7 +1,9 @@
 {{/* Einstellungen, Datenexport, Konto löschen (dash_settings.go). Präfix "einst-".
      Fehler am Feld: aria-invalid + aria-describedby auf span.field-error (Stil aus dash.css).
-     Jeder Abschnitt ist eine Karte mit .section-title und buntem 48px-Icon. Die drei Abschnitte im
-     Formular bleiben <section class="einst-section"> in fester Reihenfolge (assets/screenshots/shoot.mjs).
+     Jeder Abschnitt ist eine Karte mit .section-title und buntem 48px-Icon. Im Formular zwei Spalten
+     (.einst-col): links Salon und Social-Links, rechts Aussehen und Buchungsregeln (#regeln); die Knöpfe
+     bleiben direktes Kind des Formulars (assets/screenshots/shoot.mjs). Das Formular ist multipart
+     (Logo, Titelbild). Pro-Felder stehen in fieldset.einst-pro, ohne Pro gesperrt (.Pro).
      Texte: deutscher Text = Schlüssel ({{t .Lang "..."}}), Fehler und Auswahl-Labels kommen deutsch aus Go. */}}
 {{define "einst-seite"}}{{template "dash-top" .}}
 <div class="page-head">
@@ -30,10 +32,60 @@
 .einst-more { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
 .einst-news form { margin: 0; }
 .einst-danger-link a { color: var(--danger); font-weight: 700; }
-/* Breit: Salon links, Aussehen und Buchungsregeln rechts; Login, News und Daten nebeneinander */
+/* Spalten: schmal eine Spalte (Salon, Aussehen, Social-Links, Regeln), breit zwei */
+.einst-col { display: contents; }
+#salon { order: 1; } #aussehen { order: 2; } #social { order: 3; } #regeln { order: 4; } .einst-form > .actions { order: 5; }
+/* Bilder und Pro-Block */
+.einst-img-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: .35rem; }
+.einst-thumb { display: grid; place-items: center; flex: none; width: 96px; height: 96px; border: 2px dashed var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+.einst-thumb img { width: 100%; height: 100%; object-fit: contain; }
+.einst-thumb img[hidden] { display: none; }
+.einst-thumb-cover { width: 192px; height: 72px; }
+.einst-thumb-cover img { object-fit: cover; }
+.einst-thumb span { padding: 4px; font-size: .75rem; font-weight: 600; color: var(--muted); text-align: center; }
+.einst-img-row input[type=file] { flex: 1 1 200px; min-width: 0; font: 400 15px/1.4 var(--font-text); }
+.einst-pro { margin: 1.4rem 0 0; padding: 1rem 1.1rem .4rem; border: 2px solid var(--tint-sun); border-radius: 16px; min-width: 0; }
+.einst-pro > legend { padding: 0 .4rem; font-weight: 800; }
+.einst-pro[disabled] > :not(legend):not(.einst-pro-hint) { opacity: .55; }
+.einst-pro-hint { margin: 0 0 1rem; padding: .75rem .9rem; border-radius: 12px; background: var(--tint-sun); font-size: .9375rem; }
+.einst-pro-hint a { font-weight: 700; color: var(--night); }
+.einst-choice { margin: 0 0 1.1rem; padding: 0; border: 0; min-width: 0; }
+.einst-choice > legend { margin-bottom: .35rem; padding: 0; font-size: .9375rem; font-weight: 700; }
+.einst-choice-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.einst-choice-row label { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .4rem .9rem; border: 2px solid var(--line); border-radius: 12px; background: #fff; font-weight: 600; cursor: pointer; }
+.einst-choice-row label:has(input:checked) { border-color: var(--blue); background: var(--tint-blue); }
+.einst-choice-row label:has(input:focus-visible) { outline: 3px solid var(--night); outline-offset: 2px; }
+.einst-f-schlicht { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.einst-f-modern { font-family: "Kammzeit Sans", system-ui, sans-serif; }
+.einst-f-klassisch { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif; }
+.einst-sub { margin: 1.4rem 0 .6rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 1rem; }
+/* Kleine Vorschau der Buchungsseite (Farben und Formen wie style.css) */
+.einst-mini-wrap { margin: 0 0 1.4rem; }
+.einst-mini-label { display: block; margin-bottom: .35rem; font-size: .9375rem; font-weight: 700; }
+.einst-mini { --r: 0; --fg: #111; --bg: #fff; overflow: hidden; border: 1px solid #c9d6e6; border-top: 6px solid var(--accent); border-radius: 14px;
+  background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.einst-mini.round { --r: 12px; }
+.einst-mini.dark { --fg: #f2f2f2; --bg: #141414; border-color: #141414; border-top-color: var(--accent); }
+.einst-mini.font-modern { font-family: "Kammzeit Sans", system-ui, sans-serif; }
+.einst-mini.font-klassisch { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif; }
+.einst-mini-cover { display: block; width: 100%; height: 70px; object-fit: cover; }
+.einst-mini-cover[hidden] { display: none; }
+.einst-mini-in { padding: 14px 16px 16px; }
+.einst-mini-head { display: flex; align-items: center; gap: 10px; }
+.einst-mini-head img { height: 36px; width: auto; max-width: 96px; object-fit: contain; border-radius: calc(var(--r) / 2); }
+.einst-mini-head img[hidden] { display: none; }
+.einst-mini.dark .einst-mini-head img { padding: 4px; background: #fff; }
+.einst-mini-head strong { font-size: 1.25rem; line-height: 1.15; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.einst-mini-welcome { margin: 8px 0 0; padding-left: 10px; border-left: 3px solid var(--accent); white-space: pre-line; }
+.einst-mini-welcome:empty { display: none; }
+.einst-mini-slots { display: flex; gap: 6px; margin-top: 12px; }
+.einst-mini-slots span { flex: 1; padding: 6px 0; border: 1px solid var(--fg); border-radius: var(--r); text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.einst-mini-slots .on { background: var(--accent); color: var(--on-accent); box-shadow: inset 0 0 0 2px var(--fg); }
+.einst-mini-btn { display: block; margin-top: 10px; padding: 9px; border-radius: var(--r); background: var(--fg); color: var(--bg); text-align: center; font-weight: 700; }
+/* Breit: zwei Spalten; Login, News und Daten nebeneinander */
 @media (min-width: 1000px) {
-  .einst-form { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-rows: auto 1fr; align-items: start; }
-  .einst-form > .einst-section:first-of-type { grid-row: span 2; }
+  .einst-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .einst-col { display: grid; gap: 20px; align-content: start; }
   .einst-form > .actions { grid-column: 1 / -1; }
   .einst-more { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
 }
@@ -55,7 +107,8 @@
 </section>
 
 {{if .Errors}}<p class="error" role="alert">{{t .Lang "Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert."}}</p>{{end}}
-<form method="post" action="/dashboard/einstellungen" class="form einst-form" novalidate>
+<form method="post" action="/dashboard/einstellungen" class="form einst-form" enctype="multipart/form-data" novalidate>
+  <div class="einst-col">
   <section class="einst-section card" id="salon">
     <div class="section-title"><img src="/static/img/icons/kamm.svg" width="48" height="48" alt=""><h2>{{t .Lang "Salon"}}</h2></div>
     <div class="field">
@@ -94,8 +147,49 @@
     </div>
   </section>
 
+  <section class="einst-section card" id="social">
+    <div class="section-title"><img src="/static/img/icons/link.svg" width="48" height="48" alt=""><h2>{{t .Lang "Social-Links"}}</h2></div>
+    <p class="muted small">{{t .Lang "Erscheinen als Buttons auf deiner Buchungsseite. Leere Felder werden nicht angezeigt."}}</p>
+    {{range .SocialFields}}
+    <div class="field">
+      <label>{{.Label}}<input type="{{if eq .Key "whatsapp"}}tel{{else}}text{{end}}" name="{{.Key}}" value="{{.Value}}" maxlength="{{if eq .Key "google"}}500{{else}}300{{end}}" placeholder="{{t $.Lang .Placeholder}}" autocapitalize="off" spellcheck="false"
+        aria-describedby="einst-hint-{{.Key}}{{if .Error}} einst-err-{{.Key}}{{end}}"{{if .Error}} aria-invalid="true"{{end}}></label>
+      <span class="hint" id="einst-hint-{{.Key}}">{{t $.Lang .Hint}}</span>
+      {{if .Error}}<span class="field-error" id="einst-err-{{.Key}}">{{t $.Lang .Error}}</span>{{end}}
+    </div>
+    {{end}}
+    <h3 class="einst-sub">{{t .Lang "Öffnungszeiten"}}</h3>
+    <label class="check"><input type="checkbox" name="show_hours" value="1"{{if .Form.ShowHours}} checked{{end}} aria-describedby="einst-hint-hours"> {{t .Lang "Öffnungszeiten auf der Buchungsseite zeigen"}}</label>
+    <span class="hint" id="einst-hint-hours">{{t .Lang "Wir fassen die Arbeitszeiten deines Teams je Wochentag zusammen. Ändern kannst du sie unter Team."}}</span>
+  </section>
+  </div>
+
+  <div class="einst-col">
   <section class="einst-section card" id="aussehen">
     <div class="section-title"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h2>{{t .Lang "Aussehen"}}</h2></div>
+    <div class="einst-mini-wrap" aria-hidden="true">
+      <span class="einst-mini-label">{{t .Lang "Vorschau deiner Buchungsseite"}}</span>
+      <div class="einst-mini {{.Theme}}" id="einst-mini" data-pro="{{if .Pro}}1{{end}}" style="--accent: {{.Form.Accent}}; --on-accent: {{.PreviewOn}}">
+        <img class="einst-mini-cover" id="einst-mini-cover" alt=""{{if and .Pro .Form.Cover}} src="/media/{{.Form.Cover}}"{{else}} hidden{{end}}>
+        <div class="einst-mini-in">
+          <div class="einst-mini-head"><img id="einst-mini-logo" alt=""{{with .Form.Logo}} src="/media/{{.}}"{{else}} hidden{{end}}><strong>{{.Form.Name}}</strong></div>
+          <p class="einst-mini-welcome" id="einst-mini-welcome">{{if .Pro}}{{.Form.Welcome}}{{end}}</p>
+          <div class="einst-mini-slots"><span>09:00</span><span class="on">09:30</span><span>10:00</span><span>10:30</span></div>
+          <span class="einst-mini-btn">{{t .Lang "Verbindlich buchen"}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="einst-logo">{{t .Lang "Logo"}}</label>
+      <div class="einst-img-row">
+        <span class="einst-thumb"><img id="einst-logo-prev" alt="{{t .Lang "Dein Logo"}}"{{with .Form.Logo}} src="/media/{{.}}"{{else}} hidden{{end}}>{{if not .Form.Logo}}<span id="einst-logo-prev-none">{{t .Lang "Noch kein Logo"}}</span>{{end}}</span>
+        <input type="file" id="einst-logo" name="logo" accept="image/png,image/jpeg,image/webp" data-prev="einst-logo-prev" data-mini="einst-mini-logo"
+          aria-describedby="einst-hint-logo{{if .Errors.logo}} einst-err-logo{{end}}"{{if .Errors.logo}} aria-invalid="true"{{end}}>
+      </div>
+      <span class="hint" id="einst-hint-logo">{{t .Lang "PNG, JPG oder WebP bis 5 MB. Am besten mit transparentem Hintergrund. Wir verkleinern es auf höchstens 512 Pixel und entfernen Kamera- und Standortdaten."}}</span>
+      {{if .Form.Logo}}<label class="check"><input type="checkbox" name="logo_weg" value="1"> {{t .Lang "Logo entfernen"}}</label>{{end}}
+      {{with .Errors.logo}}<span class="field-error" id="einst-err-logo">{{t $.Lang .}}</span>{{end}}
+    </div>
     <div class="field">
       <label for="einst-accent">{{t .Lang "Akzentfarbe"}}</label>
       <span class="einst-color" id="einst-preview-box" style="--accent: {{.Form.Accent}}; --on-accent: {{.PreviewOn}}">
@@ -112,6 +206,43 @@
       <span class="hint" id="einst-hint-lang">{{t .Lang "In dieser Sprache sehen deine Kunden die Buchungsseite und die Mails zu ihren Terminen. Die Adresse oben passt sich an, bisherige Links funktionieren weiter."}}</span>
       {{with .Errors.lang}}<span class="field-error" id="einst-err-lang">{{t $.Lang .}}</span>{{end}}
     </div>
+    <fieldset class="einst-pro"{{if not .Pro}} disabled{{end}}>
+      <legend><span class="chip chip-sun chip-plain">Pro</span> {{t .Lang "Titelbild, Design und Galerie"}}</legend>
+      {{if not .Pro}}<p class="einst-pro-hint">{{t .Lang "Mit Pro bekommt deine Buchungsseite ein Titelbild, eine Fotogalerie, eine eigene Schrift, runde Ecken, ein dunkles Design und einen Begrüßungstext."}} <a href="/dashboard/abo">{{t .Lang "Zu Pro wechseln"}}</a></p>{{end}}
+      <div class="field">
+        <label for="einst-cover">{{t .Lang "Titelbild"}}</label>
+        <div class="einst-img-row">
+          <span class="einst-thumb einst-thumb-cover"><img id="einst-cover-prev" alt="{{t .Lang "Dein Titelbild"}}"{{with .Form.Cover}} src="/media/{{.}}"{{else}} hidden{{end}}>{{if not .Form.Cover}}<span id="einst-cover-prev-none">{{t .Lang "Noch kein Titelbild"}}</span>{{end}}</span>
+          <input type="file" id="einst-cover" name="cover" accept="image/png,image/jpeg,image/webp" data-prev="einst-cover-prev" data-mini="einst-mini-cover"
+            aria-describedby="einst-hint-cover{{if .Errors.cover}} einst-err-cover{{end}}"{{if .Errors.cover}} aria-invalid="true"{{end}}>
+        </div>
+        <span class="hint" id="einst-hint-cover">{{t .Lang "Breites Foto, zum Beispiel dein Salon von innen. Steht oben auf der Buchungsseite, auf dem Handy etwas schmaler zugeschnitten."}}</span>
+        {{if .Form.Cover}}<label class="check"><input type="checkbox" name="cover_weg" value="1"> {{t .Lang "Titelbild entfernen"}}</label>{{end}}
+        {{with .Errors.cover}}<span class="field-error" id="einst-err-cover">{{t $.Lang .}}</span>{{end}}
+      </div>
+      <fieldset class="einst-choice">
+        <legend>{{t .Lang "Schrift"}}</legend>
+        <div class="einst-choice-row">{{range .Fonts}}<label class="einst-f-{{.Value}}"><input type="radio" name="theme_font" value="{{.Value}}" data-theme="font"{{if eq .Value $.Form.ThemeFont}} checked{{end}}> {{t $.Lang .Label}}</label>{{end}}</div>
+        {{with .Errors.theme_font}}<span class="field-error">{{t $.Lang .}}</span>{{end}}
+      </fieldset>
+      <fieldset class="einst-choice">
+        <legend>{{t .Lang "Ecken"}}</legend>
+        <div class="einst-choice-row">{{range .Radii}}<label><input type="radio" name="theme_radius" value="{{.Value}}" data-theme="radius"{{if eq .Value $.Form.ThemeRadius}} checked{{end}}> {{t $.Lang .Label}}</label>{{end}}</div>
+        {{with .Errors.theme_radius}}<span class="field-error">{{t $.Lang .}}</span>{{end}}
+      </fieldset>
+      <fieldset class="einst-choice">
+        <legend>{{t .Lang "Hell oder dunkel"}}</legend>
+        <div class="einst-choice-row">{{range .Modes}}<label><input type="radio" name="theme_mode" value="{{.Value}}" data-theme="mode"{{if eq .Value $.Form.ThemeMode}} checked{{end}}> {{t $.Lang .Label}}</label>{{end}}</div>
+        {{with .Errors.theme_mode}}<span class="field-error">{{t $.Lang .}}</span>{{end}}
+      </fieldset>
+      <div class="field">
+        <label>{{t .Lang "Begrüßungstext"}}<textarea name="welcome" id="einst-welcome" rows="3" maxlength="300"
+          aria-describedby="einst-hint-welcome{{if .Errors.welcome}} einst-err-welcome{{end}}"{{if .Errors.welcome}} aria-invalid="true"{{end}}>{{.Form.Welcome}}</textarea></label>
+        <span class="hint" id="einst-hint-welcome">{{t .Lang "Hervorgehoben oben auf der Buchungsseite, zum Beispiel ein Willkommen oder ein aktueller Hinweis. Höchstens 300 Zeichen."}}</span>
+        {{with .Errors.welcome}}<span class="field-error" id="einst-err-welcome">{{t $.Lang .}}</span>{{end}}
+      </div>
+      <p><a href="/dashboard/einstellungen/galerie">{{t .Lang "Fotogalerie verwalten"}}</a> <span class="muted small">({{tf .Lang "%d von %d Fotos" .GalleryCount .GalleryMax}})</span></p>
+    </fieldset>
   </section>
 
   <section class="einst-section card" id="regeln">
@@ -139,6 +270,7 @@
       {{with .Errors.horizon}}<span class="field-error" id="einst-err-horizon">{{t $.Lang .}}</span>{{end}}
     </div>
   </section>
+  </div>
 
   <div class="actions"><button class="btn" type="submit">{{t .Lang "Speichern"}}</button></div>
 </form>
@@ -202,6 +334,78 @@
       <a href="/dashboard/einstellungen">{{t .Lang "Abbrechen"}}</a>
     </div>
   </form>
+{{end}}
+</div>
+{{template "dash-bottom" .}}{{end}}
+
+{{/* Fotogalerie (dash_gallery.go): bis zu 12 Fotos, Beschreibung, Reihenfolge, löschen.
+     Hochladen nur mit Pro; ändern und löschen auch ohne (Aufräumen nach einem Wechsel zu Gratis). */}}
+{{define "einst-galerie"}}{{template "dash-top" .}}
+<div class="page-head">
+  <a class="page-head-back" href="/dashboard/einstellungen#aussehen">{{t .Lang "Zurück zu den Einstellungen"}}</a>
+  <img class="page-head-icon" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>{{t .Lang "Bis zu 12 Fotos von deinem Salon und deiner Arbeit. Sie stehen auf deiner Buchungsseite unter dem Formular."}}</p>
+    <p>{{t .Lang "Die Beschreibung je Foto hilft Menschen, die Bilder nicht sehen können, und Suchmaschinen."}}</p>
+  </div>
+</div>
+<style>
+.einst-g { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.einst-g-upload { max-width: 640px; }
+.einst-g-upload input[type=file] { display: block; margin-top: .35rem; font: 400 15px/1.4 var(--font-text); max-width: 100%; }
+.einst-g-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 20px; margin: 0; padding: 0; list-style: none; }
+.einst-g-item { display: grid; gap: 12px; align-content: start; padding: 12px; }
+.einst-g-item img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 12px; background: var(--sky-50); }
+.einst-g-item form { display: grid; gap: 10px; }
+.einst-g-item .field { margin: 0; }
+.einst-g-item .actions { margin: 0; gap: .5rem; }
+.einst-g-num { font-size: .8125rem; font-weight: 700; color: var(--muted); }
+.einst-pro-hint { margin: 0; padding: 1rem 1.1rem; border-radius: 16px; background: var(--tint-sun); max-width: 640px; }
+.einst-pro-hint a { font-weight: 700; color: var(--night); }
+</style>
+<div class="einst-g">
+{{with .Error}}<p class="error" role="alert">{{with $.ErrorFile}}<strong>{{.}}</strong>: {{end}}{{.}}</p>{{end}}
+{{if not .Pro}}
+<p class="einst-pro-hint"><span class="chip chip-sun chip-plain">Pro</span> {{t .Lang "Die Fotogalerie gibt es mit Pro. Deine Kunden sehen dann Fotos von deinem Salon und deiner Arbeit direkt beim Buchen."}} <a href="/dashboard/abo">{{t .Lang "Zu Pro wechseln"}}</a></p>
+{{else if gt .Left 0}}
+<form method="post" action="/dashboard/einstellungen/galerie" enctype="multipart/form-data" class="card form einst-g-upload">
+  <div class="field">
+    <label>{{t .Lang "Fotos hinzufügen"}}<input type="file" name="fotos" accept="image/png,image/jpeg,image/webp" multiple required aria-describedby="einst-g-hint"></label>
+    <span class="hint" id="einst-g-hint">{{tf .Lang "JPG, PNG oder WebP, je höchstens 5 MB, zusammen bis 20 MB. Noch %d von %d Plätzen frei." .Left .Max}} {{t .Lang "Kamera- und Standortdaten entfernen wir beim Hochladen."}}</span>
+  </div>
+  <div class="actions"><button class="btn" type="submit">{{t .Lang "Hochladen"}}</button></div>
+</form>
+{{else}}
+<p class="muted">{{t .Lang "Die Galerie ist voll. Lösch ein Foto, um ein neues hochzuladen."}}</p>
+{{end}}
+
+{{if .Items}}
+<ol class="einst-g-list">
+{{range $i, $g := .Items}}
+<li class="card einst-g-item" id="foto-{{$g.ID}}">
+  <img src="/media/{{$g.Hash}}" width="{{$g.Width}}" height="{{$g.Height}}" alt="{{$g.Alt}}" loading="lazy">
+  <form method="post" action="/dashboard/einstellungen/galerie/{{$g.ID}}">
+    <span class="einst-g-num">{{tf $.Lang "Foto %d" $g.Pos}}</span>
+    <div class="field">
+      <label>{{t $.Lang "Beschreibung"}}<input type="text" name="alt" value="{{$g.Alt}}" maxlength="150" placeholder="{{t $.Lang "z. B. Balayage in Honigblond"}}"></label>
+    </div>
+    <div class="actions">
+      <button class="btn btn-secondary btn-small" type="submit" name="aktion" value="text">{{t $.Lang "Speichern"}}</button>
+      <button class="btn btn-secondary btn-small" type="submit" name="aktion" value="vor"{{if eq $i 0}} disabled{{end}}>{{t $.Lang "Nach vorn"}}</button>
+      <button class="btn btn-secondary btn-small" type="submit" name="aktion" value="zurueck"{{if $g.Last}} disabled{{end}}>{{t $.Lang "Nach hinten"}}</button>
+      <button class="btn btn-danger btn-small" type="submit" name="aktion" value="loeschen">{{t $.Lang "Löschen"}}</button>
+    </div>
+  </form>
+</li>
+{{end}}
+</ol>
+{{else if .Pro}}
+<div class="empty">
+  <img src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="">
+  <h2>{{t .Lang "Noch keine Fotos"}}</h2>
+  <p>{{t .Lang "Zeig deine schönsten Schnitte und Farben. Auf der Buchungsseite erscheinen die Fotos als Quadrate."}}</p>
+</div>
 {{end}}
 </div>
 {{template "dash-bottom" .}}{{end}}

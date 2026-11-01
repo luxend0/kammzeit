@@ -38,3 +38,44 @@ if (url && copy && status) {
     }
   });
 }
+
+// Vorschau der Buchungsseite (#einst-mini): Akzentfarbe, Design, Begrüßungstext und
+// gewählte Bilder. Bilder als data:-URL (die CSP erlaubt kein blob:).
+const mini = document.getElementById("einst-mini");
+if (mini) {
+  document.getElementById("einst-accent")?.addEventListener("input", (e) => {
+    mini.style.setProperty("--accent", e.target.value);
+    mini.style.setProperty("--on-accent", onAccent(e.target.value));
+  });
+  const theme = () => {
+    const val = (name) => document.querySelector(`input[name=${name}]:checked`)?.value;
+    mini.classList.remove("font-modern", "font-klassisch", "round", "dark");
+    if (!mini.dataset.pro) return; // ohne Pro gilt das Standard-Design
+    const font = val("theme_font");
+    if (font && font !== "schlicht") mini.classList.add("font-" + font);
+    if (val("theme_radius") === "round") mini.classList.add("round");
+    if (val("theme_mode") === "dark") mini.classList.add("dark");
+  };
+  document.querySelectorAll("input[data-theme]").forEach((el) => el.addEventListener("change", theme));
+  const welcome = document.getElementById("einst-welcome");
+  welcome?.addEventListener("input", () => {
+    if (mini.dataset.pro) document.getElementById("einst-mini-welcome").textContent = welcome.value.trim();
+  });
+}
+document.querySelectorAll("input[type=file][data-prev]").forEach((input) => {
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) return;
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      for (const id of [input.dataset.prev, input.dataset.mini]) {
+        const img = document.getElementById(id);
+        if (!img || (id === "einst-mini-cover" && !mini?.dataset.pro)) continue;
+        img.src = reader.result;
+        img.hidden = false;
+      }
+      document.getElementById(input.dataset.prev + "-none")?.remove();
+    });
+    reader.readAsDataURL(file);
+  });
+});

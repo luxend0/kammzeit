@@ -21,19 +21,30 @@ type salon struct {
 	HorizonDays                            int
 	StripeCustomerID, StripeSubscriptionID string
 	Lang                                   string // Sprache der Buchungsseite: de | en
-	Loc                                    *time.Location
+	// Anpassung der Buchungsseite (custom.go): Social-Links (geprüft gespeichert),
+	// Öffnungszeiten-Box, Design (nur Pro), Logo/Titelbild = Hash in salon_media.
+	Instagram, TikTok, Facebook, Google, WhatsApp string
+	ShowHours                                     bool
+	ThemeFont, ThemeRadius, ThemeMode, Welcome    string
+	Logo, Cover                                   string
+	Loc                                           *time.Location
 }
 
 // Pro ist der bezahlte Plan: unbegrenzt Mitarbeiter, ohne Branding, ohne Gebühr.
 func (s *salon) Pro() bool { return s.Plan == "pro" }
 
 const salonCols = `SELECT id, slug, name, email, accent, plan, timezone, address, phone, website, imprint_url, about,
-	min_notice_min, cancel_notice_min, booking_horizon_days, stripe_customer_id, stripe_subscription_id, lang FROM salons `
+	min_notice_min, cancel_notice_min, booking_horizon_days, stripe_customer_id, stripe_subscription_id, lang,
+	instagram, tiktok, facebook, google, whatsapp, show_hours, theme_font, theme_radius, theme_mode, welcome_text,
+	COALESCE((SELECT hash FROM salon_media m WHERE m.salon_id = salons.id AND m.kind = 'logo'), ''),
+	COALESCE((SELECT hash FROM salon_media m WHERE m.salon_id = salons.id AND m.kind = 'cover'), '') FROM salons `
 
 func scanSalon(row interface{ Scan(...any) error }) (*salon, error) {
 	var s salon
 	err := row.Scan(&s.ID, &s.Slug, &s.Name, &s.Email, &s.Accent, &s.Plan, &s.TZ, &s.Address, &s.Phone, &s.Website,
-		&s.ImprintURL, &s.About, &s.MinNoticeMin, &s.CancelNoticeMin, &s.HorizonDays, &s.StripeCustomerID, &s.StripeSubscriptionID, &s.Lang)
+		&s.ImprintURL, &s.About, &s.MinNoticeMin, &s.CancelNoticeMin, &s.HorizonDays, &s.StripeCustomerID, &s.StripeSubscriptionID, &s.Lang,
+		&s.Instagram, &s.TikTok, &s.Facebook, &s.Google, &s.WhatsApp, &s.ShowHours, &s.ThemeFont, &s.ThemeRadius, &s.ThemeMode, &s.Welcome,
+		&s.Logo, &s.Cover)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +105,33 @@ var migrations = []string{
 	     UNIQUE (salon_id, day, number)
 	 );
 	 CREATE INDEX queue_entries_salon_day ON queue_entries (salon_id, day, status);`,
+	// 4: Anpassung der Buchungsseite: Bilder (Logo, Titelbild, Galerie) als BLOB,
+	// damit das Backup eine Datei bleibt; Social-Links, Öffnungszeiten-Box, Design.
+	`CREATE TABLE salon_media (
+	     id         INTEGER PRIMARY KEY,
+	     salon_id   INTEGER NOT NULL REFERENCES salons(id) ON DELETE CASCADE,
+	     kind       TEXT NOT NULL CHECK (kind IN ('logo', 'cover', 'gallery')),
+	     mime       TEXT NOT NULL CHECK (mime IN ('image/jpeg', 'image/png')), -- immer neu kodiert
+	     data       BLOB NOT NULL,
+	     width      INTEGER NOT NULL,
+	     height     INTEGER NOT NULL,
+	     hash       TEXT NOT NULL UNIQUE,          -- Adresse /media/{hash}, ändert sich mit dem Inhalt
+	     sort       INTEGER NOT NULL DEFAULT 0,
+	     alt        TEXT NOT NULL DEFAULT '',
+	     created_at INTEGER NOT NULL DEFAULT (unixepoch())
+	 );
+	 CREATE INDEX salon_media_salon ON salon_media (salon_id, kind, sort);
+	 CREATE UNIQUE INDEX salon_media_single ON salon_media (salon_id, kind) WHERE kind IN ('logo', 'cover');
+	 ALTER TABLE salons ADD COLUMN instagram TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE salons ADD COLUMN tiktok TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE salons ADD COLUMN facebook TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE salons ADD COLUMN google TEXT NOT NULL DEFAULT '';         -- Maps/Bewertungen
+	 ALTER TABLE salons ADD COLUMN whatsapp TEXT NOT NULL DEFAULT '';       -- nur Ziffern mit Ländervorwahl
+	 ALTER TABLE salons ADD COLUMN show_hours INTEGER NOT NULL DEFAULT 1;
+	 ALTER TABLE salons ADD COLUMN theme_font TEXT NOT NULL DEFAULT 'schlicht';
+	 ALTER TABLE salons ADD COLUMN theme_radius TEXT NOT NULL DEFAULT 'square';
+	 ALTER TABLE salons ADD COLUMN theme_mode TEXT NOT NULL DEFAULT 'light';
+	 ALTER TABLE salons ADD COLUMN welcome_text TEXT NOT NULL DEFAULT '';`,
 }
 
 // termsVersion = Stand von AGB und AVV in web/legal.html. Bei inhaltlicher
