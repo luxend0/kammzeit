@@ -133,9 +133,6 @@ func init() {
 
 		// Kammzeit-News (marketing.go)
 		"Dieser Bestätigungslink ist abgelaufen, wurde schon benutzt oder ist unvollständig. Ein Link gilt 7 Tage. In den Einstellungen kannst du einen neuen anfordern.": "This confirmation link has expired, has already been used or is incomplete. A link is valid for 7 days. You can request a new one in Settings.",
-		"Bitte bestätigen: Kammzeit-News per E-Mail": "Please confirm: Kammzeit news by email",
-		marketingMailDE: "Hello,\n\nyou'd like to receive occasional news about Kammzeit by email. Please confirm with this link (valid for 7 days):\n\n%s\n\n" +
-			"Didn't ask for this? Just ignore this email and we won't send you any news.\n",
 		"Zu den Einstellungen":     "Go to Settings",
 		"Kammzeit-News bestätigen": "Confirm Kammzeit news",
 		"Bestätige, dass du gelegentlich Neuigkeiten zu Kammzeit per E-Mail bekommen möchtest. Abbestellen geht jederzeit mit einem Klick.": "Please confirm that you'd like to receive occasional news about Kammzeit by email. You can unsubscribe at any time with one click.",
