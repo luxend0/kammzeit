@@ -100,16 +100,30 @@ func main() {
 	a := &app{cfg: cfg, db: db, tpl: tpl, mail: mailerFromEnv()}
 	go a.reminderLoop(context.Background())
 
+	listen := env("LISTEN", ":"+cfg.Port) // Standard bleibt alle Schnittstellen (Docker, Selbsthosten)
 	srv := &http.Server{
-		Addr:              env("LISTEN", ":"+cfg.Port), // hinter einem Proxy: LISTEN=127.0.0.1:8080
+		Addr:              listen,
 		Handler:           a.routes(),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      30 * time.Second,
 		IdleTimeout:       2 * time.Minute,
 	}
-	log.Printf("Kammzeit auf :%s (Basis-Domain %s, Einzelbetrieb %v)", cfg.Port, cfg.BaseDomain, cfg.SingleTenant)
+	log.Printf("Kammzeit auf %s (Basis-Domain %s, Einzelbetrieb %v)", listen, cfg.BaseDomain, cfg.SingleTenant)
+	if allInterfaces(listen) {
+		log.Printf("Hinweis: lauscht auf allen Netzwerkschnittstellen, also auch ohne TLS direkt am Proxy vorbei. Hinter einem Reverse-Proxy LISTEN=127.0.0.1:%s setzen.", cfg.Port)
+	}
 	log.Fatal(srv.ListenAndServe())
+}
+
+// allInterfaces: die LISTEN-Adresse nimmt Verbindungen auf allen Schnittstellen an.
+func allInterfaces(listen string) bool {
+	host, _, err := net.SplitHostPort(listen)
+	if err != nil {
+		return false
+	}
+	ip := net.ParseIP(host)
+	return host == "" || ip != nil && ip.IsUnspecified()
 }
 
 func openDB(path string) (*sql.DB, error) {
@@ -195,7 +209,9 @@ func (m mailer) send(to, subject, body string) error {
 		"MIME-Version: 1.0\r\n" +
 		"Content-Type: text/plain; charset=utf-8\r\n" +
 		"Content-Transfer-Encoding: 8bit\r\n\r\n" +
-		strings.ReplaceAll(body, "\n", "\r\n")
+		// Alle CR raus, auch einzelne (z. B. in einem von Hand gepflegten
+		// Kundennamen): die gingen sonst unverändert auf die Leitung (SMTP-Smuggling).
+		strings.ReplaceAll(strings.ReplaceAll(body, "\r", ""), "\n", "\r\n")
 	var auth smtp.Auth
 	if m.user != "" {
 		auth = smtp.PlainAuth("", m.user, m.pass, m.host)
@@ -287,11 +303,15 @@ func location(tz string) *time.Location {
 
 // seedDemo legt den Salon "demo" an (Aufruf: kammzeit demo). Mehrfach aufrufbar.
 // ponytail: bis zum Admin-Bereich ist das der Weg, einen Salon anzulegen.
+// Das Demo-Konto gilt als schon angemeldet (last_login_at), sonst bekäme
+// demo.<Basis-Domain> kein Zertifikat (tlsAllowed).
 func seedDemo(db *sql.DB) error {
 	var n int
 	if err := db.QueryRow(`SELECT COUNT(*) FROM salons WHERE slug = 'demo'`).Scan(&n); err != nil || n > 0 {
 		if err == nil {
 			log.Print("Salon demo existiert schon")
+			_, err = db.Exec(`UPDATE users SET last_login_at = unixepoch()
+				WHERE last_login_at IS NULL AND salon_id = (SELECT id FROM salons WHERE slug = 'demo')`)
 		}
 		return err
 	}
@@ -334,7 +354,7 @@ func seedDemo(db *sql.DB) error {
 		SELECT st.id, sv.id FROM staff st JOIN services sv ON sv.salon_id = st.salon_id WHERE st.salon_id = ?`, salonID); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`INSERT INTO users (salon_id, email) VALUES (?, 'demo@example.com')`, salonID); err != nil {
+	if _, err := tx.Exec(`INSERT INTO users (salon_id, email, last_login_at) VALUES (?, 'demo@example.com', unixepoch())`, salonID); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
