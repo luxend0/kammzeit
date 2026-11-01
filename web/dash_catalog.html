@@ -21,9 +21,9 @@
   <img class="page-head-icon" src="/static/img/icons/schere.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>Was Kunden online buchen können, mit Dauer und Preis.</p>
+    <p>{{t .Lang "Was Kunden online buchen können, mit Dauer und Preis."}}</p>
   </div>
-  <div class="page-head-actions"><a class="btn" href="/dashboard/leistungen/neu">Neue Leistung</a></div>
+  <div class="page-head-actions"><a class="btn" href="/dashboard/leistungen/neu">{{t .Lang "Neue Leistung"}}</a></div>
 </div>
 {{template "catalog-style"}}
 <style>
@@ -40,38 +40,38 @@
 </style>
 {{if .Services}}
 <div class="table-wrap"><table class="table catalog-table">
-<thead><tr><th class="leist-move-col"><span class="catalog-sr">Reihenfolge</span></th><th>Name</th><th class="num leist-dauer">Dauer</th><th class="num">Preis</th></tr></thead>
+<thead><tr><th class="leist-move-col"><span class="catalog-sr">{{t .Lang "Reihenfolge"}}</span></th><th>{{t .Lang "Name"}}</th><th class="num leist-dauer">{{t .Lang "Dauer"}}</th><th class="num">{{t .Lang "Preis"}}</th></tr></thead>
 <tbody>
 {{range .Services}}<tr id="leist-{{.ID}}">
   <td><form class="leist-move" method="post" action="/dashboard/leistungen/{{.ID}}/verschieben">
-    <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="hoch" aria-label="{{.Name}} nach oben"{{if .First}} disabled{{end}}>&uarr;</button>
-    <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="runter" aria-label="{{.Name}} nach unten"{{if .Last}} disabled{{end}}>&darr;</button>
+    <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="hoch" aria-label="{{tf $.Lang "%s nach oben" .Name}}"{{if .First}} disabled{{end}}>&uarr;</button>
+    <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="runter" aria-label="{{tf $.Lang "%s nach unten" .Name}}"{{if .Last}} disabled{{end}}>&darr;</button>
   </form></td>
-  <td><a class="catalog-name" href="/dashboard/leistungen/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="chip chip-grey">inaktiv</span>{{end}}
-    <span class="catalog-sub leist-mob">{{.Duration}} Min.</span></td>
-  <td class="num nowrap leist-dauer">{{.Duration}} Min.</td>
-  <td class="num nowrap">{{euro .PriceCents}}</td>
+  <td><a class="catalog-name" href="/dashboard/leistungen/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="chip chip-grey">{{t $.Lang "inaktiv"}}</span>{{end}}
+    <span class="catalog-sub leist-mob">{{tf $.Lang "%d Min." .Duration}}</span></td>
+  <td class="num nowrap leist-dauer">{{tf $.Lang "%d Min." .Duration}}</td>
+  <td class="num nowrap">{{money $.Lang .PriceCents}}</td>
 </tr>{{end}}
 </tbody>
 </table></div>
-<p class="muted small">In dieser Reihenfolge stehen die Leistungen auf der Buchungsseite. Inaktive Leistungen sind dort nicht zu sehen.</p>
+<p class="muted small">{{t .Lang "In dieser Reihenfolge stehen die Leistungen auf der Buchungsseite. Inaktive Leistungen sind dort nicht zu sehen."}}</p>
 {{else}}
 <div class="empty">
   <img src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="">
-  <h2>Noch keine Leistungen</h2>
-  <p>Lege die erste an, damit Kunden buchen können. Zum Beispiel „Damenhaarschnitt“, 60 Minuten, 54 Euro.</p>
-  <p class="actions"><a class="btn" href="/dashboard/leistungen/neu">Neue Leistung</a></p>
+  <h2>{{t .Lang "Noch keine Leistungen"}}</h2>
+  <p>{{t .Lang "Lege die erste an, damit Kunden buchen können. Zum Beispiel „Damenhaarschnitt“, 60 Minuten, 54 Euro."}}</p>
+  <p class="actions"><a class="btn" href="/dashboard/leistungen/neu">{{t .Lang "Neue Leistung"}}</a></p>
 </div>
 {{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "leist-form"}}{{template "dash-top" .}}
 <div class="page-head">
-  <a class="page-head-back" href="/dashboard/leistungen">Zurück zu Leistungen</a>
+  <a class="page-head-back" href="/dashboard/leistungen">{{t .Lang "Zurück zu Leistungen"}}</a>
   <img class="page-head-icon" src="/static/img/icons/schere.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>Name, Dauer und Preis stehen so auf deiner Buchungsseite.</p>
+    <p>{{t .Lang "Name, Dauer und Preis stehen so auf deiner Buchungsseite."}}</p>
   </div>
 </div>
 {{template "catalog-style"}}
@@ -79,45 +79,45 @@
 {{with .F}}
 <form method="post" class="form card" novalidate>
   <div class="field">
-    <label for="leist-name">Name</label>
+    <label for="leist-name">{{t $.Lang "Name"}}</label>
     <input type="text" id="leist-name" name="name" value="{{.Name}}" maxlength="80" required{{if .Errs.name}} aria-invalid="true" aria-describedby="err-name"{{end}}>
     {{with .Errs.name}}<span class="field-error" id="err-name">{{.}}</span>{{end}}
   </div>
   <div class="field">
-    <label for="leist-beschreibung">Beschreibung</label>
+    <label for="leist-beschreibung">{{t $.Lang "Beschreibung"}}</label>
     <textarea id="leist-beschreibung" name="beschreibung" maxlength="300" aria-describedby="leist-beschreibung-hint{{if .Errs.beschreibung}} err-beschreibung{{end}}"{{if .Errs.beschreibung}} aria-invalid="true"{{end}}>{{.Description}}</textarea>
-    <span class="hint" id="leist-beschreibung-hint">Optional, höchstens 300 Zeichen. Steht auf der Buchungsseite unter dem Namen.</span>
+    <span class="hint" id="leist-beschreibung-hint">{{t $.Lang "Optional, höchstens 300 Zeichen. Steht auf der Buchungsseite unter dem Namen."}}</span>
     {{with .Errs.beschreibung}}<span class="field-error" id="err-beschreibung">{{.}}</span>{{end}}
   </div>
   <div class="row">
     <div class="field">
-      <label for="leist-dauer">Dauer in Minuten</label>
+      <label for="leist-dauer">{{t $.Lang "Dauer in Minuten"}}</label>
       <input type="number" id="leist-dauer" name="dauer" value="{{.Duration}}" min="5" max="480" step="5" required{{if .Errs.dauer}} aria-invalid="true" aria-describedby="err-dauer"{{end}}>
       {{with .Errs.dauer}}<span class="field-error" id="err-dauer">{{.}}</span>{{end}}
     </div>
     <div class="field">
-      <label for="leist-preis">Preis in Euro</label>
-      <input type="text" id="leist-preis" name="preis" value="{{.Price}}" inputmode="decimal" placeholder="25,00" maxlength="12" required{{if .Errs.preis}} aria-invalid="true" aria-describedby="err-preis"{{end}}>
+      <label for="leist-preis">{{t $.Lang "Preis in Euro"}}</label>
+      <input type="text" id="leist-preis" name="preis" value="{{.Price}}" inputmode="decimal" placeholder="{{t $.Lang "25,00"}}" maxlength="12" required{{if .Errs.preis}} aria-invalid="true" aria-describedby="err-preis"{{end}}>
       {{with .Errs.preis}}<span class="field-error" id="err-preis">{{.}}</span>{{end}}
     </div>
   </div>
-  <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> Aktiv, online buchbar</label>
-  {{if not .ID}}<p class="muted small">Neue Leistungen bekommen automatisch alle aktiven Mitarbeiter. Ändern kannst du das unter Team.</p>{{end}}
+  <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> {{t $.Lang "Aktiv, online buchbar"}}</label>
+  {{if not .ID}}<p class="muted small">{{t $.Lang "Neue Leistungen bekommen automatisch alle aktiven Mitarbeiter. Ändern kannst du das unter Team."}}</p>{{end}}
   <div class="actions">
-    <button class="btn" type="submit">Speichern</button>
-    <a href="/dashboard/leistungen">Abbrechen</a>
+    <button class="btn" type="submit">{{t $.Lang "Speichern"}}</button>
+    <a href="/dashboard/leistungen">{{t $.Lang "Abbrechen"}}</a>
   </div>
 </form>
 {{if .ID}}
-{{if and .Appts (not .Active)}}<p class="muted small catalog-del">Die Leistung hat Termine und kann deshalb nicht gelöscht werden. Sie ist deaktiviert und auf der Buchungsseite nicht zu sehen.</p>
+{{if and .Appts (not .Active)}}<p class="muted small catalog-del">{{t $.Lang "Die Leistung hat Termine und kann deshalb nicht gelöscht werden. Sie ist deaktiviert und auf der Buchungsseite nicht zu sehen."}}</p>
 {{else}}<details class="catalog-del">
-  <summary class="btn btn-danger btn-small">Leistung löschen</summary>
+  <summary class="btn btn-danger btn-small">{{t $.Lang "Leistung löschen"}}</summary>
   <div class="catalog-del-box">
-    <p><strong>Wirklich löschen?</strong>
-    {{if .Appts}}Die Leistung hat schon Termine. Sie wird deshalb nicht gelöscht, sondern stattdessen deaktiviert. Die Termine bleiben.
-    {{else}}Das lässt sich nicht rückgängig machen.{{end}}</p>
+    <p><strong>{{t $.Lang "Wirklich löschen?"}}</strong>
+    {{if .Appts}}{{t $.Lang "Die Leistung hat schon Termine. Sie wird deshalb nicht gelöscht, sondern stattdessen deaktiviert. Die Termine bleiben."}}
+    {{else}}{{t $.Lang "Das lässt sich nicht rückgängig machen."}}{{end}}</p>
     <form method="post" action="/dashboard/leistungen/{{.ID}}/loeschen">
-      <button class="btn btn-danger" type="submit">{{if .Appts}}Ja, deaktivieren{{else}}Ja, löschen{{end}}</button>
+      <button class="btn btn-danger" type="submit">{{if .Appts}}{{t $.Lang "Ja, deaktivieren"}}{{else}}{{t $.Lang "Ja, löschen"}}{{end}}</button>
     </form>
   </div>
 </details>{{end}}
@@ -125,11 +125,11 @@
 {{end}}
 {{template "dash-bottom" .}}{{end}}
 
-{{/* Hinweis auf das Mitarbeiter-Limit im Gratis-Plan, mit Weg zu Pro. */}}
+{{/* Hinweis auf das Mitarbeiter-Limit im Gratis-Plan, mit Weg zu Pro. Daten: Seite mit .ProHint (übersetzt) und .Lang. */}}
 {{define "team-pro-hint"}}<div class="card card-sky team-pro">
   <img src="/static/img/icons/pro.svg" width="48" height="48" alt="">
-  <p>{{.}}</p>
-  <a class="btn btn-secondary btn-small" href="/dashboard/abo">Pro ansehen</a>
+  <p>{{.ProHint}}</p>
+  <a class="btn btn-secondary btn-small" href="/dashboard/abo">{{t .Lang "Pro ansehen"}}</a>
 </div>{{end}}
 
 {{define "team-style"}}<style>
@@ -144,24 +144,24 @@
   <img class="page-head-icon" src="/static/img/icons/team.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>Wer bei dir arbeitet, wann und für welche Leistungen.</p>
+    <p>{{t .Lang "Wer bei dir arbeitet, wann und für welche Leistungen."}}</p>
   </div>
-  <div class="page-head-actions"><a class="btn" href="/dashboard/team/neu">Neuer Mitarbeiter</a></div>
+  <div class="page-head-actions"><a class="btn" href="/dashboard/team/neu">{{t .Lang "Neuer Mitarbeiter"}}</a></div>
 </div>
 {{template "catalog-style"}}
 {{template "team-style"}}
 <style>
 @media (max-width: 560px) { .team-leist { display: none; } }
 </style>
-{{if and .ShowLimit .Staff}}{{template "team-pro-hint" (print "Im Gratis-Plan ist höchstens " .Limit " Mitarbeiter aktiv. Mit Pro unbegrenzt viele.")}}{{end}}
+{{if and .ShowLimit .Staff}}{{template "team-pro-hint" .}}{{end}}
 {{if .Staff}}
 <div class="table-wrap"><table class="table catalog-table">
-<thead><tr><th>Name</th><th>Arbeitszeiten</th><th class="num team-leist">Leistungen</th></tr></thead>
+<thead><tr><th>{{t .Lang "Name"}}</th><th>{{t .Lang "Arbeitszeiten"}}</th><th class="num team-leist">{{t .Lang "Leistungen"}}</th></tr></thead>
 <tbody>
 {{range .Staff}}<tr>
-  <td><a class="catalog-name" href="/dashboard/team/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="chip chip-grey">inaktiv</span>{{end}}
-    {{if eq .Services 0}}<span class="catalog-sub chip chip-coral">Keine Leistungen, online nicht buchbar</span>{{end}}</td>
-  <td>{{range .Hours}}<div class="nowrap">{{.}}</div>{{else}}<span class="muted">keine</span>{{end}}</td>
+  <td><a class="catalog-name" href="/dashboard/team/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="chip chip-grey">{{t $.Lang "inaktiv"}}</span>{{end}}
+    {{if eq .Services 0}}<span class="catalog-sub chip chip-coral">{{t $.Lang "Keine Leistungen, online nicht buchbar"}}</span>{{end}}</td>
+  <td>{{range .Hours}}<div class="nowrap">{{.}}</div>{{else}}<span class="muted">{{t $.Lang "keine"}}</span>{{end}}</td>
   <td class="num team-leist">{{.Services}}</td>
 </tr>{{end}}
 </tbody>
@@ -169,20 +169,20 @@
 {{else}}
 <div class="empty">
   <img src="/static/img/ill/team.webp" width="1000" height="800" alt="">
-  <h2>Noch keine Mitarbeiter</h2>
-  <p>Ohne aktiven Mitarbeiter ist nichts buchbar. Leg am besten zuerst dich selbst an.</p>
-  <p class="actions"><a class="btn" href="/dashboard/team/neu">Neuer Mitarbeiter</a></p>
+  <h2>{{t .Lang "Noch keine Mitarbeiter"}}</h2>
+  <p>{{t .Lang "Ohne aktiven Mitarbeiter ist nichts buchbar. Leg am besten zuerst dich selbst an."}}</p>
+  <p class="actions"><a class="btn" href="/dashboard/team/neu">{{t .Lang "Neuer Mitarbeiter"}}</a></p>
 </div>
 {{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "team-form"}}{{template "dash-top" .}}
 <div class="page-head">
-  <a class="page-head-back" href="/dashboard/team">Zurück zum Team</a>
+  <a class="page-head-back" href="/dashboard/team">{{t .Lang "Zurück zum Team"}}</a>
   <img class="page-head-icon" src="/static/img/icons/team.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>Für welche Leistungen und zu welchen Zeiten online gebucht werden kann.</p>
+    <p>{{t .Lang "Für welche Leistungen und zu welchen Zeiten online gebucht werden kann."}}</p>
   </div>
 </div>
 {{template "catalog-style"}}
@@ -210,49 +210,49 @@
   .team-hours .team-err { padding-top: 0; border-bottom: 0; }
 }
 </style>
-{{if .LimitHit}}<p class="error" role="alert"><span>Aktive Mitarbeiter im Gratis-Plan: höchstens {{.Limit}}.
-  <a href="/dashboard/abo">Zu Pro wechseln</a>{{if .F}} oder einen anderen Mitarbeiter deaktivieren{{end}}.</span></p>
-{{if not .F}}{{template "team-pro-hint" "Mit Pro sind beliebig viele Mitarbeiter aktiv, für 14,90 € im Monat oder 149 € im Jahr."}}{{end}}{{end}}
+{{if .LimitHit}}<p class="error" role="alert"><span>{{tf .Lang "Aktive Mitarbeiter im Gratis-Plan: höchstens %d." .Limit}}
+  <a href="/dashboard/abo">{{t .Lang "Zu Pro wechseln"}}</a>{{if .F}}{{t .Lang " oder einen anderen Mitarbeiter deaktivieren"}}{{end}}.</span></p>
+{{if not .F}}{{template "team-pro-hint" .}}{{end}}{{end}}
 {{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
 {{with .F}}
 {{with .Notice}}<p class="flash" role="status">{{.}}</p>{{end}}
 <form method="post" class="form form-wide" novalidate>
   {{/* Enter in einem Feld löst den ersten Absende-Knopf aus: das soll Speichern sein, nicht "übertragen". */}}
-  <button class="catalog-sr" type="submit" tabindex="-1" aria-hidden="true">Speichern</button>
+  <button class="catalog-sr" type="submit" tabindex="-1" aria-hidden="true">{{t $.Lang "Speichern"}}</button>
   <div class="team-cards">
   <section class="card">
     <div class="team-name">
       <div class="field">
-        <label for="team-name">Name</label>
+        <label for="team-name">{{t $.Lang "Name"}}</label>
         <input type="text" id="team-name" name="name" value="{{.Name}}" maxlength="60" required{{if .Errs.name}} aria-invalid="true" aria-describedby="err-name"{{end}}>
         {{with .Errs.name}}<span class="field-error" id="err-name">{{.}}</span>{{end}}
       </div>
-      <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> Aktiv, online buchbar</label>
+      <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> {{t $.Lang "Aktiv, online buchbar"}}</label>
     </div>
-    {{if not .ID}}<p class="muted small">Leistungen und Arbeitszeiten sind ein Vorschlag. Pass sie vor dem Speichern an.</p>{{end}}
+    {{if not .ID}}<p class="muted small">{{t $.Lang "Leistungen und Arbeitszeiten sind ein Vorschlag. Pass sie vor dem Speichern an."}}</p>{{end}}
   </section>
 
   <section class="card">
-    <div class="section-title"><img src="/static/img/icons/schere.svg" width="32" height="32" alt=""><h2>Leistungen</h2></div>
-    <p class="muted small">Online buchbar ist der Mitarbeiter nur für die angehakten Leistungen.</p>
+    <div class="section-title"><img src="/static/img/icons/schere.svg" width="32" height="32" alt=""><h2>{{t $.Lang "Leistungen"}}</h2></div>
+    <p class="muted small">{{t $.Lang "Online buchbar ist der Mitarbeiter nur für die angehakten Leistungen."}}</p>
     <div class="team-leistungen">
-    {{range .Services}}<label class="check"><input type="checkbox" name="leistung" value="{{.ID}}"{{if .Checked}} checked{{end}}> {{.Name}}{{if not .Active}} <span class="muted">(inaktiv)</span>{{end}}</label>
-    {{else}}<p class="muted">Noch keine Leistungen. <a href="/dashboard/leistungen/neu">Neue Leistung</a></p>{{end}}
+    {{range .Services}}<label class="check"><input type="checkbox" name="leistung" value="{{.ID}}"{{if .Checked}} checked{{end}}> {{.Name}}{{if not .Active}} <span class="muted">({{t $.Lang "inaktiv"}})</span>{{end}}</label>
+    {{else}}<p class="muted">{{t $.Lang "Noch keine Leistungen."}} <a href="/dashboard/leistungen/neu">{{t $.Lang "Neue Leistung"}}</a></p>{{end}}
     </div>
   </section>
 
   <section class="card">
-    <div class="section-title"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt=""><h2 id="team-hours-h">Arbeitszeiten</h2></div>
-    <p class="muted small" id="team-hours-hint">Leer heißt frei. Mit Mittagspause: Block 1 bis zur Pause, Block 2 danach, z. B. 9:00-12:00 und 13:00-18:00.</p>
+    <div class="section-title"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt=""><h2 id="team-hours-h">{{t $.Lang "Arbeitszeiten"}}</h2></div>
+    <p class="muted small" id="team-hours-hint">{{t $.Lang "Leer heißt frei. Mit Mittagspause: Block 1 bis zur Pause, Block 2 danach, z. B. 9:00-12:00 und 13:00-18:00."}}</p>
     <div class="table-wrap"><table class="team-hours" aria-labelledby="team-hours-h" aria-describedby="team-hours-hint">
-      <thead><tr><th>Tag</th><th>Block 1</th><th>Block 2</th></tr></thead>
+      <thead><tr><th>{{t $.Lang "Tag"}}</th><th>{{t $.Lang "Block 1"}}</th><th>{{t $.Lang "Block 2"}}</th></tr></thead>
       <tbody>
       {{range .Days}}<tr>
         <th scope="row">{{.Label}}</th>
-        <td class="nowrap" data-label="Block 1"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{.Label}}, Block 1, Beginn"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
-          - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{.Label}}, Block 1, Ende"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
-        <td class="nowrap" data-label="Block 2"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{.Label}}, Block 2, Beginn"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
-          - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{.Label}}, Block 2, Ende"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
+        <td class="nowrap" data-label="{{t $.Lang "Block 1"}}"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{tf $.Lang "%s, Block 1, Beginn" .Label}}"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
+          - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{tf $.Lang "%s, Block 1, Ende" .Label}}"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
+        <td class="nowrap" data-label="{{t $.Lang "Block 2"}}"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{tf $.Lang "%s, Block 2, Beginn" .Label}}"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
+          - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{tf $.Lang "%s, Block 2, Ende" .Label}}"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
       </tr>
       {{if .Err}}<tr class="team-err"><td></td><td colspan="2"><span class="field-error" id="err-tag-{{.WD}}">{{.Err}}</span></td></tr>{{end}}
       {{end}}
@@ -262,20 +262,20 @@
   </section>
   </div>
   <div class="actions" style="margin-top: 24px">
-    <button class="btn" type="submit">Speichern</button>
-    <a href="/dashboard/team">Abbrechen</a>
+    <button class="btn" type="submit">{{t $.Lang "Speichern"}}</button>
+    <a href="/dashboard/team">{{t $.Lang "Abbrechen"}}</a>
   </div>
 </form>
 {{if .ID}}
-{{if and .Appts (not .Active)}}<p class="muted small catalog-del">Der Mitarbeiter hat Termine und kann deshalb nicht gelöscht werden. Er ist deaktiviert und online nicht buchbar.</p>
+{{if and .Appts (not .Active)}}<p class="muted small catalog-del">{{t $.Lang "Der Mitarbeiter hat Termine und kann deshalb nicht gelöscht werden. Er ist deaktiviert und online nicht buchbar."}}</p>
 {{else}}<details class="catalog-del">
-  <summary class="btn btn-danger btn-small">Mitarbeiter löschen</summary>
+  <summary class="btn btn-danger btn-small">{{t $.Lang "Mitarbeiter löschen"}}</summary>
   <div class="catalog-del-box">
-    <p><strong>Wirklich löschen?</strong>
-    {{if .Appts}}Der Mitarbeiter hat schon Termine. Er wird deshalb nicht gelöscht, sondern stattdessen deaktiviert. Die Termine bleiben.
-    {{else}}Das lässt sich nicht rückgängig machen.{{end}}</p>
+    <p><strong>{{t $.Lang "Wirklich löschen?"}}</strong>
+    {{if .Appts}}{{t $.Lang "Der Mitarbeiter hat schon Termine. Er wird deshalb nicht gelöscht, sondern stattdessen deaktiviert. Die Termine bleiben."}}
+    {{else}}{{t $.Lang "Das lässt sich nicht rückgängig machen."}}{{end}}</p>
     <form method="post" action="/dashboard/team/{{.ID}}/loeschen">
-      <button class="btn btn-danger" type="submit">{{if .Appts}}Ja, deaktivieren{{else}}Ja, löschen{{end}}</button>
+      <button class="btn btn-danger" type="submit">{{if .Appts}}{{t $.Lang "Ja, deaktivieren"}}{{else}}{{t $.Lang "Ja, löschen"}}{{end}}</button>
     </form>
   </div>
 </details>{{end}}

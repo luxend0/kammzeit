@@ -70,6 +70,30 @@ var migrations = []string{
 	 ALTER TABLE users ADD COLUMN marketing_withdrawn_at INTEGER;
 	 ALTER TABLE users ADD COLUMN marketing_pending_hash TEXT NOT NULL DEFAULT '';
 	 ALTER TABLE users ADD COLUMN marketing_pending_at INTEGER;`,
+	// 3: Mitarbeiter-Logins (Rolle owner|staff, staff_id = zugehöriger Mitarbeiter)
+	// und Warteschlange für Laufkundschaft (pro Salon schaltbar, nur Pro).
+	`ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'owner' CHECK (role IN ('owner', 'staff'));
+	 ALTER TABLE users ADD COLUMN staff_id INTEGER REFERENCES staff(id) ON DELETE SET NULL;
+	 ALTER TABLE salons ADD COLUMN queue_enabled INTEGER NOT NULL DEFAULT 0;
+	 ALTER TABLE salons ADD COLUMN queue_note TEXT NOT NULL DEFAULT '';
+	 CREATE TABLE queue_entries (
+	     id          INTEGER PRIMARY KEY,
+	     salon_id    INTEGER NOT NULL REFERENCES salons(id) ON DELETE CASCADE,
+	     number      INTEGER NOT NULL,              -- Nummer des Tages (1, 2, 3 ...)
+	     day         TEXT NOT NULL,                 -- YYYY-MM-DD in Salon-Zeitzone
+	     name        TEXT NOT NULL,
+	     email       TEXT,                          -- optional, für "gleich dran"-Mail
+	     service_id  INTEGER REFERENCES services(id) ON DELETE SET NULL,
+	     staff_id    INTEGER REFERENCES staff(id) ON DELETE SET NULL,
+	     status      TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'called', 'serving', 'done', 'noshow', 'left')),
+	     token       TEXT NOT NULL UNIQUE,          -- Statusseite des Kunden
+	     created_at  INTEGER NOT NULL DEFAULT (unixepoch()),
+	     called_at   INTEGER,
+	     done_at     INTEGER,
+	     notified_at INTEGER,
+	     UNIQUE (salon_id, day, number)
+	 );
+	 CREATE INDEX queue_entries_salon_day ON queue_entries (salon_id, day, status);`,
 }
 
 // termsVersion = Stand von AGB und AVV in web/legal.html. Bei inhaltlicher
