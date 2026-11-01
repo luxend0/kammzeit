@@ -10,8 +10,8 @@
 <style>
 .auth-brand { display: inline-block; margin: 0 0 48px; font-weight: 800; text-decoration: none; letter-spacing: -.01em; border-bottom: 2px solid var(--fg); }
 .auth-note { margin: 20px 0; padding: 10px 14px; border-left: 4px solid var(--accent); background: #f5f5f5; }
-.auth-error { border-left-color: #b00020; background: #fdf0f2; }
 .auth-alt { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); }
+@media (pointer: coarse) { .auth-alt a { display: inline-flex; align-items: center; min-height: 44px; } }
 </style>
 </head>
 <body>
@@ -30,12 +30,15 @@
 {{if .LoggedOut}}<p class="auth-note" role="status">Du bist abgemeldet.</p>{{end}}
 {{if .Sent}}
 <p class="auth-note" role="status">Wenn es ein Konto mit dieser Adresse gibt, ist ein Login-Link unterwegs. Er ist 15 Minuten gültig.</p>
+<p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
 <p class="muted small">Nichts angekommen? Schau im Spam-Ordner nach oder <a href="/login">fordere einen neuen Link an</a>.</p>
 {{else}}
-{{with .Error}}<p class="auth-note auth-error" role="alert">{{.}}</p>{{end}}
 <form method="post" action="/login">
   <input type="hidden" name="weiter" value="{{.Next}}">
-  <label class="field">E-Mail<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus></label>
+  <div class="field">
+    <label>E-Mail<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus{{if .Error}} aria-invalid="true" aria-describedby="auth-err-email"{{end}}></label>
+    {{with .Error}}<span class="field-error" id="auth-err-email">{{.}}</span>{{end}}
+  </div>
   <button type="submit">Login-Link schicken</button>
 </form>
 {{end}}

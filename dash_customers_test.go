@@ -148,7 +148,10 @@ func TestKundenMandantentrennung(t *testing.T) {
 	}
 
 	// Gegenprobe: der eigene Salon darf lesen und löschen, Termine gehen mit.
-	if w := kundenReq(h, theirs, p, nil); w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "geheime Rezeptur") {
+	// Die Notiz steht über Kontakt und Besuchen (am Handy sonst erst unter zwei Karten).
+	w := kundenReq(h, theirs, p, nil)
+	if body := w.Body.String(); w.Code != http.StatusOK || !strings.Contains(body, "geheime Rezeptur") ||
+		strings.Index(body, "geheime Rezeptur") > strings.Index(body, "<h2>Kontakt</h2>") {
 		t.Fatalf("eigener Kunde: Status %d", w.Code)
 	}
 	if w := kundenReq(h, theirs, p+"/loeschen", url.Values{}); w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/dashboard/kunden?geloescht" {
@@ -168,12 +171,18 @@ func TestKundenDoppelteEmail(t *testing.T) {
 		return kundenReq(h, cookie, "/dashboard/kunden/neu", url.Values{"name": {name}, "email": {email}, "phone": {""}, "notes": {""}})
 	}
 
-	if w := create(mine, "Anna", "anna@example.com"); w.Code != http.StatusSeeOther {
-		t.Fatalf("anlegen: Status %d", w.Code)
+	w := create(mine, "Anna", "anna@example.com")
+	if w.Code != http.StatusSeeOther || !strings.HasSuffix(w.Header().Get("Location"), "?gespeichert=neu") || kundenGespeichert["neu"] == "" {
+		t.Fatalf("anlegen: Status %d, Location %q", w.Code, w.Header().Get("Location"))
 	}
-	w := create(mine, "Anna Zwei", " ANNA@example.com ")
+	w = create(mine, "Anna Zwei", " ANNA@example.com ")
 	if w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "gehört schon zu einem anderen Kunden") {
 		t.Fatalf("doppelt anlegen: Status %d, Body ohne Hinweis", w.Code)
+	}
+	// Fehler am Feld: aria-invalid, Hinweis und Fehler per aria-describedby.
+	if body := w.Body.String(); !strings.Contains(body, `aria-describedby="kunde-hint-email kunde-err-email" aria-invalid="true"`) ||
+		!strings.Contains(body, `<span class="field-error" id="kunde-err-email">`) || strings.Count(body, `aria-invalid="true"`) != 1 {
+		t.Errorf("Fehler nicht am Feld E-Mail:\n%s", body)
 	}
 	if !strings.Contains(w.Body.String(), `value="Anna Zwei"`) {
 		t.Error("Eingaben gehen nach dem Fehler verloren")
@@ -190,9 +199,15 @@ func TestKundenDoppelteEmail(t *testing.T) {
 		t.Fatal(err)
 	}
 	w = kundenReq(h, mine, fmt.Sprintf("/dashboard/kunden/%d", berta), url.Values{"name": {"Berta"}, "email": {"anna@example.com"}})
-	if w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "gehört schon zu einem anderen Kunden") {
+	if w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "gehört schon zu einem anderen Kunden") ||
+		!strings.Contains(w.Body.String(), `id="kunde-err-email"`) {
 		t.Fatalf("doppelt bearbeiten: Status %d", w.Code)
 	}
+	w = kundenReq(h, mine, fmt.Sprintf("/dashboard/kunden/%d", berta), url.Values{"name": {"Berta B."}})
+	if w.Code != http.StatusSeeOther || !strings.HasSuffix(w.Header().Get("Location"), "?gespeichert=karte") || kundenGespeichert["karte"] == "" {
+		t.Fatalf("bearbeiten: Status %d, Location %q", w.Code, w.Header().Get("Location"))
+	}
+	kundenReq(h, mine, fmt.Sprintf("/dashboard/kunden/%d", berta), url.Values{"name": {"Berta"}})
 	if n := kundenCount(t, a, `customers WHERE id = ? AND email IS NULL`, berta); n != 1 {
 		t.Fatal("Berta wurde trotz Konflikt geändert")
 	}
@@ -205,8 +220,12 @@ func TestKundenDoppelteEmail(t *testing.T) {
 		t.Fatalf("anderer Salon: Status %d", w.Code)
 	}
 	// Pflichtfeld und Längen.
-	if w := create(mine, " ", ""); w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "Bitte einen Namen") {
+	if w := create(mine, " ", ""); w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "Bitte einen Namen") ||
+		!strings.Contains(w.Body.String(), `aria-invalid="true" aria-describedby="kunde-err-name"`) {
 		t.Fatalf("ohne Namen: Status %d", w.Code)
+	}
+	if w := create(mine, "Anna\x07", ""); w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "Steuerzeichen") {
+		t.Fatalf("Steuerzeichen im Namen: Status %d", w.Code)
 	}
 	if w := create(mine, strings.Repeat("ä", 101), ""); w.Code != http.StatusBadRequest {
 		t.Fatalf("zu langer Name: Status %d", w.Code)

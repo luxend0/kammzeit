@@ -6,6 +6,7 @@
   --muted: #555;      /* 7:1 auf Weiß */
   --line: #d4d4d4;
   --soft: #f3f3f3;
+  --danger: #b00020;
 }
 * { box-sizing: border-box; }
 body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
@@ -13,7 +14,8 @@ body.salon { border-top: 6px solid var(--accent); }
 main, footer { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
 footer { padding-top: 0; color: var(--muted); font-size: .875rem; }
 a { color: inherit; text-underline-offset: 2px; }
-a:focus-visible, button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+/* Fokus: dunkler Rahmen mit hellem Ring, sichtbar auf jeder Akzentfarbe */
+:focus-visible { outline: 2px solid #111; outline-offset: 2px; box-shadow: 0 0 0 4px #fff; }
 h1 { font-size: 2.25rem; line-height: 1.1; margin: 0 0 8px; letter-spacing: -.02em; overflow-wrap: anywhere; }
 h2 { font-size: 1.125rem; margin: 28px 0 6px; }
 .lead { margin: 0 0 8px; color: var(--muted); }
@@ -38,7 +40,6 @@ legend { font-weight: 800; font-size: 1.125rem; padding-right: 8px; }
 .opt:hover { background: var(--soft); }
 .opt:has(input:checked) { border-left-color: var(--accent); }
 .opt input { flex: none; width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--fg); }
-.opt input:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
 .opt-text { flex: 1; min-width: 0; }
 .opt-name { display: block; font-weight: 600; }
 .opt-desc { display: block; margin-top: 2px; color: var(--muted); font-size: .875rem; }
@@ -53,7 +54,8 @@ legend { font-weight: 800; font-size: 1.125rem; padding-right: 8px; }
 .slot span { display: block; padding: 11px 0; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; border: 1px solid var(--fg); }
 .slot:hover span { background: var(--soft); }
 .slot input:checked + span { background: var(--accent); color: var(--on-accent); box-shadow: inset 0 0 0 2px var(--fg); font-weight: 800; }
-.slot input:focus-visible + span { outline: 3px solid var(--fg); outline-offset: 2px; }
+.slot input:focus-visible + span { outline: 2px solid #111; outline-offset: 2px; box-shadow: 0 0 0 4px #fff; }
+.slot input:checked:focus-visible + span { box-shadow: inset 0 0 0 2px var(--fg), 0 0 0 4px #fff; }
 
 .field { display: block; margin: 12px 0; font-size: .875rem; font-weight: 600; }
 .optional { font-weight: 400; color: var(--muted); }
@@ -61,19 +63,27 @@ input[type=text], input[type=email], input[type=tel], input[type=date] {
   display: block; width: 100%; min-height: 48px; margin-top: 4px; padding: 10px; font: inherit; font-size: 1rem; font-weight: 400;
   border: 1px solid var(--fg); border-radius: 0; background: var(--bg); color: var(--fg);
 }
-input:focus-visible { outline: 3px solid var(--fg); outline-offset: 1px; }
+input, select, textarea { font-size: 16px; } /* darunter zoomt iOS beim Antippen */
+input[aria-invalid=true], select[aria-invalid=true], textarea[aria-invalid=true] { border: 2px solid var(--danger); }
+input[type=checkbox][aria-invalid=true] { outline: 2px solid var(--danger); outline-offset: 2px; }
+.field .hint { display: block; margin-top: 4px; font-weight: 400; color: var(--muted); }
+.field-error { display: block; margin-top: 4px; font-weight: 600; color: var(--danger); }
 .hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
 button, .btn { display: block; width: 100%; margin-top: 24px; padding: 14px 20px; font: inherit; font-weight: 700; text-align: center; text-decoration: none;
   color: #fff; background: var(--fg); border: 2px solid var(--fg); border-radius: 0; cursor: pointer; }
 button:hover, .btn:hover { background: var(--accent); color: var(--on-accent); }
-.btn:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
 
 .notice { padding: 12px 14px; border-left: 4px solid var(--fg); background: var(--soft); }
 
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 20px 0; }
 dt { color: var(--muted); }
 dd { margin: 0; font-weight: 600; }
+
+/* Tippflächen am Touchscreen mindestens 44px hoch */
+@media (pointer: coarse) {
+  footer a, .crumb a, .contact-links a { display: inline-flex; align-items: center; min-height: 44px; }
+}
 
 @media (min-width: 560px) {
   h1 { font-size: 2.75rem; }
