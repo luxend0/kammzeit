@@ -2,12 +2,14 @@
 # Rendert assets/blender/ill_<name>.py sichtbar in Blender und wandelt nach WebP.
 # Nur ein Blender gleichzeitig (flock), Monitor muss an sein, PC-Schutz: -t 6, nice, ionice.
 # KZ_TEST=1: halbe Aufloesung, Ergebnis nur in scratchpad/kammzeit-assets/ill-test/.
+# KZ_LANG=en: englische Fassung (Texte im Bild), Ausgabe <name>-en.webp.
 set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 WT=$(cd "$HERE/../.." && pwd)
 ASSETS=/tmp/claude-1000/-home-luxend/392722f8-b013-47c4-8bce-99419030ab5b/scratchpad/kammzeit-assets
 NAME=$1
 SCRIPT=$(echo "$NAME" | tr - _)
+[ "${KZ_LANG:-de}" = de ] || NAME=$NAME-$KZ_LANG
 mkdir -p "$ASSETS/ill/png" "$ASSETS/ill/log" "$ASSETS/ill-test" "$WT/web/static/img/ill"
 LOG="$ASSETS/ill/log/$NAME.log"
 START=$(date +%s)

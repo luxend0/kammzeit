@@ -16,6 +16,7 @@ import toon_lib as T  # noqa: E402
 
 FONT_DIR = "/usr/share/fonts/TTF"
 TEST = bool(os.environ.get("KZ_TEST"))  # Testlauf: halbe Aufloesung, nur in ill-test/
+LANG = os.environ.get("KZ_LANG", "de")  # en: englische Fassung <name>-en (Texte im Bild per say())
 SCENE = bpy.context.scene
 
 # ---------------------------------------------------------------- Palette (Website v2)
@@ -211,6 +212,11 @@ def capsule(name, L, r0, r1, n=32, k=8, **kw):
     return lathe(name, prof, n=n, **kw)
 
 
+def say(de, en):
+    """Text im Bild in der Sprache von KZ_LANG."""
+    return en if LANG == "en" else de
+
+
 def text(name, body, size, font="Roboto-Bold.ttf", align="LEFT", parent=None, loc=(0, 0, 0), rot=(0, 0, 0),
          mat=None, spacing=1.0, line=False, extrude=0.0, to_mesh=True):
     """Text, als Mesh umgewandelt (damit Kamera-Rahmung und Konturregeln greifen)."""
@@ -290,7 +296,10 @@ def drop_to_floor(root):
 # ---------------------------------------------------------------- Start
 
 def run(name, build, res, **kw):
-    """Startet toon_lib.Run mit den Kammzeit-Ausgabepfaden (KZ_TEST = halbe Aufloesung, Testordner)."""
+    """Startet toon_lib.Run mit den Kammzeit-Ausgabepfaden (KZ_TEST = halbe Aufloesung, Testordner).
+    KZ_LANG=en haengt "-en" an den Namen."""
+    if LANG != "de":
+        name += "-" + LANG
     if TEST:
         out = os.path.join(ASSETS, "ill-test", name + ".png")
         blend = None
@@ -298,7 +307,8 @@ def run(name, build, res, **kw):
         kw["outline_px"] = kw.get("outline_px", 2.4) / 2
     else:
         out = os.path.join(ASSETS, "ill", "png", name + ".png")
-        blend = os.path.join(HERE, name + ".blend")
+        # ponytail: Sprachfassungen ohne eigene .blend, die Szene ist dieselbe wie in der deutschen
+        blend = os.path.join(HERE, name + ".blend") if LANG == "de" else None
     kw.setdefault("outline_px", 2.4)
     T.Run(name, build, out, res=res, blend=blend, **kw).start()
 

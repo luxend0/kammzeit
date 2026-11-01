@@ -22,10 +22,10 @@ def profile_screen(d, w, h):
                0.0052, 0.006, parent=d, mat=K.flat(WHITE), line=False)
         K.slab("Profil_Ring_%d" % sx, K.ellipse(-w / 2 + 0.13 + sx * 0.022, top - 0.035, 0.014, 0.014, 24), 0.0052, 0.006,
                parent=d, mat=K.flat(WHITE), line=False)
-    K.text("Profil_Name", "Salon Locke", 0.042, parent=d, loc=(-w / 2 + 0.24, top + 0.01, 0.004), mat=K.flat(NIGHT))
+    K.text("Profil_Name", K.say("Salon Locke", "Curl Studio"), 0.042, parent=d, loc=(-w / 2 + 0.24, top + 0.01, 0.004), mat=K.flat(NIGHT))
     K.slab("Profil_Zeile", K.rrect(0.2, 0.024, 0.012, 6, -w / 2 + 0.34, top - 0.04), 0.003, 0.005, parent=d, mat=grey, line=False)
     K.slab("Profil_Knopf", K.rrect(w - 0.1, 0.085, 0.0425, 10, 0, top - 0.15), 0.003, 0.006, parent=d, mat=K.flat(YELLOW), line=False)
-    K.text("Profil_Knopf_Text", "Termin buchen", 0.036, align="CENTER", parent=d, loc=(0, top - 0.163, 0.0062), mat=K.flat(NIGHT))
+    K.text("Profil_Knopf_Text", K.say("Termin buchen", "Book appointment"), 0.036, align="CENTER", parent=d, loc=(0, top - 0.163, 0.0062), mat=K.flat(NIGHT))
     cols = [SKY, MINT, K.P["rosa"], YELLOW, BLUE, K.P["mint_hell"]]
     s = (w - 0.1 - 0.04) / 3
     for i, c in enumerate(cols):

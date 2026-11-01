@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Legt eine SQLite-DB nur für die Website-Screenshots an: Salon "Salon Lindner"
-(Slug lindner) mit erfundenen Mitarbeitern, Leistungen, Kunden und Terminen.
+"""Füllt eine SQLite-DB nur für die Website-Screenshots: "Salon Lindner" (Slug
+lindner, Deutsch) und "Lindner Hair Studio" (Slug lindner-hair, Englisch) mit
+erfundenen Mitarbeitern, Leistungen, Kunden, Terminen, Warteschlange und Logo.
+Beide Salons haben denselben Ablauf, nur Texte und Namen sind übersetzt.
 
 Aufruf: seed.py <db-pfad> <tag YYYY-MM-DD>
-<tag> ist der Werktag, den die Screenshots als "heute" zeigen (shoot.sh stellt
-die Uhr des Servers auf diesen Tag, 11:20 Uhr). Alle Termine liegen relativ dazu.
-Namen, Adressen und Telefonnummern sind erfunden; E-Mails nutzen example.com,
-Telefonnummern die Vorwahl 01234 (gibt es in Deutschland nicht).
+Die DB muss Schema und Migrationen schon haben (shoot.sh legt sie mit der
+Screenshot-Binary an). <tag> ist der Werktag, den die Screenshots als "heute"
+zeigen (shoot.sh stellt die Uhr des Servers auf diesen Tag, 11:20 Uhr). Alle
+Termine liegen relativ dazu. Namen, Adressen und Telefonnummern sind erfunden;
+E-Mails nutzen example.com, Telefonnummern die Vorwahl 01234 bzw. +00 (gibt es nicht).
 """
+import hashlib
 import secrets
 import sqlite3
 import sys
@@ -15,10 +19,9 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-TZ = ZoneInfo("Europe/Berlin")
-LOGIN = "lindner@example.com"
+HERE = Path(__file__).resolve().parent
 
-# (Name, Beschreibung, Minuten, Cent)
+# (Name, Beschreibung, Minuten, Cent); englisch in derselben Reihenfolge
 SERVICES = [
     ("Damenhaarschnitt", "Waschen, Schneiden, Föhnen", 60, 5400),
     ("Herrenhaarschnitt", "Waschen, Schneiden, Styling", 30, 2900),
@@ -31,7 +34,19 @@ SERVICES = [
     ("Pony nachschneiden", "Zwischen zwei Terminen", 15, 900),
     ("Hochsteckfrisur", "Nur nach Absprache", 60, 6500),  # inaktiv
 ]
-INACTIVE = {"Hochsteckfrisur"}
+SERVICES_EN = [
+    ("Women's haircut", "Wash, cut and blow-dry"),
+    ("Men's haircut", "Wash, cut and styling"),
+    ("Men's haircut and beard", "Haircut and beard trim"),
+    ("Children's haircut", "Up to age 12, cut without blow-dry"),
+    ("Root colour", "Root colour, wash and blow-dry"),
+    ("Colour and cut", "Full colour, cut and blow-dry"),
+    ("Highlights and balayage", "With consultation, care and blow-dry"),
+    ("Wash and blow-dry", "No cut"),
+    ("Fringe trim", "Between two appointments"),
+    ("Updo", "By arrangement only"),
+]
+INACTIVE = 9  # Index der inaktiven Leistung
 
 # Wochentag wie time.Weekday: 0 = Sonntag. Blöcke in Minuten ab Mitternacht.
 def hm(s):
@@ -75,6 +90,18 @@ CUSTOMERS = {
     "Daniel Koch": (True, "01234 66219", 330),
     "Julia Schröder": (True, "", 140),
     "Mia Lehmann": (False, "01234 52817", 75),
+}
+
+# Englischer Salon: Namen für Kunden in ganz Europa
+NAMES_EN = {
+    "Jana": "Emma", "Murat": "Luca", "Sophie": "Ines",
+    "Claudia Neumann": "Claire Martin", "Sabine Krüger": "Sarah Jansen", "Katrin Weber": "Laura Rossi",
+    "Stefan Meyer": "Tom Peeters", "Melanie Klein": "Megan Walsh", "Nicole Braun": "Nina Novak",
+    "Markus Schmitt": "Marco Bianchi", "Sandra Wagner": "Camille Dubois", "Jan Wolf": "Jan de Vries",
+    "Andrea Fischer": "Andrea Costa", "Frank Schäfer": "Felix Lambert", "Anna Lange": "Anna Larsen",
+    "Birgit Möller": "Ingrid Olsen", "Petra Hoffmann": "Paula Moreau", "Simone Köhler": "Simone Ricci",
+    "Lisa Hartmann": "Lisa Murphy", "Daniel Koch": "Daniel Silva", "Julia Schröder": "Julia Nowak",
+    "Mia Lehmann": "Mia Horvat",
 }
 
 # Der gezeigte Tag: (Mitarbeiter, Beginn, Leistung, Kunde, Status, Quelle)
@@ -126,52 +153,87 @@ CLAUDIA = [
     (-42, "Sophie", "9:00", 4, "booked"),
     (42, "Sophie", "9:00", 4, "booked"),
 ]
-CLAUDIA_NOTES = """Farbe: 7/1 + 6 % / 35 Min. Einwirkzeit
+
+# Warteschlange des gezeigten Tages: (Status, de-Name, en-Name, Leistung, Mitarbeiter, angestellt um, E-Mail ja/nein)
+QUEUE = [
+    ("done", "Tobias", "Oliver", 1, "Murat", "9:40", False),
+    ("done", "Elif", "Amira", 7, None, "10:05", True),
+    ("serving", "Paul", "Noah", 2, "Murat", "10:35", False),
+    ("called", "Leonie", "Lea", 8, None, "10:50", True),
+    ("waiting", "Ben", "Leo", 3, None, "11:02", False),
+    ("waiting", "Mara", "Maya", None, None, "11:09", True),
+    ("waiting", "Kemal", "Karim", 1, "Murat", "11:15", False),
+]
+
+SALONS = {
+    "de": dict(
+        slug="lindner", name="Salon Lindner", login="lindner@example.com", tz="Europe/Berlin", phone="01234 56780",
+        address="Bahnhofstraße 12\n12345 Musterstadt",
+        about="Friseursalon mitten in Musterstadt. Schnitt, Farbe und Pflege für Damen, Herren und Kinder.",
+        imprint="https://salon-lindner.example/impressum",
+        notes="""Farbe: 7/1 + 6 % / 35 Min. Einwirkzeit
 Längen nur auffrischen, Spitzen 1-2 cm.
 Kopfhaut empfindlich, mildes Shampoo nehmen.
-Trinkt Kaffee mit Hafermilch."""
+Trinkt Kaffee mit Hafermilch.""",
+        queue_note="Bitte bleib in der Nähe, wir rufen dich auf.",
+    ),
+    "en": dict(
+        slug="lindner-hair", name="Lindner Hair Studio", login="lindner.hair@example.com", tz="Europe/Amsterdam",
+        phone="+00 123 456 780", address="12 Market Street\n1000 Sampletown",
+        about="Hair salon in the centre of Sampletown. Cuts, colour and care for women, men and children.",
+        imprint="https://lindner-hair.example/imprint",
+        notes="""Colour: 7/1 + 6% / 35 min processing time
+Refresh the lengths only, trim ends 1-2 cm.
+Sensitive scalp, use a mild shampoo.
+Likes coffee with oat milk.""",
+        queue_note="Please stay nearby, we will call you.",
+    ),
+}
 
 
-def at(day, clock):
-    h, m = map(int, clock.split(":"))
-    return int(datetime(day.year, day.month, day.day, h, m, tzinfo=TZ).timestamp())
+def seed(db, lang, shown):
+    cfg = SALONS[lang]
+    tz = ZoneInfo(cfg["tz"])
 
+    def name(n):
+        return NAMES_EN.get(n, n) if lang == "en" else n
 
-def main():
-    db_path, shown = sys.argv[1], date.fromisoformat(sys.argv[2])
-    schema = (Path(__file__).resolve().parents[2] / "schema.sql").read_text()
-    Path(db_path).unlink(missing_ok=True)
-    db = sqlite3.connect(db_path)
-    db.executescript(schema)
+    def at(day, clock):
+        h, m = map(int, clock.split(":"))
+        return int(datetime(day.year, day.month, day.day, h, m, tzinfo=tz).timestamp())
+
     noon = at(shown, "11:20")  # "jetzt" laut shoot.sh
 
     cur = db.execute(
-        """INSERT INTO salons (slug, name, email, plan, address, phone, about, imprint_url,
-           min_notice_min, cancel_notice_min, booking_horizon_days, created_at)
-           VALUES ('lindner', 'Salon Lindner', ?, 'pro', ?, '01234 56780', ?, 'https://salon-lindner.example/impressum',
-           120, 1440, 60, ?)""",
-        (
-            LOGIN,
-            "Bahnhofstraße 12\n12345 Musterstadt",
-            "Friseursalon mitten in Musterstadt. Schnitt, Farbe und Pflege für Damen, Herren und Kinder.",
-            noon - 400 * 86400,
-        ),
+        """INSERT INTO salons (slug, name, email, plan, address, phone, about, imprint_url, timezone, lang,
+           min_notice_min, cancel_notice_min, booking_horizon_days, queue_enabled, queue_note, created_at)
+           VALUES (?, ?, ?, 'pro', ?, ?, ?, ?, ?, ?, 120, 1440, 60, 1, ?, ?)""",
+        (cfg["slug"], cfg["name"], cfg["login"], cfg["address"], cfg["phone"], cfg["about"], cfg["imprint"],
+         cfg["tz"], lang, cfg["queue_note"], noon - 400 * 86400),
     )
     salon = cur.lastrowid
-    db.execute("INSERT INTO users (salon_id, email) VALUES (?, ?)", (salon, LOGIN))
+    # last_login_at gesetzt: kein Erstlogin, die Tour markiert shoot.mjs zusätzlich als gesehen
+    db.execute("INSERT INTO users (salon_id, email, lang, last_login_at) VALUES (?, ?, ?, ?)",
+               (salon, cfg["login"], lang, noon - 3600))
+    logo = (HERE / "logo.png").read_bytes()
+    digest = hashlib.sha256(f"{salon}:logo:".encode() + logo).hexdigest()[:32]  # wie mediaHash in media.go
+    db.execute("INSERT INTO salon_media (salon_id, kind, mime, data, width, height, hash) VALUES (?, 'logo', 'image/png', ?, 256, 256, ?)",
+               (salon, logo, digest))
 
     service_ids = []
-    for i, (name, desc, minutes, cents) in enumerate(SERVICES):
+    for i, (sname, desc, minutes, cents) in enumerate(SERVICES):
+        if lang == "en":
+            sname, desc = SERVICES_EN[i]
         cur = db.execute(
             "INSERT INTO services (salon_id, name, description, duration_min, price_cents, sort, active) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (salon, name, desc, minutes, cents, i, int(name not in INACTIVE)),
+            (salon, sname, desc, minutes, cents, i, int(i != INACTIVE)),
         )
         service_ids.append(cur.lastrowid)
 
     staff_ids = {}
-    for i, (name, spec) in enumerate(STAFF.items()):
-        cur = db.execute("INSERT INTO staff (salon_id, name, sort) VALUES (?, ?, ?)", (salon, name, i))
-        staff_ids[name] = cur.lastrowid
+    for i, (sname, spec) in enumerate(STAFF.items()):
+        cur = db.execute("INSERT INTO staff (salon_id, name, sort) VALUES (?, ?, ?)", (salon, name(sname), i))
+        staff_ids[sname] = cur.lastrowid
         for s in spec["services"]:
             db.execute("INSERT INTO staff_services (staff_id, service_id) VALUES (?, ?)", (cur.lastrowid, service_ids[s]))
         for wd in sorted(spec["hours"]):
@@ -182,17 +244,20 @@ def main():
                 )
 
     customer_ids = {}
-    for name, (has_mail, phone, since) in CUSTOMERS.items():
+    for cname, (has_mail, phone, since) in CUSTOMERS.items():
+        shown_name = name(cname)
         mail = None
         if has_mail:
-            first, last = name.lower().split(" ", 1)
-            mail = f"{first}.{last}@example.com".translate(str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"}))
-        notes = CLAUDIA_NOTES if name == "Claudia Neumann" else ""
+            local = shown_name.lower().replace(" ", ".", 1).replace(" ", "")  # jan.devries
+            mail = f"{local}@example.com".translate(str.maketrans({"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"}))
+        if lang == "en" and phone:
+            phone = phone.replace("01234 ", "+00 123 ")
+        notes = cfg["notes"] if cname == "Claudia Neumann" else ""
         cur = db.execute(
             "INSERT INTO customers (salon_id, name, email, phone, notes, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (salon, name, mail, phone, notes, noon - since * 86400),
+            (salon, shown_name, mail, phone, notes, noon - since * 86400),
         )
-        customer_ids[name] = cur.lastrowid
+        customer_ids[cname] = cur.lastrowid
 
     def appt(day, staff, clock, service, customer, status, source):
         start = at(day, clock)
@@ -213,6 +278,27 @@ def main():
     for days, staff, clock, service, status in CLAUDIA:
         appt(shown + timedelta(days=days), staff, clock, service, "Claudia Neumann", status, "online")
 
+    for nr, (status, de_name, en_name, service, staff, clock, has_mail) in enumerate(QUEUE, 1):
+        qname = en_name if lang == "en" else de_name
+        created = at(shown, clock)
+        called = created + 25 * 60 if status != "waiting" else None
+        done = created + 50 * 60 if status == "done" else None
+        db.execute(
+            """INSERT INTO queue_entries (salon_id, number, day, name, email, service_id, staff_id, status, token,
+               created_at, called_at, done_at, notified_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (salon, nr, shown.isoformat(), qname, f"{qname.lower()}@example.com" if has_mail else None,
+             service_ids[service] if service is not None else None, staff_ids[staff] if staff else None,
+             status, secrets.token_hex(16), created, called, done, called),
+        )
+
+
+def main():
+    db_path, shown = sys.argv[1], date.fromisoformat(sys.argv[2])
+    db = sqlite3.connect(db_path)
+    if db.execute("PRAGMA user_version").fetchone()[0] < 4:
+        sys.exit("seed.py: DB ohne Migrationen, erst mit der Screenshot-Binary anlegen (siehe shoot.sh)")
+    for lang in SALONS:
+        seed(db, lang, shown)
     db.commit()
     db.close()
 
