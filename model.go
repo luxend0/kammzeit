@@ -136,7 +136,7 @@ var migrations = []string{
 
 // termsVersion = Stand von AGB und AVV in web/legal.html. Bei inhaltlicher
 // Änderung hochzählen.
-const termsVersion = "2026-11-01"
+const termsVersion = "2026-11-02"
 
 func migrate(db *sql.DB) error {
 	var v int
