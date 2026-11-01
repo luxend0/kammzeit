@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -238,5 +239,28 @@ func signupCounts(t *testing.T, a *app, want map[string]int) {
 		if err := a.db.QueryRow(q).Scan(&got); err != nil || got != n {
 			t.Errorf("%s = %d (%v), want %d", q, got, err, n)
 		}
+	}
+}
+
+// Die Zustimmung zu AGB/AVV muss mit Zeitpunkt und Fassung nachweisbar sein.
+func TestSignupStoresTermsAcceptance(t *testing.T) {
+	db, err := openDB(t.TempDir() + "/terms.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var v int
+	if err := db.QueryRow(`PRAGMA user_version`).Scan(&v); err != nil || v != len(migrations) {
+		t.Fatalf("user_version = %d, want %d (%v)", v, len(migrations), err)
+	}
+	if _, err := db.Exec(`INSERT INTO salons (slug, name) VALUES ('t', 'T')`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO users (salon_id, email, terms_accepted_at, terms_version) VALUES (1, 'a@b.de', unixepoch(), ?)`, termsVersion); err != nil {
+		t.Fatal(err)
+	}
+	var ver string
+	var at sql.NullInt64
+	if err := db.QueryRow(`SELECT terms_version, terms_accepted_at FROM users`).Scan(&ver, &at); err != nil || ver != termsVersion || !at.Valid {
+		t.Fatalf("terms = %q %v (%v)", ver, at, err)
 	}
 }

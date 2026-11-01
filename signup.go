@@ -189,7 +189,7 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 	case mailErr != nil || len(addr.Address) > 200:
 		msg = "Bitte eine gültige E-Mail-Adresse angeben."
 	case !a.cfg.SingleTenant && r.PostFormValue("agb") != "1":
-		msg = "Bitte die AGB und den Vertrag zur Auftragsverarbeitung akzeptieren."
+		msg = "Bitte bestätigen, dass du als Unternehmer handelst, und die AGB und den Vertrag zur Auftragsverarbeitung akzeptieren."
 	}
 	if msg != "" {
 		a.signupForm(w, r, http.StatusBadRequest, msg)
@@ -280,7 +280,7 @@ func (a *app) signupCreate(name, slug, email string) (userID int64, taken bool, 
 		return id
 	}
 	salonID := exec(`INSERT INTO salons (name, slug, email, plan) VALUES (?, ?, ?, 'free')`, name, slug, email)
-	userID = exec(`INSERT INTO users (salon_id, email) VALUES (?, ?)`, salonID, email)
+	userID = exec(`INSERT INTO users (salon_id, email, terms_accepted_at, terms_version) VALUES (?, ?, unixepoch(), ?)`, salonID, email, termsVersion)
 	staffID := exec(`INSERT INTO staff (salon_id, name) VALUES (?, 'Team')`, salonID)
 	for wd := time.Tuesday; wd <= time.Saturday; wd++ {
 		end := 18 * 60

@@ -52,7 +52,15 @@ const freeStaffLimit = 1
 
 // migrations ändern bestehende Tabellen. Nur anhängen, nie umsortieren oder
 // ändern: Index+1 = PRAGMA user_version nach dem Lauf.
-var migrations = []string{}
+var migrations = []string{
+	// 1: Nachweis, wann welche AGB/AVV-Fassung akzeptiert wurde.
+	`ALTER TABLE users ADD COLUMN terms_accepted_at INTEGER;
+	 ALTER TABLE users ADD COLUMN terms_version TEXT NOT NULL DEFAULT '';`,
+}
+
+// termsVersion = Stand von AGB und AVV in web/legal.html. Bei inhaltlicher
+// Änderung hochzählen.
+const termsVersion = "2026-11-01"
 
 func migrate(db *sql.DB) error {
 	var v int
