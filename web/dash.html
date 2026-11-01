@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="/static/dash.css">
 <script src="/static/htmx.min.js" defer></script>
 <script src="/static/dash.js" defer></script>
+{{template "pwa-head" .}}
 </head>
 {{/* Bewusst ohne die Akzentfarbe des Salons: das Dashboard nutzt die Kammzeit-Palette aus dash.css.
      Accent/OnAccent stehen für Vorschauen bereit (z. B. Einstellungen). */}}
@@ -49,7 +50,7 @@
 {{/* Einfarbiges 24px-Icon aus sprite.svg, Farbe = currentColor. Aufruf: {{template "dash-icon" "kalender"}} */}}
 {{define "dash-icon"}}<svg width="24" height="24" aria-hidden="true" focusable="false"><use href="/static/img/icons/sprite.svg#i-{{.}}-24"/></svg>{{end}}
 
-{{define "dash-bottom"}}</main>
+{{define "dash-bottom"}}{{template "pwa-install-hint" .}}</main>
 </body>
 </html>{{end}}
 
