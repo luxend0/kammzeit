@@ -1,8 +1,8 @@
 {{/* Help centre (/help, /help/<slug>), Open source, Data and security, FAQ for kammzeit.com (English).
      Registration: site_en_hilfe.go. Styling: web/static/site-hilfe.css (shared with the German pages).
      Menu items, field names and button labels follow the glossary in the i18n contract and the English
-     dashboard (i18n_*.go). If a label changes there, update it here. No dashboard screenshots: the
-     existing ones under img/shots show the German interface. Order of the guides (next links, sidebar,
+     dashboard (i18n_*.go). If a label changes there, update it here. Screenshots come from
+     img/shots/en (English demo salon, assets/screenshots/shoot.sh). Order of the guides (next links, sidebar,
      /help) as in site_en_hilfe.go. */}}
 
 {{/* ===== Shared parts ===== */}}
@@ -244,6 +244,10 @@
 
     <h2 id="order">Order</h2>
     <p>In the list under <b class="ui">Services</b>, each row starts with two arrows. <b class="ui">&uarr;</b> moves a service up, <b class="ui">&darr;</b> moves it down. Your booking page shows the services in this order, so put the one booked most often at the top.</p>
+    <figure class="figure">
+      <img class="shot" src="/static/img/shots/en/leistungen.webp" width="1280" height="981" alt="List of services in the dashboard with duration, price, active or inactive status and arrows for the order" loading="lazy">
+      <figcaption>The list under Services with duration, price, status and the arrows for the order.</figcaption>
+    </figure>
 
     <h2 id="change">Changing a service</h2>
     <p>Click the service in the list, change the values and click <b class="ui">Save</b>.</p>
@@ -303,6 +307,10 @@
       </table>
     </div>
     <p>Times go in steps of 5 minutes. Customers only see start times at which the chosen service fits completely into one block. In the example, a 60-minute service on Tuesday can start between 09:00 and 11:30 and between 13:30 and 17:00.</p>
+    <figure class="figure">
+      <img class="shot" src="/static/img/shots/en/team.webp" width="1280" height="643" alt="Team in the dashboard: staff members with working hours per weekday in two blocks" loading="lazy">
+      <figcaption>Under Team you see every staff member and their working hours at a glance.</figcaption>
+    </figure>
 
     <h2 id="services">Who does which service</h2>
     <p>On the booking page, customers first choose the service, then who they want to book with: a particular staff member or <b class="ui">Anyone available</b>. Only staff members who have that service ticked are offered. With Anyone available, the customer sees the free times of all matching staff together.</p>
@@ -352,6 +360,10 @@
         </tbody>
       </table>
     </div>
+    <figure class="figure">
+      <img class="shot" src="/static/img/shots/en/einstellungen-regeln.webp" width="638" height="589" alt="Booking rules section in Settings with time zone, minimum notice, cancellation deadline and booking window" loading="lazy">
+      <figcaption>The Booking rules section, here with 2 hours notice and cancellation up to 1 day before.</figcaption>
+    </figure>
 
     <h2 id="minimum-notice">Minimum notice</h2>
     <p>The minimum notice stops a booking for ten minutes from now from catching you by surprise. With “2 hours before”, your booking page shows 11:00 as the first free time when it is 09:00. Customers who want to come sooner can call you, and you add the appointment to the <a href="/help/add-appointments">calendar</a> yourself.</p>
@@ -391,6 +403,10 @@
     <p>Open <b class="ui">Settings</b> in the menu. Right at the top, under “Your booking page”, you will find the address, for example <code>https://salon-example.kammzeit.com</code>. Click <b class="ui">Copy link</b> to copy it. Or click <b class="ui">Booking page</b> at the top right of the dashboard and copy the address from your browser's address bar.</p>
     <p>If your booking page is set to German, its address ends in <code>.kammzeit.de</code>. The <code>.kammzeit.com</code> address keeps working too, see <a href="/help/language">Language and kammzeit.de</a>.</p>
     <p>Your own domain, such as <code>bookings.your-salon.com</code>, is not available on kammzeit.com yet. It is <a href="/roadmap#custom-domain">planned</a>. If you <a href="/open-source">host Kammzeit yourself</a>, you can already use any domain.</p>
+    <figure class="figure hilfe-figur-schmal">
+      <img class="shot" src="/static/img/shots/en/buchung-mobil.webp" width="390" height="940" alt="A salon booking page on a phone: choose a service, staff member, day and time" loading="lazy">
+      <figcaption>This is how your customers see the booking page on their phone.</figcaption>
+    </figure>
 
     <h2 id="instagram">Instagram</h2>
     <ol class="hilfe-schritte">
@@ -455,6 +471,10 @@ Book online
     <h2 id="calendar">Reading the calendar</h2>
     <p>The <b class="ui">Calendar</b> is the start page of your dashboard. At the top you see the appointments today and the next appointment. Below that, switch between <b class="ui">Day</b> and <b class="ui">Week</b>, move with <b class="ui">Previous day</b> and <b class="ui">Next day</b> (in the week view: <b class="ui">Previous week</b> and <b class="ui">Next week</b>), go back with <b class="ui">Today</b> or pick a date and click <b class="ui">Show</b>.</p>
     <p>In the day view, each staff member has a column in their own colour. White areas are working hours, hatched areas are time off or breaks, and a coral line marks the current time. Cancelled appointments have a grey outline and the name crossed out. No-shows have a coral outline.</p>
+    <figure class="figure">
+      <img class="shot" src="/static/img/shots/en/kalender.webp" width="1280" height="1118" alt="Calendar in the dashboard, day view with one column per staff member and several appointments" loading="lazy">
+      <figcaption>Day view: one column per staff member, appointments with time, customer and service.</figcaption>
+    </figure>
 
     <h2 id="add">Add an appointment</h2>
     <ol class="hilfe-schritte">
@@ -525,6 +545,10 @@ Book online
       <li><b>Revenue so far</b> is the sum of the current service prices, for orientation only. Kammzeit doesn't know what was actually paid.</li>
       <li><b class="ui">New appointment</b> at the top opens the appointment form with this customer already selected.</li>
     </ul>
+    <figure class="figure">
+      <img class="shot" src="/static/img/shots/en/kunde.webp" width="1280" height="1520" alt="Customer card with notes, contact details, visits and appointments" loading="lazy">
+      <figcaption>Customer card with a note on the colour formula and the appointment history.</figcaption>
+    </figure>
 
     <h2 id="notes">Notes</h2>
     <p>Open <b class="ui">Edit contact details and notes</b>. The <b class="ui">Notes</b> field is for anything you want to know at the next visit: the colour formula (“7/1 + 20 vol.”), the favourite cut, special wishes. Up to 2000 characters, then click <b class="ui">Save</b>. Notes are only visible to your salon in the dashboard, never to the customer.</p>
@@ -863,6 +887,11 @@ Book online
       <li><b class="ui">Remove</b>: takes someone off the list without further ado.</li>
     </ul>
     <p>If someone asks at the counter, add them on the right under <b class="ui">Add a person</b> with their name and click <b class="ui">Add to queue</b>.</p>
+
+    <figure class="figure">
+      <img class="shot" src="/static/img/shots/en/warteschlange.webp" width="1280" height="1323" alt="Queue page in the dashboard with waiting customers, buttons to call them and the form for customers at the counter" loading="lazy">
+      <figcaption>The Queue page: the list with number and waiting time on the left, adding walk-ins at the counter and printing the QR code on the right.</figcaption>
+    </figure>
 
     <h2 id="email">An email when it's their turn</h2>
     <p>If someone gave an email address when joining, they get an email “It's your turn” with their number as soon as you click <b class="ui">Call</b>. So they can pop out for a coffee in the meantime. In the list, these people are marked “gets an email”. The email is sent in the language of your booking page.</p>
