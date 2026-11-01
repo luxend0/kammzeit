@@ -139,6 +139,46 @@
 .team-pro img { flex: none; }
 </style>{{end}}
 
+{{/* Arbeitszeiten-Karte im Mitarbeiter-Formular und unter Meine Zeiten (staff.go).
+     Daten: Seitendaten mit .Lang und .F (teamForm: Days, CopyFrom, CopyLabel). Teil eines <form>. */}}
+{{define "team-zeiten"}}<style>
+.team-hours { border-collapse: collapse; margin: 0 0 12px; }
+.team-hours th, .team-hours td { padding: 6px 20px 6px 0; text-align: left; vertical-align: middle; }
+.team-hours thead th { font-size: .8125rem; font-weight: 800; color: var(--muted); }
+.team-hours tbody th { font-weight: 700; }
+.team-hours input[type=time] { display: inline-block; width: 8em; margin: 0; }
+.team-hours .team-err td { padding-top: 0; padding-bottom: 8px; }
+@media (max-width: 560px) {
+  .team-hours, .team-hours tbody, .team-hours tr, .team-hours th, .team-hours td { display: block; }
+  .team-hours thead { display: none; }
+  .team-hours tr { padding: 10px 0 6px; border-bottom: 1px solid var(--line); }
+  .team-hours th, .team-hours td { padding: 3px 0; }
+  .team-hours td { display: flex; align-items: center; gap: 6px; }
+  .team-hours input[type=time] { flex: 1 1 0; width: auto; min-width: 0; }
+  .team-hours td[data-label]::before { content: attr(data-label); flex: none; width: 4em; font-size: .8125rem; color: var(--muted); }
+  .team-hours .team-err { padding-top: 0; border-bottom: 0; }
+}
+</style>
+<section class="card">
+  <div class="section-title"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt=""><h2 id="team-hours-h">{{t $.Lang "Arbeitszeiten"}}</h2></div>
+  <p class="muted small" id="team-hours-hint">{{t $.Lang "Leer heißt frei. Mit Mittagspause: Block 1 bis zur Pause, Block 2 danach, z. B. 9:00-12:00 und 13:00-18:00."}}</p>
+  <div class="table-wrap"><table class="team-hours" aria-labelledby="team-hours-h" aria-describedby="team-hours-hint">
+    <thead><tr><th>{{t $.Lang "Tag"}}</th><th>{{t $.Lang "Block 1"}}</th><th>{{t $.Lang "Block 2"}}</th></tr></thead>
+    <tbody>
+    {{range .F.Days}}<tr>
+      <th scope="row">{{.Label}}</th>
+      <td class="nowrap" data-label="{{t $.Lang "Block 1"}}"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{tf $.Lang "%s, Block 1, Beginn" .Label}}"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
+        - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{tf $.Lang "%s, Block 1, Ende" .Label}}"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
+      <td class="nowrap" data-label="{{t $.Lang "Block 2"}}"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{tf $.Lang "%s, Block 2, Beginn" .Label}}"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
+        - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{tf $.Lang "%s, Block 2, Ende" .Label}}"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
+    </tr>
+    {{if .Err}}<tr class="team-err"><td></td><td colspan="2"><span class="field-error" id="err-tag-{{.WD}}">{{.Err}}</span></td></tr>{{end}}
+    {{end}}
+    </tbody>
+  </table></div>
+  {{with .F}}{{if .CopyFrom}}<button class="btn btn-secondary btn-small" type="submit" name="uebertragen" value="{{.CopyFrom}}">{{.CopyLabel}}</button>{{end}}{{end}}
+</section>{{end}}
+
 {{define "team-liste"}}{{template "dash-top" .}}
 <div class="page-head">
   <img class="page-head-icon" src="/static/img/icons/team.svg" width="48" height="48" alt="">
@@ -160,7 +200,8 @@
 <tbody>
 {{range .Staff}}<tr>
   <td><a class="catalog-name" href="/dashboard/team/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="chip chip-grey">{{t $.Lang "inaktiv"}}</span>{{end}}
-    {{if eq .Services 0}}<span class="catalog-sub chip chip-coral">{{t $.Lang "Keine Leistungen, online nicht buchbar"}}</span>{{end}}</td>
+    {{if eq .Services 0}}<span class="catalog-sub chip chip-coral">{{t $.Lang "Keine Leistungen, online nicht buchbar"}}</span>{{end}}
+    {{template "staff-status" (mailArgs "Lang" $.Lang "Login" .Login "Active" .Active "On" $.StaffLogins)}}</td>
   <td>{{range .Hours}}<div class="nowrap">{{.}}</div>{{else}}<span class="muted">{{t $.Lang "keine"}}</span>{{end}}</td>
   <td class="num team-leist">{{.Services}}</td>
 </tr>{{end}}
@@ -193,22 +234,6 @@
 .team-name { max-width: 600px; }
 .team-leistungen { display: grid; gap: 0 24px; }
 @media (min-width: 640px) { .team-leistungen { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
-.team-hours { border-collapse: collapse; margin: 0 0 12px; }
-.team-hours th, .team-hours td { padding: 6px 20px 6px 0; text-align: left; vertical-align: middle; }
-.team-hours thead th { font-size: .8125rem; font-weight: 800; color: var(--muted); }
-.team-hours tbody th { font-weight: 700; }
-.team-hours input[type=time] { display: inline-block; width: 8em; margin: 0; }
-.team-hours .team-err td { padding-top: 0; padding-bottom: 8px; }
-@media (max-width: 560px) {
-  .team-hours, .team-hours tbody, .team-hours tr, .team-hours th, .team-hours td { display: block; }
-  .team-hours thead { display: none; }
-  .team-hours tr { padding: 10px 0 6px; border-bottom: 1px solid var(--line); }
-  .team-hours th, .team-hours td { padding: 3px 0; }
-  .team-hours td { display: flex; align-items: center; gap: 6px; }
-  .team-hours input[type=time] { flex: 1 1 0; width: auto; min-width: 0; }
-  .team-hours td[data-label]::before { content: attr(data-label); flex: none; width: 4em; font-size: .8125rem; color: var(--muted); }
-  .team-hours .team-err { padding-top: 0; border-bottom: 0; }
-}
 </style>
 {{if .LimitHit}}<p class="error" role="alert"><span>{{tf .Lang "Aktive Mitarbeiter im Gratis-Plan: höchstens %d." .Limit}}
   <a href="/dashboard/abo">{{t .Lang "Zu Pro wechseln"}}</a>{{if .F}}{{t .Lang " oder einen anderen Mitarbeiter deaktivieren"}}{{end}}.</span></p>
@@ -241,25 +266,7 @@
     </div>
   </section>
 
-  <section class="card">
-    <div class="section-title"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt=""><h2 id="team-hours-h">{{t $.Lang "Arbeitszeiten"}}</h2></div>
-    <p class="muted small" id="team-hours-hint">{{t $.Lang "Leer heißt frei. Mit Mittagspause: Block 1 bis zur Pause, Block 2 danach, z. B. 9:00-12:00 und 13:00-18:00."}}</p>
-    <div class="table-wrap"><table class="team-hours" aria-labelledby="team-hours-h" aria-describedby="team-hours-hint">
-      <thead><tr><th>{{t $.Lang "Tag"}}</th><th>{{t $.Lang "Block 1"}}</th><th>{{t $.Lang "Block 2"}}</th></tr></thead>
-      <tbody>
-      {{range .Days}}<tr>
-        <th scope="row">{{.Label}}</th>
-        <td class="nowrap" data-label="{{t $.Lang "Block 1"}}"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{tf $.Lang "%s, Block 1, Beginn" .Label}}"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
-          - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{tf $.Lang "%s, Block 1, Ende" .Label}}"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
-        <td class="nowrap" data-label="{{t $.Lang "Block 2"}}"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{tf $.Lang "%s, Block 2, Beginn" .Label}}"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
-          - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{tf $.Lang "%s, Block 2, Ende" .Label}}"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
-      </tr>
-      {{if .Err}}<tr class="team-err"><td></td><td colspan="2"><span class="field-error" id="err-tag-{{.WD}}">{{.Err}}</span></td></tr>{{end}}
-      {{end}}
-      </tbody>
-    </table></div>
-    {{if .CopyFrom}}<button class="btn btn-secondary btn-small" type="submit" name="uebertragen" value="{{.CopyFrom}}">{{.CopyLabel}}</button>{{end}}
-  </section>
+  {{template "team-zeiten" $}}
   </div>
   <div class="actions" style="margin-top: 24px">
     <button class="btn" type="submit">{{t $.Lang "Speichern"}}</button>
@@ -267,6 +274,7 @@
   </div>
 </form>
 {{if .ID}}
+{{template "staff-zugang" $}}
 {{if and .Appts (not .Active)}}<p class="muted small catalog-del">{{t $.Lang "Der Mitarbeiter hat Termine und kann deshalb nicht gelöscht werden. Er ist deaktiviert und online nicht buchbar."}}</p>
 {{else}}<details class="catalog-del">
   <summary class="btn btn-danger btn-small">{{t $.Lang "Mitarbeiter löschen"}}</summary>

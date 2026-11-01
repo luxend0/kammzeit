@@ -247,6 +247,52 @@ Kammzeit
 <p class="kz-m" style="margin:16px 0 0;font-size:13px;line-height:20px;color:#4B5E7E;">{{mt .Lang "Du hast keinen Login angefordert? Dann kannst du diese Mail einfach ignorieren. Ohne Klick passiert nichts." "Didn't ask to log in? Then simply ignore this email. Nothing happens without a click."}}</p>
 {{template "mail-end" .}}{{end}}
 
+{{/* ===== Einladung für einen Mitarbeiter-Login (staff.go; Daten: Link, LoginURL, Salon = Name, Name = Mitarbeiter;
+     Sprache des Logins). Kopf Kammzeit, weil es um das Kammzeit-Konto geht. ===== */}}
+
+{{define "mail-staff-invite-subject"}}{{mt .Lang "Dein Zugang zu Kammzeit für" "Your Kammzeit access for"}} {{.Salon}}{{end}}
+
+{{define "mail-staff-invite-text"}}{{if eq .Lang "en"}}Hello {{.Name}},
+
+{{.Salon}} uses Kammzeit for appointments and has set up a login for you. With it you can see the calendar and the customer records, add appointments and keep your own working hours up to date.
+
+Log in for the first time with this link:
+
+{{.Link}}
+
+It is valid for 15 minutes and works only once. After that, simply log in at {{.LoginURL}} with this email address. You will get a new link every time, no password needed.
+
+Don't know {{.Salon}}? Then simply ignore this email. Nothing happens without a click.
+
+Kammzeit
+{{else}}Hallo {{.Name}},
+
+{{.Salon}} nutzt Kammzeit für Termine und hat dir einen Zugang eingerichtet. Damit siehst du den Kalender und die Kundenkartei, trägst Termine ein und pflegst deine Arbeitszeiten selbst.
+
+Melde dich das erste Mal mit diesem Link an:
+
+{{.Link}}
+
+Er ist 15 Minuten gültig und funktioniert nur einmal. Danach meldest du dich einfach auf {{.LoginURL}} mit dieser E-Mail-Adresse an. Du bekommst jedes Mal einen neuen Link, ein Passwort brauchst du nicht.
+
+Du kennst {{.Salon}} nicht? Dann kannst du diese Mail einfach ignorieren. Ohne Klick passiert nichts.
+
+Kammzeit
+{{end}}{{end}}
+
+{{define "mail-staff-invite-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s %s" (mt .Lang "Dein Zugang zum Kalender von" "Your access to the calendar of") .Salon)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Img" .Img "Text" (mt .Lang "Du bist eingeladen" "You're invited"))}}
+<p class="kz-t" style="margin:16px 0 0;color:#13294B;">{{if eq .Lang "en"}}Hello {{.Name}}, <strong>{{.Salon}}</strong> uses Kammzeit for appointments and has set up a login for you. With it you can see the calendar and the customer records, add appointments and keep your own working hours up to date.{{else}}Hallo {{.Name}}, <strong>{{.Salon}}</strong> nutzt Kammzeit für Termine und hat dir einen Zugang eingerichtet. Damit siehst du den Kalender und die Kundenkartei, trägst Termine ein und pflegst deine Arbeitszeiten selbst.{{end}}</p>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 10px;">
+{{template "mail-btn" (mailArgs "URL" .Link "Label" (mt .Lang "Jetzt anmelden →" "Log in now →") "C" .Pri)}}
+</td></tr></table>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-box" bgcolor="#E3F3FF" style="background:#E3F3FF;border-radius:16px;"><tr><td class="kz-t" style="padding:14px 20px;font-size:15px;line-height:23px;color:#13294B;">
+<strong>{{mt .Lang "Gut zu wissen:" "Good to know:"}}</strong> {{if eq .Lang "en"}}The link is valid for 15&nbsp;minutes and works only once. After that, simply log in at <a href="{{.LoginURL}}" target="_blank" class="kz-a" style="color:#1E6BFF;">{{.LoginURL}}</a> with this email address. No password needed.{{else}}Der Link gilt 15&nbsp;Minuten und nur einmal. Danach meldest du dich einfach auf <a href="{{.LoginURL}}" target="_blank" class="kz-a" style="color:#1E6BFF;">{{.LoginURL}}</a> mit dieser E-Mail-Adresse an. Ein Passwort brauchst du nicht.{{end}}
+</td></tr></table>
+{{template "mail-fallback" (mailArgs "Lang" .Lang "URL" .Link)}}
+<p class="kz-m" style="margin:16px 0 0;font-size:13px;line-height:20px;color:#4B5E7E;">{{if eq .Lang "en"}}Don't know {{.Salon}}? Then simply ignore this email. Nothing happens without a click.{{else}}Du kennst {{.Salon}} nicht? Dann kannst du diese Mail einfach ignorieren. Ohne Klick passiert nichts.{{end}}</p>
+{{template "mail-end" .}}{{end}}
+
 {{/* ===== Buchung bestätigt, an den Kunden (customerMailData, optional BySalon = vom Salon eingetragen) ===== */}}
 
 {{define "mail-booking-confirm-subject"}}{{mt .Lang "Termin bestätigt:" "Appointment confirmed:"}} {{.S.Name}}{{end}}

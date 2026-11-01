@@ -23,13 +23,13 @@ const kundenProSeite = 50
 
 func (a *app) routesCustomers(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dashboard/kunden", a.dash(a.kundenListe))
-	mux.HandleFunc("GET /dashboard/kunden.csv", a.dash(a.kundenCSV))
+	mux.HandleFunc("GET /dashboard/kunden.csv", a.dashOwner(a.kundenCSV))
 	mux.HandleFunc("GET /dashboard/kunden/neu", a.dash(a.kundeNeu))
 	mux.HandleFunc("POST /dashboard/kunden/neu", a.dash(a.kundeAnlegen))
 	mux.HandleFunc("GET /dashboard/kunden/{id}", a.dash(a.kundeKarte))
 	mux.HandleFunc("POST /dashboard/kunden/{id}", a.dash(a.kundeSpeichern))
-	mux.HandleFunc("GET /dashboard/kunden/{id}/loeschen", a.dash(a.kundeLoeschenSeite))
-	mux.HandleFunc("POST /dashboard/kunden/{id}/loeschen", a.dash(a.kundeLoeschen))
+	mux.HandleFunc("GET /dashboard/kunden/{id}/loeschen", a.dashOwner(a.kundeLoeschenSeite))
+	mux.HandleFunc("POST /dashboard/kunden/{id}/loeschen", a.dashOwner(a.kundeLoeschen))
 }
 
 // kunde = eine Karteikarte. Email leer = keine Adresse (in der DB NULL).

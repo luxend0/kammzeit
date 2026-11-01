@@ -213,10 +213,10 @@ fieldset.kal-group > legend + * { clear: both; }
   <img src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="">
   <h2>{{t .Lang "So geht es los"}}</h2>
   <p>{{t .Lang "Damit Termine eingetragen und online gebucht werden können, braucht dein Salon mindestens einen Mitarbeiter mit Arbeitszeiten und eine aktive Leistung."}}</p>
-  <p class="actions">
+  {{if not .IsStaff}}<p class="actions">
     {{if not .HasStaff}}<a class="btn" href="/dashboard/team">{{t .Lang "Mitarbeiter anlegen"}}</a>{{end}}
     {{if not .HasServices}}<a class="btn{{if not .HasStaff}} btn-secondary{{end}}" href="/dashboard/leistungen">{{t .Lang "Leistung anlegen oder auf aktiv stellen"}}</a>{{end}}
-  </p>
+  </p>{{end}}
 </div>{{end}}
 
 {{define "kal-kopf"}}
@@ -292,7 +292,7 @@ fieldset.kal-group > legend + * { clear: both; }
   <img src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="">
   <h2>{{if .IsToday}}{{t .Lang "Heute ist der Salon zu"}}{{else}}{{t .Lang "An diesem Tag ist der Salon zu"}}{{end}}</h2>
   <p>{{t .Lang "Laut Arbeitszeiten arbeitet an diesem Tag niemand. Online kann dann auch niemand buchen."}}</p>
-  <p class="actions">{{if and .HasStaff .HasServices}}<a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">{{t .Lang "Trotzdem einen Termin eintragen"}}</a> {{end}}<a class="btn btn-secondary" href="/dashboard/team">{{t .Lang "Arbeitszeiten ändern"}}</a></p>
+  <p class="actions">{{if and .HasStaff .HasServices}}<a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">{{t .Lang "Trotzdem einen Termin eintragen"}}</a> {{end}}<a class="btn btn-secondary" href="{{if not .IsStaff}}/dashboard/team{{else}}/dashboard/meine-zeiten{{end}}">{{t .Lang "Arbeitszeiten ändern"}}</a></p>
 </div>
 {{else if eq .DayCount 0}}
 <div class="empty kal-frei">

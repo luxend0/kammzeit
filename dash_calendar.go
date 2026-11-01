@@ -139,6 +139,9 @@ func (a *app) kalIndex(w http.ResponseWriter, r *http.Request, c *dctx) {
 		a.dashServerError(w, r, c, err)
 		return
 	}
+	if !c.Owner() {
+		delete(d, "Steps") // "Erste Schritte" sind Inhaber-Aufgaben
+	}
 	nav := func(t time.Time) string {
 		if week {
 			return "/dashboard?ansicht=woche&tag=" + t.Format(time.DateOnly)

@@ -75,6 +75,7 @@ func (a *app) routes() http.Handler {
 	a.routesCatalog(mux)   // dash_catalog.go: /dashboard/leistungen, /dashboard/team
 	a.routesSettings(mux)  // dash_settings.go: /dashboard/einstellungen
 	a.routesBilling(mux)   // billing.go: /dashboard/abo, /stripe/webhook
+	a.routesStaff(mux)     // staff.go: Mitarbeiter-Logins, /dashboard/meine-zeiten
 	a.routesSite(mux)      // site.go: öffentliche Seiten, sitemap.xml, robots.txt
 	a.routesPWA(mux)       // pwa.go: /manifest.webmanifest, /sw.js, /offline
 	return securityHeaders(a.langRedirect(mux))
