@@ -1,7 +1,8 @@
 {{/* Hilfe-Center (/hilfe, /hilfe/<slug>), Open Source, Daten und Sicherheit, Häufige Fragen.
      Registrierung: site_hilfe.go. Gestaltung: web/static/site-hilfe.css (nach site.css).
-     Alle Menüpunkte, Feldnamen und Button-Texte sind aus web/dash*.html, signup.html, auth.html
-     übernommen. Ändert sich dort ein Text, hier nachziehen. */}}
+     Alle Menüpunkte, Feldnamen und Button-Texte sind aus web/dash*.html, queue.html, pwa.html,
+     signup.html, auth.html übernommen. Ändert sich dort ein Text, hier nachziehen.
+     Reihenfolge der Anleitungen (Weiter-Links, Seitenleiste, /hilfe) wie in site_hilfe.go. */}}
 
 {{/* ===== Gemeinsame Bausteine ===== */}}
 
@@ -13,6 +14,7 @@
     <li><a href="/hilfe/leistungen"{{if eq .Path "/hilfe/leistungen"}} aria-current="page"{{end}}>Leistungen anlegen</a></li>
     <li><a href="/hilfe/arbeitszeiten"{{if eq .Path "/hilfe/arbeitszeiten"}} aria-current="page"{{end}}>Team und Arbeitszeiten</a></li>
     <li><a href="/hilfe/buchungsregeln"{{if eq .Path "/hilfe/buchungsregeln"}} aria-current="page"{{end}}>Buchungsregeln</a></li>
+    <li><a href="/hilfe/buchungsseite-gestalten"{{if eq .Path "/hilfe/buchungsseite-gestalten"}} aria-current="page"{{end}}>Buchungsseite gestalten</a></li>
     <li><a href="/hilfe/link-teilen"{{if eq .Path "/hilfe/link-teilen"}} aria-current="page"{{end}}>Buchungslink teilen</a></li>
   </ul>
   <p class="hilfe-aside-gruppe">02 / Im Alltag</p>
@@ -20,8 +22,15 @@
     <li><a href="/hilfe/termine-eintragen"{{if eq .Path "/hilfe/termine-eintragen"}} aria-current="page"{{end}}>Termine eintragen</a></li>
     <li><a href="/hilfe/kundenkartei"{{if eq .Path "/hilfe/kundenkartei"}} aria-current="page"{{end}}>Kundenkartei</a></li>
     <li><a href="/hilfe/absagen-und-no-shows"{{if eq .Path "/hilfe/absagen-und-no-shows"}} aria-current="page"{{end}}>Absagen und No-Shows</a></li>
+    <li><a href="/hilfe/warteschlange"{{if eq .Path "/hilfe/warteschlange"}} aria-current="page"{{end}}>Warteschlange</a></li>
   </ul>
-  <p class="hilfe-aside-gruppe">03 / Konto und Abo</p>
+  <p class="hilfe-aside-gruppe">03 / Team, App, Sprache</p>
+  <ul>
+    <li><a href="/hilfe/mitarbeiter-logins"{{if eq .Path "/hilfe/mitarbeiter-logins"}} aria-current="page"{{end}}>Mitarbeiter einladen</a></li>
+    <li><a href="/hilfe/app-installieren"{{if eq .Path "/hilfe/app-installieren"}} aria-current="page"{{end}}>App installieren</a></li>
+    <li><a href="/hilfe/sprache"{{if eq .Path "/hilfe/sprache"}} aria-current="page"{{end}}>Sprache und kammzeit.com</a></li>
+  </ul>
+  <p class="hilfe-aside-gruppe">04 / Konto und Abo</p>
   <ul>
     <li><a href="/hilfe/pro-und-kuendigen"{{if eq .Path "/hilfe/pro-und-kuendigen"}} aria-current="page"{{end}}>Pro und Kündigen</a></li>
     <li><a href="/hilfe/daten-export-und-loeschen"{{if eq .Path "/hilfe/daten-export-und-loeschen"}} aria-current="page"{{end}}>Export und Löschen</a></li>
@@ -62,7 +71,7 @@
     </span>
     <span class="hilfe-start-knopf">Los geht's <img src="/static/img/icons/pfeil-rechts.svg" width="24" height="24" alt=""></span>
   </a>
-  <p class="hilfe-tour" style="margin: 1rem 0 0">Schon registriert? Kammi zeigt dir das Dashboard in zwei Minuten: <a href="/dashboard?tour=1">Tour durchs Dashboard starten</a></p>
+  <p class="hilfe-tour" style="margin: 1rem 0 0">Schon registriert? Kammi zeigt dir das Dashboard in zwei Minuten. Die Tour startet beim ersten Login von selbst, neu startest du sie jederzeit über das Fragezeichen oben im Dashboard oder hier: <a href="/dashboard?tour=1">Tour durchs Dashboard starten</a></p>
 </div>
 
 <section class="section hilfe-gruppe" id="einrichten">
@@ -72,7 +81,8 @@
       <li><a class="hilfe-karte" href="/hilfe/erste-schritte"><img src="/static/img/icons/start.svg" width="48" height="48" alt=""><b>Erste Schritte</b><span>Registrieren, Login-Link, Einrichtung in etwa zehn Minuten.</span></a></li>
       <li><a class="hilfe-karte" href="/hilfe/leistungen"><img src="/static/img/icons/schere.svg" width="48" height="48" alt=""><b>Leistungen anlegen</b><span>Dauer, Preis, Beschreibung, Reihenfolge, deaktivieren.</span></a></li>
       <li><a class="hilfe-karte" href="/hilfe/arbeitszeiten"><img src="/static/img/icons/team.svg" width="48" height="48" alt=""><b>Team und Arbeitszeiten</b><span>Mitarbeiter, Pausen über zwei Blöcke, Urlaub.</span></a></li>
-      <li><a class="hilfe-karte" href="/hilfe/buchungsregeln"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><b>Buchungsregeln</b><span>Mindestvorlauf, Absagefrist, wie weit im Voraus.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/buchungsregeln"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><b>Buchungsregeln</b><span>Mindestvorlauf, Absagefrist, wie weit im Voraus, Zeitzone.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/buchungsseite-gestalten"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><b>Buchungsseite gestalten</b><span>Logo, Social-Links, Öffnungszeiten. Mit Pro Titelbild, Design und Galerie.</span></a></li>
       <li><a class="hilfe-karte" href="/hilfe/link-teilen"><img src="/static/img/icons/link.svg" width="48" height="48" alt=""><b>Buchungslink teilen</b><span>Instagram, Google, WhatsApp, Button für deine Website.</span></a></li>
     </ul>
   </div>
@@ -80,28 +90,40 @@
 
 <section class="section section-alt hilfe-gruppe" id="alltag">
   <div class="wrap">
-    <div class="section-head"><p class="section-num"><span>02</span> / Im Alltag</p><h2>Termine, Kunden, Absagen</h2></div>
+    <div class="section-head"><p class="section-num"><span>02</span> / Im Alltag</p><h2>Termine, Kunden, Absagen, Laufkundschaft</h2></div>
     <ul class="hilfe-karten">
-      <li><a class="hilfe-karte" href="/hilfe/termine-eintragen"><img src="/static/img/icons/telefon.svg" width="48" height="48" alt=""><b>Termine eintragen</b><span>Telefontermine in den Kalender, ohne Doppelbuchung.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/termine-eintragen"><img src="/static/img/icons/telefon.svg" width="48" height="48" alt=""><b>Termine eintragen</b><span>Telefontermine in den Kalender, verschieben, ohne Doppelbuchung.</span></a></li>
       <li><a class="hilfe-karte" href="/hilfe/kundenkartei"><img src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><b>Kundenkartei</b><span>Notizen wie Farbrezepturen, Historie, CSV-Export.</span></a></li>
       <li><a class="hilfe-karte" href="/hilfe/absagen-und-no-shows"><img src="/static/img/icons/absage.svg" width="48" height="48" alt=""><b>Absagen und No-Shows</b><span>Absage per Link, Erinnerung, nicht erschienen.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/warteschlange"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><b>Warteschlange</b><span>Kunden ohne Termin stellen sich per QR-Code an. Mit Pro.</span></a></li>
     </ul>
   </div>
 </section>
 
-<section class="section hilfe-gruppe" id="konto">
+<section class="section hilfe-gruppe" id="team-und-app">
   <div class="wrap">
-    <div class="section-head"><p class="section-num"><span>03</span> / Konto und Abo</p><h2>Abo, Export, Löschen</h2></div>
+    <div class="section-head"><p class="section-num"><span>03</span> / Team, App, Sprache</p><h2>Mit Team, auf dem Handy, in zwei Sprachen</h2></div>
+    <ul class="hilfe-karten">
+      <li><a class="hilfe-karte" href="/hilfe/mitarbeiter-logins"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><b>Mitarbeiter einladen</b><span>Eigene Logins, wer was sieht, Meine Zeiten. Mit Pro.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/app-installieren"><img src="/static/img/icons/handy.svg" width="48" height="48" alt=""><b>App installieren</b><span>Dashboard auf iPhone, Android oder PC, ohne App Store.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/sprache"><img src="/static/img/icons/eu.svg" width="48" height="48" alt=""><b>Sprache und kammzeit.com</b><span>Buchungsseite auf Englisch, ein Konto für beide Seiten.</span></a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt hilfe-gruppe" id="konto">
+  <div class="wrap">
+    <div class="section-head"><p class="section-num"><span>04</span> / Konto und Abo</p><h2>Abo, Export, Löschen</h2></div>
     <ul class="hilfe-karten">
       <li><a class="hilfe-karte" href="/hilfe/pro-und-kuendigen"><img src="/static/img/icons/pro.svg" width="48" height="48" alt=""><b>Pro und Kündigen</b><span>Abo abschließen, Rechnungen, Kundenportal, Kündigung.</span></a></li>
-      <li><a class="hilfe-karte" href="/hilfe/daten-export-und-loeschen"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""><b>Export und Löschen</b><span>Alle Daten als Datei, Konto endgültig löschen.</span></a></li>
+      <li><a class="hilfe-karte" href="/hilfe/daten-export-und-loeschen"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""><b>Export, News, Löschen</b><span>Alle Daten als Datei, Kammzeit-News abbestellen, Konto löschen.</span></a></li>
     </ul>
   </div>
 </section>
 
 <section class="section hilfe-gruppe" id="mehr">
   <div class="wrap">
-    <div class="section-head"><p class="section-num"><span>04</span> / Mehr</p><h2>Hintergrund</h2></div>
+    <div class="section-head"><p class="section-num"><span>05</span> / Mehr</p><h2>Hintergrund</h2></div>
     <ul class="hilfe-karten hilfe-karten-mehr">
       <li><a class="hilfe-karte" href="/fragen"><img src="/static/img/icons/hilfe.svg" width="48" height="48" alt=""><b>Häufige Fragen</b><span>Preise, Kunden, Daten und Technik, kurz beantwortet.</span></a></li>
       <li><a class="hilfe-karte" href="/sicherheit"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><b>Daten und Sicherheit</b><span>Wo die Daten liegen, wer Zugriff hat, wie gelöscht wird.</span></a></li>
@@ -132,53 +154,55 @@
     <ol class="hilfe-schritte">
       <li>Öffne <a href="/registrieren">kammzeit.de/registrieren</a>. Oben rechts auf jeder Seite heißt der Button <b class="ui">Kostenlos starten</b>.</li>
       <li>Trag unter <b class="ui">Salonname</b> den Namen ein, wie er auf deiner Buchungsseite stehen soll.</li>
-      <li>Darunter schlägt Kammzeit die <b class="ui">Wunsch-Adresse deiner Buchungsseite</b> vor, zum Beispiel <code>salon-muster.kammzeit.de</code>. Erlaubt sind a-z, 0-9 und Bindestrich, 3 bis 40 Zeichen. Neben dem Feld steht „frei“ oder „vergeben“. Die Adresse lässt sich später nicht ändern.</li>
+      <li>Darunter schlägt Kammzeit die <b class="ui">Wunsch-Adresse deiner Buchungsseite</b> vor, zum Beispiel <code>salon-muster.kammzeit.de</code>. Erlaubt sind a-z, 0-9 und Bindestrich, 3 bis 40 Zeichen. Neben dem Feld steht „Adresse ist frei“ oder „Adresse ist vergeben“. Die Adresse lässt sich später nicht ändern.</li>
+      <li>Unter <b class="ui">Dein Vorname</b> deinen Namen. Unter diesem Namen buchen Kunden bei dir. Weitere Mitarbeiter legst du später an.</li>
       <li>Unter <b class="ui">E-Mail</b> die Adresse, mit der du dich anmelden willst. Ein Passwort gibt es nicht.</li>
-      <li>Häkchen setzen: Du meldest den Salon als Unternehmer an und akzeptierst <a href="/agb">AGB</a> und <a href="/avv">Auftragsverarbeitungsvertrag</a>. Dann <b class="ui">Salon anlegen</b>.</li>
+      <li>Häkchen setzen: Du meldest den Salon als Unternehmer an und akzeptierst <a href="/agb">AGB</a> und <a href="/avv">Auftragsverarbeitungsvertrag</a>. Das Häkchen darunter für Kammzeit-News ist freiwillig. Dann <b class="ui">Salon anlegen</b>.</li>
     </ol>
 
     <h2 id="anmelden">2. Mit dem Link anmelden</h2>
     <p>Du siehst „Fast geschafft“, und an deine Adresse geht eine Mail mit dem Betreff „Dein Login für Kammzeit“.</p>
     <ol class="hilfe-schritte">
-      <li>Öffne den Link in der Mail. Er ist 15 Minuten gültig und funktioniert nur einmal.</li>
-      <li>Klick auf <b class="ui">Jetzt anmelden</b>. Du bist im Dashboard, im <b class="ui">Kalender</b>.</li>
+      <li>Öffne den Link auf dem Gerät, auf dem du Kammzeit nutzen willst. Er ist 15 Minuten gültig und funktioniert nur einmal.</li>
+      <li>Klick auf <b class="ui">Jetzt anmelden</b>. Du bist im Dashboard, im <b class="ui">Kalender</b>. Beim ersten Mal zeigt dir Kammi in einer kurzen Tour, wo du was findest.</li>
     </ol>
-    <p>Keine Mail da? Schau im Spam-Ordner nach. Unter <a href="/login">kammzeit.de/login</a> kannst du jederzeit einen neuen Link anfordern.</p>
+    <p>Keine Mail da? Schau im Spam-Ordner nach. Unter <a href="/login">kammzeit.de/login</a> kannst du jederzeit einen neuen Link anfordern. Hast du Kammzeit-News angehakt, kommt noch eine zweite Mail zum Bestätigen. Erst danach schicken wir dir Neuigkeiten.</p>
     <h3>Später wieder anmelden</h3>
     <p><a href="/login">kammzeit.de/login</a> öffnen, <b class="ui">E-Mail</b> eintragen, <b class="ui">Login-Link schicken</b>, den Link in der Mail öffnen, <b class="ui">Jetzt anmelden</b>. Die Anmeldung hält auf diesem Gerät 30 Tage. <b class="ui">Abmelden</b> steht oben rechts im Dashboard.</p>
-    <p>Ein Login gehört zu genau einem Salon. Eigene Zugänge für Mitarbeiter gibt es nicht.</p>
+    <p>Dein Login gehört zu genau einem Salon. Mit Pro kannst du deinem Team eigene Logins geben, siehe <a href="/hilfe/mitarbeiter-logins">Mitarbeiter einladen</a>.</p>
 
     <h2 id="beispiel">3. Was schon da ist</h2>
-    <p>Damit du nicht bei null anfängst, legt Kammzeit beim Registrieren ein Beispiel an. Es ist sofort online buchbar:</p>
+    <p>Damit du nicht bei null anfängst, legt Kammzeit beim Registrieren ein Beispiel an:</p>
     <ul>
-      <li>einen Mitarbeiter namens „Team“ mit den Arbeitszeiten Dienstag bis Freitag 9:00-18:00 und Samstag 9:00-14:00,</li>
+      <li>dich als Mitarbeiter mit deinem Vornamen und den Arbeitszeiten Dienstag bis Freitag 9:00-18:00 und Samstag 9:00-14:00,</li>
       <li>die Leistungen „Haarschnitt“ (30 Min., 25,00 €) und „Waschen, Schneiden, Föhnen“ (60 Min., 45,00 €).</li>
     </ul>
-    <p>Pass beides in den nächsten Schritten an deinen Salon an.</p>
+    <p>Die Beispiel-Leistungen sind noch inaktiv. Online buchbar ist erst etwas, wenn mindestens eine Leistung aktiv ist. So kannst du in Ruhe alles prüfen, bevor die erste Buchung kommt.</p>
+    <p>Oben im <b class="ui">Kalender</b> steht die Liste <b class="ui">Erste Schritte</b> mit vier Punkten: Leistungen und Preise prüfen und auf aktiv stellen, Mitarbeiter benennen und Arbeitszeiten eintragen, Adresse und Link zum Impressum eintragen, Buchungsseite ansehen und den Link teilen. Jeder Punkt hakt sich ab, sobald er erledigt ist. Die Liste verschwindet mit der ersten Online-Buchung.</p>
 
     <h2 id="einrichten">4. Einrichten</h2>
     <ol class="hilfe-schritte">
-      <li><b class="ui">Leistungen</b>: Namen, Dauer und Preise anpassen, eigene Leistungen ergänzen. Siehe <a href="/hilfe/leistungen">Leistungen anlegen</a>.</li>
-      <li><b class="ui">Team</b>: „Team“ anklicken, auf deinen Namen umbenennen und deine Arbeitszeiten eintragen. Pausen gehen über den zweiten Block. Siehe <a href="/hilfe/arbeitszeiten">Team und Arbeitszeiten</a>.</li>
+      <li><b class="ui">Leistungen</b>: Namen, Dauer und Preise anpassen, eigene Leistungen ergänzen und <b class="ui">Aktiv, online buchbar</b> anhaken. Siehe <a href="/hilfe/leistungen">Leistungen anlegen</a>.</li>
+      <li><b class="ui">Team</b>: deinen Eintrag öffnen, Arbeitszeiten und angehakte Leistungen prüfen. Pausen gehen über den zweiten Block. Siehe <a href="/hilfe/arbeitszeiten">Team und Arbeitszeiten</a>.</li>
       <li><b class="ui">Einstellungen</b>, Abschnitt Salon: <b class="ui">Telefon</b>, <b class="ui">Adresse</b>, <b class="ui">Website</b>, <b class="ui">Impressum deines Salons</b> und ein paar Sätze unter <b class="ui">Über uns</b>. Das alles steht auf deiner Buchungsseite.</li>
       <li>Im selben Abschnitt die <b class="ui">E-Mail für Buchungsinfos</b> prüfen. Dorthin gehen neue Buchungen und Absagen. Sie ist mit deiner Anmeldeadresse vorbelegt.</li>
-      <li>Abschnitt Aussehen: die <b class="ui">Akzentfarbe</b> für Buttons und Markierungen auf deiner Buchungsseite.</li>
+      <li>Abschnitt Aussehen: dein <b class="ui">Logo</b>, die <b class="ui">Akzentfarbe</b> für Buttons und Markierungen und die <b class="ui">Sprache der Buchungsseite</b> (Deutsch oder English). Siehe <a href="/hilfe/buchungsseite-gestalten">Buchungsseite gestalten</a>.</li>
       <li>Abschnitt Buchungsregeln: wie kurzfristig gebucht und abgesagt werden darf. Voreingestellt sind frühestens 1 Stunde vorher, Absage bis Terminbeginn und 60 Tage im Voraus. Siehe <a href="/hilfe/buchungsregeln">Buchungsregeln</a>.</li>
     </ol>
-    <p>Jede Seite mit <b class="ui">Speichern</b> abschließen. Oben erscheint dann „Gespeichert.“</p>
+    <p>Jede Seite mit <b class="ui">Speichern</b> abschließen. Oben erscheint dann eine Bestätigung.</p>
 
     <h2 id="test">5. Testtermin buchen</h2>
     <ol class="hilfe-schritte">
       <li>Klick oben rechts im Dashboard auf <b class="ui">Buchungsseite</b>. Sie öffnet sich in einem neuen Tab, so wie deine Kunden sie sehen.</li>
       <li>Buch einen Termin mit deiner eigenen E-Mail-Adresse. Du bekommst die Bestätigung mit Kalendereintrag und Absage-Link, und an die E-Mail für Buchungsinfos geht „Neue Buchung“.</li>
-      <li>Im <b class="ui">Kalender</b> steht der Termin jetzt. Sag ihn über den Link in der Mail ab oder im Termin über <b class="ui">Absagen</b>.</li>
+      <li>Im <b class="ui">Kalender</b> steht der Termin jetzt. Sag ihn über den Link in der Mail ab oder öffne ihn im Kalender und klick auf <b class="ui">Termin absagen</b>.</li>
     </ol>
 
     <h2 id="teilen">6. Link teilen</h2>
     <p>Jetzt müssen deine Kunden die Seite nur noch finden: in der Instagram-Bio, im Google-Unternehmensprofil, im WhatsApp-Status oder als Button auf deiner Website. Wie das geht, steht unter <a href="/hilfe/link-teilen">Buchungslink teilen</a>.</p>
 
     <div class="hilfe-hinweis">
-      <p><b>Gratis und Pro:</b> Im Gratis-Plan ist ein Mitarbeiter aktiv, und unten auf deiner Buchungsseite steht „Online-Termine mit Kammzeit“. Mit Pro gibt es beliebig viele Mitarbeiter und keinen Hinweis. Siehe <a href="/hilfe/pro-und-kuendigen">Pro und Kündigen</a>.</p>
+      <p><b>Gratis und Pro:</b> Im Gratis-Plan ist ein Mitarbeiter aktiv, und unten auf deiner Buchungsseite steht „Online-Termine mit Kammzeit“. Pro bringt beliebig viele Mitarbeiter, eigene Logins fürs Team, die Warteschlange für Laufkundschaft, Titelbild, Design und Fotogalerie und keinen Hinweis. Siehe <a href="/hilfe/pro-und-kuendigen">Pro und Kündigen</a>.</p>
     </div>
 
     <p class="hilfe-weiter"><a href="/hilfe/leistungen">Weiter: Leistungen anlegen</a></p>
@@ -218,10 +242,10 @@
     <p>Rechne Einwirkzeit und Aufräumen mit ein. Brauchst du nach einer Färbung zehn Minuten, um den Platz fertig zu machen, gehören sie in die Dauer.</p>
 
     <h2 id="reihenfolge">Reihenfolge</h2>
-    <p>In der Liste unter <b class="ui">Leistungen</b> steht rechts die Spalte „Reihenfolge“ mit zwei Pfeilen. <b class="ui">&uarr;</b> schiebt eine Leistung nach oben, <b class="ui">&darr;</b> nach unten. In dieser Reihenfolge erscheinen die Leistungen auf deiner Buchungsseite. Die meistgebuchte Leistung gehört nach oben.</p>
+    <p>In der Liste unter <b class="ui">Leistungen</b> beginnt jede Zeile mit zwei Pfeilen. <b class="ui">&uarr;</b> schiebt eine Leistung nach oben, <b class="ui">&darr;</b> nach unten. In dieser Reihenfolge erscheinen die Leistungen auf deiner Buchungsseite. Die meistgebuchte Leistung gehört nach oben.</p>
     <figure class="figure">
       <img class="shot" src="/static/img/shots/leistungen.webp" width="1280" height="930" alt="Liste der Leistungen im Dashboard mit Dauer, Preis, Status aktiv oder inaktiv und Pfeilen für die Reihenfolge" loading="lazy">
-      <figcaption>Die Liste unter Leistungen: Dauer, Preis, Status und rechts die Pfeile für die Reihenfolge.</figcaption>
+      <figcaption>Die Liste unter Leistungen mit Dauer, Preis, Status und den Pfeilen für die Reihenfolge.</figcaption>
     </figure>
 
     <h2 id="aendern">Ändern</h2>
@@ -235,7 +259,7 @@
     <p>Leistung öffnen, Haken bei <b class="ui">Aktiv, online buchbar</b> entfernen, <b class="ui">Speichern</b>. In der Liste steht sie dann als „inaktiv“. Sie ist online nicht mehr buchbar und lässt sich auch im Kalender nicht mehr auswählen. Bestehende Termine bleiben, wie sie sind. Zum Zurückholen den Haken wieder setzen.</p>
 
     <h2 id="loeschen">Löschen</h2>
-    <p>Leistung öffnen, ganz unten unter „Löschen“ <b class="ui">Ja, löschen</b> anhaken und <b class="ui">Leistung löschen</b>. Hat die Leistung schon Termine, löscht Kammzeit sie nicht, sondern deaktiviert sie. So bleiben die Termine und die Historie in der Kundenkartei vollständig.</p>
+    <p>Leistung öffnen, ganz unten <b class="ui">Leistung löschen</b>, dann <b class="ui">Ja, löschen</b>. Hat die Leistung schon Termine, löscht Kammzeit sie nicht, sondern deaktiviert sie (der Button heißt dann <b class="ui">Ja, deaktivieren</b>). So bleiben die Termine und die Historie in der Kundenkartei vollständig.</p>
 
     <p class="hilfe-weiter"><a href="/hilfe/arbeitszeiten">Weiter: Team und Arbeitszeiten</a></p>
   </article>
@@ -263,10 +287,10 @@
       <li>Menü <b class="ui">Team</b>. Einen Mitarbeiter in der Liste anklicken oder <b class="ui">Neuer Mitarbeiter</b>.</li>
       <li><b class="ui">Name</b>: So steht er auf der Buchungsseite unter „Bei wem?“. Ein Vorname reicht, höchstens 60 Zeichen.</li>
       <li><b class="ui">Aktiv, online buchbar</b> angehakt lassen.</li>
-      <li>Im Abschnitt „Leistungen“ ankreuzen, was dieser Mitarbeiter macht.</li>
+      <li>Im Abschnitt „Leistungen“ ankreuzen, was dieser Mitarbeiter macht. Online buchbar ist er nur für die angehakten Leistungen.</li>
       <li>Im Abschnitt „Arbeitszeiten“ die Zeiten je Wochentag eintragen und <b class="ui">Speichern</b>.</li>
     </ol>
-    <p>Bei einem neuen Mitarbeiter sind Leistungen und Arbeitszeiten schon ausgefüllt. Das ist nur ein Vorschlag, pass ihn vor dem Speichern an.</p>
+    <p>Bei einem neuen Mitarbeiter sind Leistungen und Arbeitszeiten schon ausgefüllt. Das ist nur ein Vorschlag, pass ihn vor dem Speichern an. In der Team-Liste steht bei Mitarbeitern ohne Leistung „Keine Leistungen, online nicht buchbar“.</p>
 
     <h2 id="pausen">Arbeitszeiten und Pausen</h2>
     <p>Für jeden Wochentag gibt es zwei Blöcke mit Beginn und Ende. Ein leerer Tag heißt frei. Zwischen den Blöcken liegt die Pause, in die niemand buchen kann.</p>
@@ -291,13 +315,13 @@
     <p>Auf der Buchungsseite wählen Kunden erst die Leistung, dann „Bei wem?“: einen bestimmten Mitarbeiter oder „Egal, wer frei ist“. Zur Wahl stehen nur Mitarbeiter, bei denen die Leistung angekreuzt ist. Bei „Egal, wer frei ist“ sieht der Kunde die freien Zeiten aller passenden Mitarbeiter zusammen.</p>
 
     <h2 id="mehrere">Mehrere Mitarbeiter</h2>
-    <p>Im Gratis-Plan ist ein Mitarbeiter aktiv. Beim Anlegen oder Aktivieren eines zweiten meldet das Dashboard „Aktive Mitarbeiter im Gratis-Plan: höchstens 1.“ Inaktive Mitarbeiter zählen nicht mit. Mit <a href="/hilfe/pro-und-kuendigen">Pro</a> gibt es beliebig viele.</p>
-    <p>Mitarbeiter haben keinen eigenen Login. Das Dashboard hat einen Zugang pro Salon.</p>
+    <p>Im Gratis-Plan ist ein Mitarbeiter aktiv. Beim Anlegen oder Aktivieren eines zweiten meldet das Dashboard „Aktive Mitarbeiter im Gratis-Plan: höchstens 1.“ und bietet <b class="ui">Zu Pro wechseln</b> an. Inaktive Mitarbeiter zählen nicht mit. Mit <a href="/hilfe/pro-und-kuendigen">Pro</a> gibt es beliebig viele.</p>
+    <p>Mit Pro kann jeder Mitarbeiter auch einen eigenen Login fürs Dashboard bekommen und seine Arbeitszeiten dann selbst unter <b class="ui">Meine Zeiten</b> pflegen. Siehe <a href="/hilfe/mitarbeiter-logins">Mitarbeiter einladen</a>.</p>
 
     <h2 id="urlaub">Urlaub und freie Tage</h2>
     <p>Eine eigene Funktion für Abwesenheiten wie Urlaub oder Krankheit hat Kammzeit noch nicht. So kommst du trotzdem zurecht:</p>
     <ul>
-      <li><b>Längere Abwesenheit:</b> beim Mitarbeiter den Haken bei <b class="ui">Aktiv, online buchbar</b> entfernen und speichern. Dann ist bei ihm online nichts mehr buchbar. Termine, die schon im Kalender stehen, bleiben stehen. Sag sie einzeln ab, siehe <a href="/hilfe/absagen-und-no-shows">Absagen</a>. Nach dem Urlaub den Haken wieder setzen.</li>
+      <li><b>Längere Abwesenheit:</b> beim Mitarbeiter den Haken bei <b class="ui">Aktiv, online buchbar</b> entfernen und speichern. Dann ist bei ihm online nichts mehr buchbar. Termine, die schon im Kalender stehen, bleiben stehen: Verschieb sie zu einer Kollegin oder sag sie einzeln ab, siehe <a href="/hilfe/termine-eintragen#verschieben">Verschieben</a> und <a href="/hilfe/absagen-und-no-shows">Absagen</a>. Nach dem Urlaub den Haken wieder setzen.</li>
       <li><b>Ein Wochentag fällt eine Zeit lang weg:</b> die Zeiten an diesem Tag leeren. Das gilt dann für jeden dieser Wochentage, bis du die Zeiten wieder einträgst. Notier dir die alten Zeiten vorher.</li>
       <li><b>Ein einzelner Tag oder ein paar Stunden:</b> trag für die Zeit im Kalender einen Termin ein, zum Beispiel mit dem Kundennamen „Blockiert“. Was belegt ist, kann niemand online buchen. Beim nächsten Mal findest du „Blockiert“ über die Kundensuche wieder.</li>
     </ul>
@@ -332,7 +356,7 @@
           <tr><th scope="row">Online buchbar frühestens</th><td>sofort, 30 Minuten, 1 Stunde, 2 Stunden, 4 Stunden oder 1 Tag vorher</td><td>1 Stunde vorher</td></tr>
           <tr><th scope="row">Online absagen</th><td>bis Terminbeginn, bis 1 Stunde, 2 Stunden, 1 Tag oder 2 Tage vorher</td><td>bis Terminbeginn</td></tr>
           <tr><th scope="row">Im Voraus buchbar</th><td>14, 30, 60, 90 oder 180 Tage</td><td>60 Tage</td></tr>
-          <tr><th scope="row">Zeitzone</th><td>Deutschland (Berlin), Österreich (Wien), Schweiz (Zürich)</td><td>Deutschland (Berlin)</td></tr>
+          <tr><th scope="row">Zeitzone</th><td>alle Länder der EU und die Schweiz, zum Beispiel Deutschland (Berlin), Österreich (Wien) oder Schweiz (Zürich)</td><td>Deutschland (Berlin)</td></tr>
         </tbody>
       </table>
     </div>
@@ -345,16 +369,16 @@
     <p>Der Mindestvorlauf verhindert, dass dich eine Buchung für in zehn Minuten überrascht. Mit „2 Stunden vorher“ zeigt die Buchungsseite um 9:00 Uhr die erste freie Zeit ab 11:00 Uhr. Wer kurzfristiger kommen will, ruft an, und du trägst den Termin im <a href="/hilfe/termine-eintragen">Kalender</a> ein.</p>
 
     <h2 id="absagefrist">Online absagen</h2>
-    <p>Bis zu diesem Zeitpunkt können Kunden über den Link in ihrer Mail selbst absagen. Ist eine Frist eingestellt, steht sie auf der Buchungsseite, in der Bestätigung und in der Erinnerung: „Online-Absage bis … möglich, danach bitte im Salon anrufen.“ Nach Ablauf zeigt die Absage-Seite die Telefonnummer aus deinen Einstellungen.</p>
+    <p>Bis zu diesem Zeitpunkt können Kunden über den Link in ihrer Mail selbst absagen. Ist eine Frist eingestellt, steht sie auf der Buchungsseite, in der Bestätigung und in der Erinnerung: „Online absagen geht bis …, danach ruf bitte im Salon an.“ Nach Ablauf zeigt die Absage-Seite die Telefonnummer aus deinen Einstellungen.</p>
     <p>Eine Ausfallgebühr kann Kammzeit nicht verlangen, denn Kunden bezahlen nichts online. Anzahlungen sind geplant.</p>
 
     <h2 id="horizont">Im Voraus buchbar</h2>
     <p>So weit in die Zukunft zeigt die Buchungsseite freie Termine. Ein kurzer Zeitraum (14 oder 30 Tage) hält dich flexibel, wenn sich deine Zeiten oft ändern. Ein langer (90 oder 180 Tage) passt für Stammkunden, die gleich den nächsten Termin ausmachen.</p>
 
     <h2 id="zeitzone">Zeitzone</h2>
-    <p>In dieser Zeitzone stehen alle Zeiten auf der Buchungsseite, in den Mails und im Kalender. Berlin, Wien und Zürich haben dieselbe Uhrzeit, wähl einfach dein Land.</p>
+    <p>In dieser Zeitzone stehen alle Zeiten auf der Buchungsseite, in den Mails und im Kalender. Zur Wahl stehen alle Länder der EU und die Schweiz. Wähl einfach das Land, in dem dein Salon liegt.</p>
 
-    <p class="hilfe-weiter"><a href="/hilfe/link-teilen">Weiter: Buchungslink teilen</a></p>
+    <p class="hilfe-weiter"><a href="/hilfe/buchungsseite-gestalten">Weiter: Buchungsseite gestalten</a></p>
   </article>
   {{template "hilfe-nav" .}}
 </div>
@@ -376,7 +400,8 @@
 <div class="wrap hilfe-layout">
   <article class="prose hilfe-artikel">
     <h2 id="adresse">Deine Adresse finden</h2>
-    <p>Menü <b class="ui">Einstellungen</b>, ganz oben unter „Deine Buchungsseite“. Dort steht die Adresse, etwa <code>https://salon-muster.kammzeit.de</code>. Anklicken, mit Strg+C (Mac: Cmd+C) kopieren. Oder oben rechts im Dashboard auf <b class="ui">Buchungsseite</b> klicken und die Adresse aus der Adresszeile nehmen.</p>
+    <p>Menü <b class="ui">Einstellungen</b>, ganz oben unter „Deine Buchungsseite“. Dort steht die Adresse, etwa <code>https://salon-muster.kammzeit.de</code>. <b class="ui">Link kopieren</b> legt sie in die Zwischenablage. Oder oben rechts im Dashboard auf <b class="ui">Buchungsseite</b> klicken und die Adresse aus der Adresszeile nehmen.</p>
+    <p>Ist deine Buchungsseite auf Englisch eingestellt, endet die Adresse auf <code>.kammzeit.com</code>. Die <code>.kammzeit.de</code>-Adresse funktioniert weiter, siehe <a href="/hilfe/sprache">Sprache und kammzeit.com</a>.</p>
     <p>Eine eigene Domain wie <code>termine.dein-salon.de</code> geht bei kammzeit.de noch nicht, sie ist geplant. Beim <a href="/open-source">Selbsthosten</a> geht sie schon.</p>
     <figure class="figure hilfe-figur-schmal">
       <img class="shot" src="/static/img/shots/buchung-mobil.webp" width="390" height="961" alt="Buchungsseite eines Salons auf dem Handy: Leistung wählen, Mitarbeiter, Tag und Uhrzeit" loading="lazy">
@@ -417,7 +442,7 @@ Termin online buchen
     <h2 id="mehr">Weitere Orte</h2>
     <ul>
       <li>E-Mail-Signatur und Facebook-Seite (Feld „Website“).</li>
-      <li>Terminzettel, Visitenkarte und Schaufenster: Die Adresse ist kurz genug zum Abtippen. Für das Schaufenster eignet sich ein QR-Code mit der Adresse, den dir jeder QR-Code-Generator erstellt.</li>
+      <li>Terminzettel, Visitenkarte und Schaufenster: Die Adresse ist kurz genug zum Abtippen. Für das Schaufenster eignet sich ein QR-Code mit der Adresse, den dir jeder QR-Code-Generator erstellt. Für Kunden ohne Termin gibt es mit Pro einen eigenen QR-Code zum Anstellen, siehe <a href="/hilfe/warteschlange">Warteschlange</a>.</li>
       <li>Die Ansage deines Anrufbeantworters: „Termine kannst du auch online buchen unter …“</li>
     </ul>
     <p class="note">Die Menünamen bei Instagram, Google und WhatsApp ändern sich ab und zu. Such im Zweifel nach „Link“ oder „Website“.</p>
@@ -445,7 +470,7 @@ Termin online buchen
   <article class="prose hilfe-artikel">
     <h2 id="kalender">Den Kalender lesen</h2>
     <p>Der <b class="ui">Kalender</b> ist die Startseite des Dashboards. Oben stehen „Termine heute“ und „Nächster Termin“. Darunter wählst du <b class="ui">Tag</b> oder <b class="ui">Woche</b>, blätterst mit <b class="ui">Vortag</b> und <b class="ui">Folgetag</b> (in der Woche: <b class="ui">Vorwoche</b>, <b class="ui">Folgewoche</b>), springst mit <b class="ui">Heute</b> zurück oder wählst ein Datum und <b class="ui">Zeigen</b>.</p>
-    <p>In der Tagesansicht hat jeder Mitarbeiter eine Spalte. Weiß ist Arbeitszeit, grau ist frei oder Pause, die waagrechte Linie zeigt die aktuelle Uhrzeit. Abgesagte Termine sind gestrichelt umrandet und durchgestrichen.</p>
+    <p>In der Tagesansicht hat jeder Mitarbeiter eine Spalte in seiner eigenen Farbe. Weiß ist Arbeitszeit, schraffiert ist frei oder Pause, die Linie in Koralle zeigt die aktuelle Uhrzeit. Abgesagte Termine sind grau umrandet und der Name ist durchgestrichen. Nicht erschienene Termine sind in Koralle umrandet.</p>
     <figure class="figure">
       <img class="shot" src="/static/img/shots/kalender.webp" width="1280" height="1067" alt="Kalender im Dashboard, Tagesansicht mit einer Spalte je Mitarbeiter und mehreren Terminen" loading="lazy">
       <figcaption>Tagesansicht: eine Spalte je Mitarbeiter, Termine mit Uhrzeit, Kunde und Leistung.</figcaption>
@@ -453,14 +478,15 @@ Termin online buchen
 
     <h2 id="eintragen">Einen Termin eintragen</h2>
     <ol class="hilfe-schritte">
-      <li>Klick in der Tagesansicht in eine freie Stelle in der Spalte des Mitarbeiters. Datum, Mitarbeiter und Uhrzeit sind dann schon ausgefüllt. Oder oben rechts <b class="ui">+ Termin</b>.</li>
-      <li><b class="ui">Leistung</b> und <b class="ui">Mitarbeiter</b> wählen, <b class="ui">Datum</b> und <b class="ui">Uhrzeit</b> prüfen. Die Uhrzeit geht im 5-Minuten-Raster, auch außerhalb der Arbeitszeit, etwa für einen Termin vor Ladenöffnung.</li>
-      <li>Im Kasten „Kunde“: unter <b class="ui">Bestehenden Kunden suchen</b> Name, E-Mail oder Telefon tippen und den Treffer auswählen. Oder <b class="ui">Neuer Kunde</b> mit Name und, wenn du sie hast, E-Mail und Telefon.</li>
-      <li>Wenn du willst, eine <b class="ui">Interne Notiz</b>, etwa „bringt Foto mit“. Die sieht nur der Salon.</li>
+      <li>Klick in der Tagesansicht in eine freie Stelle in der Spalte des Mitarbeiters. Datum, Mitarbeiter und Uhrzeit sind dann schon ausgefüllt. Oder oben rechts <b class="ui">Neuer Termin</b>.</li>
+      <li><b class="ui">Leistung</b> und <b class="ui">Mitarbeiter</b> wählen, <b class="ui">Datum</b> prüfen.</li>
+      <li><b class="ui">Uhrzeit</b> wählen. Unter „Frei bei …“ schlägt Kammzeit die freien Zeiten des Mitarbeiters als Buttons vor. Du kannst aber jede Zeit im 5-Minuten-Raster eintippen, auch außerhalb der Arbeitszeit, etwa für einen Termin vor Ladenöffnung.</li>
+      <li>Im Kasten „Kunde“: unter <b class="ui">Bestehenden Kunden suchen</b> Name, E-Mail oder Telefon tippen und den Treffer auswählen. Oder <b class="ui">Neuer Kunde</b> mit Name und, wenn du sie hast, Telefon und E-Mail.</li>
+      <li>Wenn du willst, eine <b class="ui">Notiz zu diesem Termin</b>, etwa „bringt Foto mit“. Die sieht nur dein Salon.</li>
       <li>Hat der Kunde eine E-Mail-Adresse, kannst du <b class="ui">Bestätigung mit Absage-Link per Mail senden</b> anhaken.</li>
-      <li><b class="ui">Termin eintragen</b>.</li>
+      <li><b class="ui">Speichern</b>.</li>
     </ol>
-    <p>Gibt es die E-Mail-Adresse schon in deiner Kundenkartei, hängt Kammzeit den Termin an diesen Kunden, statt einen zweiten anzulegen.</p>
+    <p>Gibt es die E-Mail-Adresse oder die Telefonnummer schon in deiner Kundenkartei, hängt Kammzeit den Termin an diesen Kunden, statt einen zweiten anzulegen.</p>
 
     <h2 id="doppelt">Keine Doppelbuchungen</h2>
     <p>Hat der Mitarbeiter zur gewählten Zeit schon einen Termin, speichert Kammzeit nicht und sagt dir, von wann bis wann er belegt ist, zum Beispiel „Lisa hat von 10:00 bis 10:30 Uhr schon einen Termin.“ Umgekehrt ist jeder eingetragene Termin sofort auch online belegt.</p>
@@ -471,9 +497,18 @@ Termin online buchen
       <p><b>Tipp:</b> Frag am Telefon nach der E-Mail-Adresse. Mit Erinnerung und Absage-Link vergessen Kunden ihren Termin seltener, und wer nicht kann, sagt mit einem Klick ab.</p>
     </div>
 
-    <h2 id="details">Termin ansehen, Notiz, verschieben</h2>
-    <p>Ein Klick auf den Termin zeigt Zeit, Leistung, Preis, Mitarbeiter und Kunde mit E-Mail und Telefon (auf dem Handy direkt antippen zum Anrufen). Unter „Quelle“ siehst du, ob der Termin online gebucht oder manuell eingetragen wurde. Rechts steht die <b class="ui">Interne Notiz</b> mit <b class="ui">Notiz speichern</b>.</p>
-    <p>Verschieben geht nicht in einem Schritt. Sag den Termin ab und trag den neuen ein. Habt ihr schon gesprochen, nimm beim Absagen den Haken bei <b class="ui">Kunde per Mail informieren</b> raus. Mehr unter <a href="/hilfe/absagen-und-no-shows">Absagen und No-Shows</a>.</p>
+    <h2 id="details">Termin ansehen und Notizen</h2>
+    <p>Ein Klick auf den Termin zeigt Zeit, Leistung, Preis, Mitarbeiter und Kunde mit E-Mail und Telefon (auf dem Handy direkt antippen zum Anrufen). Unter „Quelle“ siehst du, ob der Termin online gebucht oder im Dashboard eingetragen wurde.</p>
+    <p>Dort stehen zwei Arten von Notizen: die <b class="ui">Kundennotiz</b> von der <a href="/hilfe/kundenkartei#notizen">Karteikarte</a>, die für alle Termine dieser Person gilt (ändern über <b class="ui">In der Kundenkarte bearbeiten</b>), und die <b class="ui">Notiz zu diesem Termin</b>, die nur für diesen einen Termin gilt. Sie änderst du direkt im Termin und behältst sie mit <b class="ui">Notiz speichern</b>.</p>
+
+    <h2 id="verschieben">Verschieben</h2>
+    <ol class="hilfe-schritte">
+      <li>Termin öffnen, im Kasten „Termin ändern“ auf <b class="ui">Verschieben</b>.</li>
+      <li>Unter „Neue Zeit“ den Mitarbeiter, das Datum und die Uhrzeit wählen. Auch hier schlägt Kammzeit freie Zeiten vor.</li>
+      <li>Hat der Kunde eine E-Mail-Adresse, kannst du ihn per Mail über die neue Zeit informieren. Habt ihr sie schon abgesprochen, nimm den Haken raus.</li>
+      <li><b class="ui">Verschieben</b>.</li>
+    </ol>
+    <p>Kunden können nicht selbst verschieben. Sie sagen über den Link in ihrer Mail ab und buchen neu. Mehr unter <a href="/hilfe/absagen-und-no-shows">Absagen und No-Shows</a>.</p>
 
     <p class="hilfe-weiter"><a href="/hilfe/kundenkartei">Weiter: Kundenkartei</a></p>
   </article>
@@ -497,18 +532,18 @@ Termin online buchen
 <div class="wrap hilfe-layout">
   <article class="prose hilfe-artikel">
     <h2 id="woher">Wie Kunden in die Kartei kommen</h2>
-    <p>Wer online bucht, landet automatisch in der Kartei. Bucht dieselbe E-Mail-Adresse wieder, kommt der Termin auf dieselbe Karteikarte. Stammkunden ohne Online-Buchung legst du im Menü <b class="ui">Kunden</b> mit <b class="ui">Kunde anlegen</b> an oder direkt beim <a href="/hilfe/termine-eintragen">Eintragen eines Termins</a>.</p>
+    <p>Wer online bucht, landet automatisch in der Kartei. Bucht dieselbe E-Mail-Adresse wieder, kommt der Termin auf dieselbe Karteikarte. Stammkunden ohne Online-Buchung legst du im Menü <b class="ui">Kunden</b> mit <b class="ui">Neuer Kunde</b> an oder direkt beim <a href="/hilfe/termine-eintragen">Eintragen eines Termins</a>.</p>
     <p>Einen Import aus einem anderen Programm gibt es nicht.</p>
 
     <h2 id="suchen">Suchen</h2>
     <p>Das Suchfeld unter <b class="ui">Kunden</b> findet nach Name, E-Mail oder Telefon, schon beim Tippen. Die Liste zeigt Kontakt, Anzahl der Besuche, letzten Besuch und nächsten Termin.</p>
 
     <h2 id="karte">Die Karteikarte</h2>
-    <p>Ein Klick auf den Namen öffnet die Karteikarte: Kontakt, „Kunde seit“, Besuche, nächster Termin und „Umsatz bisher“. Darunter stehen alle kommenden und vergangenen Termine mit Leistung, Mitarbeiter, Preis und Status.</p>
+    <p>Ein Klick auf den Namen öffnet die Karteikarte: ganz oben die Notizen als gelber Zettel, dann Kontakt, „Kunde seit“, Besuche, nächster Termin und „Umsatz bisher“. Darunter stehen alle kommenden und vergangenen Termine mit Leistung, Mitarbeiter, Preis und Status.</p>
     <ul>
-      <li><b>Besuche</b> zählt vergangene Termine. Abgesagte und nicht erschienene zählen nicht.</li>
+      <li><b>Besuche</b> zählt erledigte Termine. Abgesagte und nicht erschienene zählen nicht.</li>
       <li><b>Umsatz bisher</b> ist die Summe der aktuellen Leistungspreise, nur zur Orientierung. Was wirklich bezahlt wurde, weiß Kammzeit nicht.</li>
-      <li><b class="ui">Termin anlegen</b> oben öffnet ein neues Terminformular mit diesem Kunden.</li>
+      <li><b class="ui">Neuer Termin</b> oben öffnet das Terminformular mit diesem Kunden.</li>
     </ul>
     <figure class="figure">
       <img class="shot" src="/static/img/shots/kunde.webp" width="1280" height="1470" alt="Karteikarte eines Kunden mit Kontakt, Besuchen, Notizen und Terminen" loading="lazy">
@@ -517,13 +552,13 @@ Termin online buchen
 
     <h2 id="notizen">Notizen</h2>
     <p><b class="ui">Kontakt und Notizen bearbeiten</b> aufklappen. Ins Feld <b class="ui">Notizen</b> kommt, was du beim nächsten Besuch wissen willst: die Farbrezeptur („7/1 + 20 Vol.“), den Lieblingsschnitt, Wünsche. Höchstens 2000 Zeichen, dann <b class="ui">Speichern</b>. Notizen sieht nur der Salon im Dashboard, nie der Kunde.</p>
-    <p>Die Notiz auf der Karteikarte gilt für die Person. Die interne Notiz an einem Termin gilt nur für diesen einen Termin.</p>
+    <p>Die Notiz auf der Karteikarte gilt für die Person und steht als „Kundennotiz“ bei jedem ihrer Termine. Die Notiz zu einem Termin gilt nur für diesen einen Termin.</p>
     <div class="hilfe-hinweis">
       <p><b>Sensible Angaben:</b> Allergien, Hautkrankheiten und andere Gesundheitsdaten gehören zu den besonderen Kategorien nach Art. 9 DSGVO. Schreib sie nur mit ausdrücklicher Einwilligung der Person in die Kartei, und so, dass du die Einwilligung nachweisen kannst. Kammzeit schützt diese Notizen wie alle anderen Daten, verschlüsselt sie aber nicht gesondert. Mehr im <a href="/avv">Auftragsverarbeitungsvertrag</a> und unter <a href="/sicherheit">Daten und Sicherheit</a>.</p>
     </div>
 
     <h2 id="csv">CSV-Export</h2>
-    <p>Unter <b class="ui">Kunden</b> oben <b class="ui">CSV-Export</b>. Du bekommst eine Datei mit den Spalten Name, E-Mail, Telefon, Notizen, Angelegt und Besuche. Sie öffnet sich direkt in Excel mit Umlauten und richtigen Spalten, auch LibreOffice und Numbers lesen sie.</p>
+    <p>Unter <b class="ui">Kunden</b>, unter der Liste: <b class="ui">Alle Kunden als CSV-Datei herunterladen</b>. Du bekommst eine Datei mit den Spalten Name, E-Mail, Telefon, Notizen, Angelegt und Besuche. Sie öffnet sich direkt in Excel mit Umlauten und richtigen Spalten, auch LibreOffice und Numbers lesen sie. Den Export und das Löschen von Kunden darf nur die Inhaberin oder der Inhaber, nicht ein <a href="/hilfe/mitarbeiter-logins">Mitarbeiter-Login</a>.</p>
     <p>Die Datei enthält Daten deiner Kunden. Leg sie nicht auf einen Rechner, den andere mitbenutzen, und lösch sie, wenn du sie nicht mehr brauchst.</p>
 
     <h2 id="loeschen">Kunden ändern oder löschen</h2>
@@ -569,12 +604,13 @@ Termin online buchen
     <h2 id="salon">Absage durch den Salon</h2>
     <ol class="hilfe-schritte">
       <li>Termin im Kalender anklicken.</li>
-      <li>Rechts im Kasten „Termin absagen“ ist <b class="ui">Kunde per Mail informieren</b> angehakt, wenn der Kunde eine E-Mail-Adresse hat und der Termin noch kommt. Er bekommt dann eine Mail mit Link zum Neubuchen und deiner Telefonnummer. Habt ihr schon gesprochen, nimm den Haken raus.</li>
-      <li><b class="ui">Absagen</b>. Die Zeit ist sofort wieder online buchbar.</li>
+      <li>Im Kasten „Termin ändern“ auf <b class="ui">Termin absagen</b>. Hat der Kunde eine E-Mail-Adresse und kommt der Termin noch, ist das Häkchen „… per Mail informieren“ gesetzt. Er bekommt dann eine Mail mit Link zum Neubuchen und deiner Telefonnummer. Habt ihr schon gesprochen, nimm den Haken raus.</li>
+      <li><b class="ui">Ja, absagen</b>. Die Zeit ist sofort wieder online buchbar.</li>
     </ol>
+    <p>Ändert sich nur die Zeit, musst du nicht absagen: <a href="/hilfe/termine-eintragen#verschieben">Verschieb</a> den Termin einfach.</p>
 
     <h2 id="noshow">Nicht erschienen</h2>
-    <p>Ab Terminbeginn erscheint im Termin der Kasten „Nicht erschienen“ mit dem Button <b class="ui">Als nicht erschienen markieren</b>. Danach steht im Kalender „nicht erschienen“ in Rot, und auf der Karteikarte steht es beim Termin. Beim nächsten Anruf siehst du so, wer schon einmal nicht gekommen ist.</p>
+    <p>Ab Terminbeginn erscheint im Termin der Kasten „Nicht erschienen“ mit dem Button <b class="ui">Als nicht erschienen markieren</b>. Danach steht im Kalender „nicht erschienen“ beim Termin, und auf der Karteikarte auch. Beim nächsten Anruf siehst du so, wer schon einmal nicht gekommen ist.</p>
     <p>Die Markierung lässt sich nicht zurücknehmen. Kommt der Kunde nur zu spät, warte mit dem Klick.</p>
 
     <h2 id="vorbeugen">No-Shows vorbeugen</h2>
@@ -584,7 +620,7 @@ Termin online buchen
       <li>Anzahlungen oder Ausfallgebühren kann Kammzeit noch nicht verlangen. Anzahlungen sind geplant.</li>
     </ul>
 
-    <p class="hilfe-weiter"><a href="/hilfe/pro-und-kuendigen">Weiter: Pro und Kündigen</a></p>
+    <p class="hilfe-weiter"><a href="/hilfe/warteschlange">Weiter: Warteschlange</a></p>
   </article>
   {{template "hilfe-nav" .}}
 </div>
@@ -598,7 +634,7 @@ Termin online buchen
     <div>
       <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#konto">Konto und Abo</a></li><li aria-current="page">Pro und Kündigen</li></ol></nav>
       <h1>Pro und Kündigen</h1>
-      <p class="lead">Gratis reicht für einen Mitarbeiter. Pro ist für Teams und für alle, die den Kammzeit-Hinweis auf der Buchungsseite nicht wollen.</p>
+      <p class="lead">Gratis reicht für einen Mitarbeiter. Pro ist für Teams, für Salons mit Laufkundschaft und für alle, die ihre Buchungsseite ohne Kammzeit-Hinweis und mit eigenem Design wollen.</p>
     </div>
     <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/pro.svg" width="48" height="48" alt=""></span></div>
   </div>
@@ -608,30 +644,43 @@ Termin online buchen
     <h2 id="unterschied">Gratis und Pro</h2>
     <div class="compare-wrap">
       <table class="compare">
-        <thead><tr><th scope="col"></th><th scope="col">Gratis</th><th scope="col">Pro</th></tr></thead>
+        <thead><tr><th scope="col"><span class="vh">Funktion</span></th><th scope="col">Gratis</th><th scope="col">Pro</th></tr></thead>
         <tbody>
           <tr><th scope="row">Aktive Mitarbeiter</th><td>1</td><td>unbegrenzt</td></tr>
+          <tr><th scope="row">Eigene Logins für Mitarbeiter</th><td>nein</td><td>ja</td></tr>
+          <tr><th scope="row">Warteschlange für Kunden ohne Termin</th><td>nein</td><td>ja</td></tr>
+          <tr><th scope="row">Logo, Social-Links, Öffnungszeiten auf der Buchungsseite</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Titelbild, Design und Fotogalerie</th><td>nein</td><td>ja</td></tr>
           <tr><th scope="row">Hinweis „Online-Termine mit Kammzeit“ auf der Buchungsseite</th><td>ja</td><td>nein</td></tr>
           <tr><th scope="row">Preis</th><td>0 €</td><td>14,90 € im Monat oder 149 € im Jahr</td></tr>
         </tbody>
       </table>
     </div>
-    <p>Alles andere ist in beiden Plänen gleich: Buchungsseite, Kalender, Kundenkartei, Erinnerungen und Export. Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p>
+    <p>Alles andere ist in beiden Plänen gleich: Buchungsseite, Kalender, Kundenkartei, Erinnerungen, App und Export. Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p>
 
     <h2 id="buchen">Zu Pro wechseln</h2>
     <ol class="hilfe-schritte">
       <li>Menü <b class="ui">Abo</b>.</li>
       <li><b class="ui">Pro monatlich</b> oder <b class="ui">Pro jährlich</b> wählen.</li>
       <li>Du landest bei Stripe, unserem Zahlungsanbieter. Zahlungsdaten eingeben und abschließen.</li>
-      <li>Zurück im Dashboard steht „Danke! Dein Pro-Abo ist aktiv, sobald die Zahlung bestätigt ist.“ Das dauert meist nur ein paar Sekunden. Danach heißt der Menüpunkt <b class="ui">Pro</b>.</li>
+      <li>Zurück im Dashboard steht „Danke! Dein Pro-Abo ist aktiv, sobald die Zahlung bestätigt ist.“ Das dauert meist nur ein paar Sekunden. Danach steht unter <b class="ui">Abo</b> Pro als dein Plan.</li>
     </ol>
 
     <h2 id="verwalten">Zahlungsart, Rechnungen, Kündigung</h2>
     <ol class="hilfe-schritte">
-      <li>Menü <b class="ui">Pro</b>, dann <b class="ui">Abo verwalten / kündigen</b>.</li>
+      <li>Menü <b class="ui">Abo</b>, dann <b class="ui">Abo verwalten / kündigen</b>.</li>
       <li>Im Kundenportal von Stripe änderst du die Zahlungsart, lädst Rechnungen herunter oder kündigst.</li>
     </ol>
-    <p>Gekündigt wird zum Ende des bezahlten Zeitraums, also des Monats oder Jahres, das schon bezahlt ist. Bis dahin bleibt Pro aktiv. Danach läuft dein Konto im Gratis-Plan weiter. Deine Daten bleiben erhalten, es gelten wieder die Grenzen des Gratis-Plans.</p>
+    <p>Gekündigt wird zum Ende des bezahlten Zeitraums, also des Monats oder Jahres, das schon bezahlt ist. Bis dahin bleibt Pro aktiv. Danach läuft dein Konto im Gratis-Plan weiter. Deine Daten bleiben erhalten, es gelten wieder die Grenzen des Gratis-Plans. Das Abo verwaltet nur die Inhaberin oder der Inhaber.</p>
+
+    <h2 id="nach-pro">Was nach dem Ende von Pro passiert</h2>
+    <p>Gelöscht wird nichts, einiges ruht nur, bis du wieder Pro buchst:</p>
+    <ul>
+      <li><b>Mitarbeiter-Logins</b> sind pausiert. Wer sich anmelden will, sieht „Zugang pausiert“. Die Zugänge bleiben gespeichert und gehen mit Pro sofort wieder. Siehe <a href="/hilfe/mitarbeiter-logins#ohne-pro">Mitarbeiter einladen</a>.</li>
+      <li>Die <b>Warteschlange</b> lässt sich nicht mehr nutzen. Im Menü steht dann ein Hinweis auf Pro.</li>
+      <li><b>Titelbild, Design und Fotogalerie</b> sind auf der Buchungsseite ausgeblendet, sie zeigt wieder das Standard-Design. Logo, Social-Links und Öffnungszeiten bleiben.</li>
+      <li>Online buchbar ist nur noch ein aktiver Mitarbeiter, und unten auf der Buchungsseite steht wieder „Online-Termine mit Kammzeit“.</li>
+    </ul>
 
     <h2 id="aufhoeren">Ganz aufhören</h2>
     <p>Willst du Kammzeit gar nicht mehr nutzen, kündige zuerst das Abo und lösch dann dein Konto. Wie, steht unter <a href="/hilfe/daten-export-und-loeschen">Export und Löschen</a>.</p>
@@ -651,7 +700,7 @@ Termin online buchen
     <div>
       <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#konto">Konto und Abo</a></li><li aria-current="page">Export und Löschen</li></ol></nav>
       <h1>Daten exportieren und Konto löschen</h1>
-      <p class="lead">Deine Daten kannst du jederzeit mitnehmen. Und wenn du gehst, löschen wir sie.</p>
+      <p class="lead">Deine Daten kannst du jederzeit mitnehmen und die Kammzeit-News jederzeit abbestellen. Und wenn du gehst, löschen wir alles.</p>
     </div>
     <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""></span></div>
   </div>
@@ -663,13 +712,21 @@ Termin online buchen
       <li>Menü <b class="ui">Einstellungen</b>, ganz unten im Abschnitt „Deine Daten“.</li>
       <li><b class="ui">Daten exportieren</b>. Du bekommst eine Datei <code>kammzeit-deine-adresse.json</code>.</li>
     </ol>
-    <p>Darin stehen deine Salon-Einstellungen, Team, Leistungen, wer welche Leistung macht, Arbeitszeiten, die Kundenkartei mit Notizen und alle Termine mit Status und interner Notiz. Nicht enthalten sind die Absage-Links der Termine und Zahlungsdaten, die liegen bei Stripe.</p>
-    <p>JSON ist ein offenes Textformat, das andere Programme einlesen können. Zum Anschauen reicht ein Texteditor. Für eine Tabelle deiner Kunden ist der <a href="/hilfe/kundenkartei#csv">CSV-Export der Kundenkartei</a> praktischer.</p>
+    <p>Darin stehen deine Salon-Einstellungen, Team, Leistungen, wer welche Leistung macht, Arbeitszeiten, die Kundenkartei mit Notizen, alle Termine mit Status und Notiz zum Termin und die Liste deiner hochgeladenen Bilder mit ihrer Adresse. Nicht enthalten sind die Absage-Links der Termine und Zahlungsdaten, die liegen bei Stripe.</p>
+    <p>JSON ist ein offenes Textformat, das andere Programme einlesen können. Zum Anschauen reicht ein Texteditor. Für eine Tabelle deiner Kunden ist der <a href="/hilfe/kundenkartei#csv">CSV-Export der Kundenkartei</a> praktischer. Exportieren darf nur die Inhaberin oder der Inhaber.</p>
+
+    <h2 id="news">Kammzeit-News per E-Mail</h2>
+    <p>Ab und zu schicken wir Neuigkeiten zu Kammzeit, zum Beispiel neue Funktionen. Nur Kammzeit, keine Werbung für andere, und nur, wenn du sie bestellst:</p>
+    <ul>
+      <li><b>Bestellen:</b> beim Registrieren das freiwillige Häkchen setzen oder später unter <b class="ui">Einstellungen</b>, Abschnitt „Kammzeit-News per E-Mail“, auf <b class="ui">News abonnieren</b>. Du bekommst eine Mail mit einem Link zum Bestätigen. Erst danach steht dort „Angemeldet“. Kam keine Mail, hilft <b class="ui">Mail erneut senden</b>.</li>
+      <li><b>Abbestellen:</b> über den Link in jeder News-Mail oder in den Einstellungen mit <b class="ui">News abbestellen</b>. Das geht jederzeit und sofort.</li>
+    </ul>
+    <p>Mails, die zu deinem Konto gehören, also Login-Links, neue Buchungen, Absagen und Abo, bekommst du unabhängig von den News.</p>
 
     <h2 id="loeschen">Konto löschen</h2>
     <ol class="hilfe-schritte">
       <li>Menü <b class="ui">Einstellungen</b>, ganz unten <b class="ui">Konto löschen</b>.</li>
-      <li>Lies die Hinweise. Gelöscht werden Buchungsseite, Team, Leistungen, Arbeitszeiten, Kundenkartei, alle Termine und dein Login.</li>
+      <li>Lies die Hinweise. Gelöscht werden Buchungsseite, Team, Leistungen, Arbeitszeiten, Kundenkartei, alle Termine, Bilder, dein Login und die Logins deiner Mitarbeiter.</li>
       <li>Zur Bestätigung die Adresse deines Salons eintippen, also den Teil vor <code>.kammzeit.de</code>.</li>
       <li><b class="ui">Endgültig löschen</b>.</li>
     </ol>
@@ -678,7 +735,7 @@ Termin online buchen
     </div>
 
     <h2 id="abo">Mit Pro-Abo</h2>
-    <p>Solange ein Pro-Abo besteht, ist das Löschen gesperrt. Kündige zuerst unter <b class="ui">Pro</b> › <b class="ui">Abo verwalten / kündigen</b>. Das Abo läuft bis zum Ende des bezahlten Zeitraums weiter, erst danach lässt sich das Konto löschen. Willst du nicht so lange warten, schreib an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
+    <p>Solange ein Pro-Abo besteht, ist das Löschen gesperrt. Kündige zuerst unter <b class="ui">Abo</b> › <b class="ui">Abo verwalten / kündigen</b>. Das Abo läuft bis zum Ende des bezahlten Zeitraums weiter, erst danach lässt sich das Konto löschen. Willst du nicht so lange warten, schreib an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
 
     <h2 id="danach">Was danach passiert</h2>
     <ul>
@@ -690,6 +747,319 @@ Termin online buchen
     <p>Einzelne Kunden löschst du auf ihrer Karteikarte, siehe <a href="/hilfe/kundenkartei#loeschen">Kundenkartei</a>. Wie wir mit Daten umgehen, steht unter <a href="/sicherheit">Daten und Sicherheit</a>.</p>
 
     <p class="hilfe-weiter"><a href="/hilfe">Zurück zur Übersicht</a></p>
+  </article>
+  {{template "hilfe-nav" .}}
+</div>
+{{template "hilfe-kontakt"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "hilfe-buchungsseite-gestalten"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#einrichten">Einrichten</a></li><li aria-current="page">Buchungsseite gestalten</li></ol></nav>
+      <h1>Buchungsseite gestalten</h1>
+      <p class="lead">Logo, Social-Links und Öffnungszeiten gibt es für alle. Mit Pro kommen Titelbild, eigene Schrift, runde Ecken, ein dunkles Design, ein Begrüßungstext und eine Fotogalerie dazu.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <p>Alles dazu steht im Menü <b class="ui">Einstellungen</b>, das nur die Inhaberin oder der Inhaber sieht. Im Abschnitt „Aussehen“ zeigt die <b class="ui">Vorschau deiner Buchungsseite</b> jede Änderung sofort. Gespeichert wird erst mit <b class="ui">Speichern</b> ganz unten.</p>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead><tr><th scope="col"><span class="vh">Funktion</span></th><th scope="col">Gratis</th><th scope="col">Pro</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Logo</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Akzentfarbe</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Social-Links</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Öffnungszeiten</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Titelbild</th><td>nein</td><td>ja</td></tr>
+          <tr><th scope="row">Schrift, Ecken, Hell oder dunkel, Begrüßungstext</th><td>nein</td><td>ja</td></tr>
+          <tr><th scope="row">Fotogalerie mit bis zu 12 Fotos</th><td>nein</td><td>ja</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="logo">Logo</h2>
+    <ol class="hilfe-schritte">
+      <li><b class="ui">Einstellungen</b>, Abschnitt „Aussehen“, beim Feld <b class="ui">Logo</b> eine Datei wählen.</li>
+      <li>Erlaubt sind PNG, JPG oder WebP bis 5 MB, am besten mit transparentem Hintergrund. SVG-Dateien nehmen wir nicht an.</li>
+      <li><b class="ui">Speichern</b>.</li>
+    </ol>
+    <p>Wir verkleinern das Logo auf höchstens 512 Pixel und entfernen Kamera- und Standortdaten. Es erscheint auf deiner Buchungsseite, in den Mails an deine Kunden und oben im Dashboard neben dem Namen deines Salons. Zum Entfernen <b class="ui">Logo entfernen</b> anhaken und speichern.</p>
+    <p>Im selben Abschnitt stehen die <b class="ui">Akzentfarbe</b> für Buttons und Markierungen und die <b class="ui">Sprache der Buchungsseite</b>, siehe <a href="/hilfe/sprache">Sprache und kammzeit.com</a>.</p>
+
+    <h2 id="social">Social-Links</h2>
+    <p>Im Abschnitt „Social-Links“ trägst du ein, wo man dich sonst findet. Die Links erscheinen als Buttons auf deiner Buchungsseite, leere Felder werden nicht angezeigt.</p>
+    <ul>
+      <li><b class="ui">Instagram</b> und <b class="ui">TikTok</b>: dein Name wie <code>@deinsalon</code> oder der Link zu deinem Profil.</li>
+      <li><b class="ui">Facebook</b>: Name oder Link deiner Facebook-Seite.</li>
+      <li><b class="ui">Google Maps</b>: der Link zu deinem Eintrag, dort sehen Kunden auch deine Bewertungen. In Google Maps: Teilen, dann Link kopieren.</li>
+      <li><b class="ui">WhatsApp</b>: deine Nummer mit Ländervorwahl, zum Beispiel <code>+49 170 1234567</code>. Kunden können dir dann direkt schreiben.</li>
+    </ul>
+
+    <h2 id="oeffnungszeiten">Öffnungszeiten</h2>
+    <p>Unter den Social-Links steht <b class="ui">Öffnungszeiten auf der Buchungsseite zeigen</b>. Das Häkchen ist von Anfang an gesetzt. Kammzeit fasst dafür die Arbeitszeiten aller aktiven Mitarbeiter je Wochentag zusammen. Eigene Öffnungszeiten trägst du also nicht ein: Ändern kannst du sie über die Arbeitszeiten unter <a href="/hilfe/arbeitszeiten">Team</a>.</p>
+
+    <h2 id="pro">Titelbild und Design (Pro)</h2>
+    <p>Im Abschnitt „Aussehen“ steht darunter der Bereich <b class="ui">Titelbild, Design und Galerie</b>. Ohne Pro ist er gesperrt und zeigt <b class="ui">Zu Pro wechseln</b>.</p>
+    <ul>
+      <li><b class="ui">Titelbild</b>: ein breites Foto, zum Beispiel dein Salon von innen. Es steht oben auf der Buchungsseite, auf dem Handy etwas schmaler zugeschnitten. Entfernen mit <b class="ui">Titelbild entfernen</b>.</li>
+      <li><b class="ui">Schrift</b>: Schlicht, Modern oder Klassisch.</li>
+      <li><b class="ui">Ecken</b>: Eckig oder Rund, für Buttons und Kästen.</li>
+      <li><b class="ui">Hell oder dunkel</b>: Hell oder Dunkel als Grundton der Seite.</li>
+      <li><b class="ui">Begrüßungstext</b>: steht hervorgehoben oben auf der Buchungsseite, etwa ein Willkommen oder ein aktueller Hinweis wie „Vom 1. bis 14. August machen wir Urlaub“. Höchstens 300 Zeichen.</li>
+    </ul>
+
+    <h2 id="galerie">Fotogalerie (Pro)</h2>
+    <ol class="hilfe-schritte">
+      <li>Im Bereich „Titelbild, Design und Galerie“ auf <b class="ui">Fotogalerie verwalten</b>. Daneben steht, wie viele der 12 Plätze belegt sind.</li>
+      <li>Unter <b class="ui">Fotos hinzufügen</b> ein oder mehrere Fotos wählen: JPG, PNG oder WebP, je höchstens 5 MB, zusammen bis 20 MB. Dann <b class="ui">Hochladen</b>.</li>
+      <li>Zu jedem Foto eine kurze <b class="ui">Beschreibung</b> eintragen, zum Beispiel „Balayage in Honigblond“, und <b class="ui">Speichern</b>. Sie hilft Menschen, die Bilder nicht sehen können, und Suchmaschinen.</li>
+      <li>Mit <b class="ui">Nach vorn</b> und <b class="ui">Nach hinten</b> die Reihenfolge ändern, mit <b class="ui">Löschen</b> ein Foto entfernen.</li>
+    </ol>
+    <p>Auf der Buchungsseite stehen die Fotos unter dem Formular, quadratisch zugeschnitten. Kamera- und Standortdaten entfernen wir beim Hochladen.</p>
+    <div class="hilfe-hinweis">
+      <p><b>Fotos von Kunden:</b> Zeig Kunden nur mit ihrem Einverständnis und nimm nur Fotos, die du selbst gemacht hast oder verwenden darfst. Alles in der Galerie ist auf deiner Buchungsseite öffentlich zu sehen.</p>
+    </div>
+
+    <h2 id="ohne-pro">Wenn Pro endet</h2>
+    <p>Gelöscht wird nichts. Titelbild, Design und Galerie sind dann nur ausgeblendet, die Buchungsseite zeigt das Standard-Design. Buchst du wieder Pro, ist alles wie vorher da. Fotos in der Galerie kannst du auch ohne Pro noch beschreiben, umsortieren und löschen. Logo, Social-Links und Öffnungszeiten bleiben ohnehin.</p>
+
+    <p class="hilfe-weiter"><a href="/hilfe/link-teilen">Weiter: Buchungslink teilen</a></p>
+  </article>
+  {{template "hilfe-nav" .}}
+</div>
+{{template "hilfe-kontakt"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "hilfe-warteschlange"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#alltag">Im Alltag</a></li><li aria-current="page">Warteschlange</li></ol></nav>
+      <h1>Warteschlange für Kunden ohne Termin</h1>
+      <p class="lead">Laufkundschaft scannt einen QR-Code, trägt den Vornamen ein und sieht auf dem Handy, wann sie dran ist. Du rufst mit einem Klick auf. Die Warteschlange gibt es mit Pro.</p>
+    </div>
+    <div class="page-head-media"><img class="ill hilfe-ill" src="/static/img/ill/schritt-termin.webp" width="1200" height="900" alt="" loading="lazy"></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <h2 id="einschalten">Einschalten</h2>
+    <ol class="hilfe-schritte">
+      <li>Menü <b class="ui">Warteschlange</b>, dann <b class="ui">Warteschlange einschalten</b>. Oben steht jetzt „An“.</li>
+      <li>Wenn du willst, unter <b class="ui">Hinweis für Kunden</b> ein paar Worte, die über dem Formular stehen, etwa „Bitte bleib in der Nähe, wir rufen dich auf.“ Höchstens 300 Zeichen, dann <b class="ui">Hinweis speichern</b>.</li>
+    </ol>
+    <p>Anstellen können sich Kunden nur, solange laut <a href="/hilfe/arbeitszeiten">Arbeitszeiten</a> jemand im Salon arbeitet. Außerhalb sehen sie einen Hinweis, dass gerade geschlossen ist. Ist die Warteschlange an und geöffnet, steht auf deiner Buchungsseite zusätzlich „Ohne Termin vorbeikommen? Online anstellen“.</p>
+    <p>Ein- und ausschalten und den Hinweis ändern darf nur die Inhaberin oder der Inhaber. Mitarbeiter mit eigenem Login bedienen die Liste. Im Gratis-Plan zeigt der Menüpunkt, was die Warteschlange kann, und <b class="ui">Zu Pro wechseln</b>.</p>
+
+    <h2 id="qr-code">QR-Code drucken</h2>
+    <ol class="hilfe-schritte">
+      <li>Auf der Seite <b class="ui">Warteschlange</b> im Kasten „Für deine Kunden“ auf <b class="ui">QR-Code drucken</b>.</li>
+      <li>Es öffnet sich ein Blatt mit dem Namen deines Salons, „Ohne Termin? Stell dich online an.“, dem QR-Code, drei kurzen Schritten und der Adresse zum Abtippen. <b class="ui">Drucken</b>.</li>
+      <li>Häng das Blatt an die Tür, ins Schaufenster oder an den Empfang.</li>
+    </ol>
+    <p>Die Adresse zum Anstellen steht auch auf der Seite Warteschlange, zum Beispiel <code>salon-muster.kammzeit.de/warteschlange</code>. Du kannst sie wie deinen Buchungslink teilen.</p>
+
+    <h2 id="anzeige">Anzeige für den Laden</h2>
+    <p><b class="ui">Anzeige für den Laden</b> öffnet in einem neuen Tab eine Seite für einen Bildschirm oder ein Tablet im Salon: groß „Jetzt dran“ mit den aufgerufenen Nummern, darunter die Wartenden und ein QR-Code mit „Hier anstellen“. <b class="ui">Vollbild</b> blendet alles andere aus. Die Anzeige aktualisiert sich alle paar Sekunden von selbst und zeigt nur Nummern, keine Namen.</p>
+
+    <h2 id="kunden">So sieht es für deine Kunden aus</h2>
+    <ol class="hilfe-schritte">
+      <li>QR-Code scannen, <b class="ui">Vorname</b> eintragen, wenn sie wollen eine E-Mail-Adresse und die Leistung, dann <b class="ui">Anstellen</b>. Ein Konto brauchen sie nicht.</li>
+      <li>Auf dem Handy sehen sie ihre Nummer, wie viele Personen vor ihnen sind und die geschätzte Wartezeit. Die Seite aktualisiert sich von selbst.</li>
+      <li>Wer doch nicht warten will, tippt auf <b class="ui">Ich gehe doch nicht</b>.</li>
+    </ol>
+    <p>Die Wartezeit schätzt Kammzeit aus der Dauer der gewählten Leistungen (ohne Angabe 20 Minuten pro Person), geteilt durch die Zahl der Mitarbeiter, die heute arbeiten.</p>
+
+    <h2 id="bedienen">Aufrufen, Bedient, Fertig, Nicht da</h2>
+    <p>Auf der Seite <b class="ui">Warteschlange</b> stehen alle Wartenden von heute mit Nummer, Wartezeit und gewählter Leistung. Die Liste aktualisiert sich alle zehn Sekunden.</p>
+    <ul>
+      <li><b class="ui">Aufrufen</b>: Die Person ist dran. Ihr Handy zeigt „Du bist dran! Bitte komm jetzt zum Empfang.“, die Anzeige im Laden zeigt ihre Nummer.</li>
+      <li><b class="ui">Bedient</b>: Die Person sitzt auf dem Stuhl. Geht auch direkt, ohne vorher aufzurufen.</li>
+      <li><b class="ui">Fertig</b>: fertig bedient, die Person verschwindet aus der Liste.</li>
+      <li><b class="ui">Nicht da</b>: aufgerufen, aber nicht gekommen. Ihr Handy bittet sie, sich am Empfang zu melden.</li>
+      <li><b class="ui">Entfernen</b>: nimmt jemanden ohne Weiteres von der Liste.</li>
+    </ul>
+    <p>Fragt jemand direkt am Tresen, trägst du ihn rechts unter <b class="ui">Person einreihen</b> mit Namen ein und klickst auf <b class="ui">Einreihen</b>.</p>
+
+    <h2 id="mail">Mail, wenn man dran ist</h2>
+    <p>Hat jemand beim Anstellen eine E-Mail-Adresse angegeben, bekommt er beim Klick auf <b class="ui">Aufrufen</b> eine Mail „Du bist dran“ mit seiner Nummer. So kann man auch kurz einen Kaffee holen gehen. In der Liste steht bei diesen Personen „bekommt eine Mail“. Die Mail kommt in der Sprache deiner Buchungsseite.</p>
+
+    <h2 id="daten">Daten</h2>
+    <p>Vorname und Mail-Adresse brauchen wir nur für die Warteschlange von heute. Am nächsten Tag löscht Kammzeit die Einträge des Vortags. Damit ein Kunde nach dem Neuladen seinen Platz wiederfindet, merkt sich sein Handy ihn bis zu 12 Stunden in einem Cookie (<code>kz_queue</code>). Mehr unter <a href="/sicherheit#anmeldung">Daten und Sicherheit</a>.</p>
+
+    <p class="hilfe-weiter"><a href="/hilfe/mitarbeiter-logins">Weiter: Mitarbeiter einladen</a></p>
+  </article>
+  {{template "hilfe-nav" .}}
+</div>
+{{template "hilfe-kontakt"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "hilfe-mitarbeiter-logins"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#team-und-app">Team, App, Sprache</a></li><li aria-current="page">Mitarbeiter einladen</li></ol></nav>
+      <h1>Mitarbeiter einladen</h1>
+      <p class="lead">Mit Pro bekommt jeder Mitarbeiter auf Wunsch einen eigenen Login. Dein Team sieht Kalender und Kunden, Abo, Einstellungen, Leistungen und Team bleiben bei dir.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <h2 id="rollen">Zwei Rollen</h2>
+    <p>Es gibt Inhaber und Mitarbeiter. Wer den Salon registriert hat, ist Inhaber. Jeder eingeladene Login ist an einen Mitarbeiter aus deinem Team gebunden.</p>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead><tr><th scope="col"><span class="vh">Bereich</span></th><th scope="col">Inhaber</th><th scope="col">Mitarbeiter</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Kalender: Termine eintragen, verschieben, absagen, nicht erschienen</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Kunden ansehen, anlegen, Notizen pflegen</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Kunden löschen, CSV-Export</th><td>ja</td><td>nein</td></tr>
+          <tr><th scope="row">Warteschlange bedienen</th><td>ja</td><td>ja</td></tr>
+          <tr><th scope="row">Warteschlange ein- und ausschalten, Hinweis</th><td>ja</td><td>nein</td></tr>
+          <tr><th scope="row">Arbeitszeiten</th><td>alle, unter Team</td><td>nur die eigenen, unter Meine Zeiten</td></tr>
+          <tr><th scope="row">Leistungen, Team, Einstellungen, Datenexport, Konto löschen, Abo</th><td>ja</td><td>nein</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Mitarbeiter sehen im Menü nur <b class="ui">Kalender</b>, <b class="ui">Kunden</b>, <b class="ui">Warteschlange</b> und <b class="ui">Meine Zeiten</b>. Oben rechts steht ihr Name mit „Mitarbeiter“. Versuchen sie trotzdem, eine Inhaber-Seite zu öffnen, sagt Kammzeit „Das darf nur die Inhaberin oder der Inhaber“.</p>
+
+    <h2 id="einladen">Einladen</h2>
+    <ol class="hilfe-schritte">
+      <li>Menü <b class="ui">Team</b>, den Mitarbeiter anklicken. Ein neuer Mitarbeiter muss erst einmal gespeichert sein.</li>
+      <li>Unter dem Formular steht die Karte <b class="ui">Login fürs Dashboard</b>. Trag unter <b class="ui">Login-E-Mail</b> die Adresse des Mitarbeiters ein.</li>
+      <li><b class="ui">Zugang einladen</b>.</li>
+    </ol>
+    <p>Dein Mitarbeiter bekommt eine Einladung mit Login-Link. Der Link gilt 15 Minuten, danach meldet er sich einfach über die Login-Seite an, wie du auch. Ein Passwort braucht niemand. Die Einladung kommt in der Sprache deiner Buchungsseite.</p>
+    <ul>
+      <li>Jede E-Mail-Adresse kann nur zu einem Kammzeit-Login gehören. Deine eigene Adresse geht also nicht, nimm die deines Mitarbeiters.</li>
+      <li>Einladen kannst du nur aktive Mitarbeiter.</li>
+      <li>Ist der Link abgelaufen, bevor er benutzt wurde: <b class="ui">Einladung erneut schicken</b>.</li>
+    </ul>
+    <p>In der Team-Liste siehst du bei jedem Mitarbeiter den Stand: „kein Login“, „eingeladen“, „Login aktiv“ oder „Login pausiert“. In der Karte steht außerdem, wann er sich zuletzt angemeldet hat.</p>
+
+    <h2 id="meine-zeiten">Meine Zeiten</h2>
+    <p>Mitarbeiter pflegen ihre Arbeitszeiten selbst: Menü <b class="ui">Meine Zeiten</b>, je Wochentag zwei Blöcke wie unter <a href="/hilfe/arbeitszeiten#pausen">Team und Arbeitszeiten</a>, dann <b class="ui">Speichern</b>. Online buchbar sind sie nur in diesen Zeiten. Die Zeiten anderer Mitarbeiter können sie nicht ändern.</p>
+    <p>Beim ersten Login zeigt Kammi auch Mitarbeitern eine kurze Tour, ohne die Inhaber-Bereiche.</p>
+
+    <h2 id="entfernen">Zugang entfernen</h2>
+    <p>Menü <b class="ui">Team</b>, Mitarbeiter öffnen, in der Karte „Login fürs Dashboard“ auf <b class="ui">Zugang entfernen</b>. Alle Anmeldungen dieses Logins sind sofort beendet. Der Mitarbeiter bleibt mit seinen Terminen im Team, nur der Login ist weg. Später kannst du ihn neu einladen.</p>
+    <p>Setzt du einen Mitarbeiter auf inaktiv, kann er sich ebenfalls nicht mehr anmelden, sein Zugang bleibt aber gespeichert.</p>
+
+    <h2 id="ohne-pro">Ohne Pro</h2>
+    <p>Mitarbeiter-Logins gibt es nur im Pro-Plan. Endet Pro, sind sie pausiert: Wer sich anmelden will, sieht „Zugang pausiert“. Gelöscht wird nichts, mit Pro gehen alle Zugänge sofort wieder. Im Gratis-Plan zeigt die Karte „Login fürs Dashboard“ stattdessen <b class="ui">Pro ansehen</b>.</p>
+    <div class="hilfe-hinweis">
+      <p><b>Geteiltes Gerät am Tresen:</b> Melde dich nach der Arbeit ab, damit niemand mit deinem Login weitermacht. Jeder im Team sollte seinen eigenen Login nutzen. Dann sieht ein Mitarbeiter auch keine Inhaber-Seiten.</p>
+    </div>
+
+    <p class="hilfe-weiter"><a href="/hilfe/app-installieren">Weiter: App installieren</a></p>
+  </article>
+  {{template "hilfe-nav" .}}
+</div>
+{{template "hilfe-kontakt"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "hilfe-app-installieren"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#team-und-app">Team, App, Sprache</a></li><li aria-current="page">App installieren</li></ol></nav>
+      <h1>Kammzeit als App installieren</h1>
+      <p class="lead">Dein Dashboard lässt sich auf Handy, Tablet und Computer wie eine App installieren. Ohne App Store, ohne Updates von Hand. Deine Kunden brauchen keine App, sie buchen im Browser.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/handy.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <p>Melde dich zuerst im Browser an. Unten im Dashboard erscheint dann einmal der Hinweis „Kammzeit als App“. Mit <b class="ui">Schließen</b> verschwindet er auf diesem Gerät.</p>
+
+    <h2 id="iphone">iPhone und iPad</h2>
+    <ol class="hilfe-schritte">
+      <li>Öffne <a href="/login">kammzeit.de/login</a> in Safari und melde dich an.</li>
+      <li>Tipp auf das Teilen-Symbol (das Quadrat mit dem Pfeil nach oben).</li>
+      <li>Wähl <b class="ui">Zum Home-Bildschirm</b>, dann <b class="ui">Hinzufügen</b>.</li>
+    </ol>
+    <p>Auf deinem Home-Bildschirm liegt jetzt Kammzeit mit dem Kamm-Symbol. Es öffnet sich ohne Adresszeile, wie eine App.</p>
+
+    <h2 id="android">Android</h2>
+    <ol class="hilfe-schritte">
+      <li>Öffne Kammzeit in Chrome und melde dich an.</li>
+      <li>Tipp im Hinweis unten auf <b class="ui">App installieren</b>. Hast du ihn geschlossen: oben rechts das Menü mit den drei Punkten, dann <b class="ui">App installieren</b> oder <b class="ui">Zum Startbildschirm hinzufügen</b>.</li>
+      <li>Bestätigen. Kammzeit liegt dann bei deinen Apps.</li>
+    </ol>
+
+    <h2 id="computer">Computer</h2>
+    <p>In Chrome, Edge und anderen Chromium-Browsern: im Hinweis auf <b class="ui">App installieren</b> klicken oder auf das Installieren-Symbol rechts in der Adresszeile. Kammzeit öffnet sich dann in einem eigenen Fenster und lässt sich an die Taskleiste heften. In Safari auf dem Mac geht es über <b class="ui">Ablage</b> › <b class="ui">Zum Dock hinzufügen</b>. Firefox auf dem Computer kann keine Web-Apps installieren. Dort nutzt du Kammzeit einfach weiter im Browser, mit denselben Funktionen.</p>
+
+    <h2 id="kurzbefehle">Kurzbefehle</h2>
+    <p>Drück auf Android lange auf das Kammzeit-Symbol, am Computer geht es mit einem Rechtsklick auf das Symbol in der Taskleiste. Dann springst du direkt zu <b class="ui">Neuer Termin</b>, <b class="ui">Kunden</b> oder <b class="ui">Warteschlange</b>.</p>
+
+    <h2 id="offline">Ohne Internet</h2>
+    <p>Kammzeit braucht eine Verbindung. Ist das Netz weg, zeigt die App „Du bist offline“ und lädt von selbst neu, sobald du wieder online bist. Termine und Kunden gibt es offline nicht, weil sie nicht auf dem Gerät gespeichert werden.</p>
+
+    <h2 id="geraet">Keine Kundendaten auf dem Gerät</h2>
+    <p>Auf dem Gerät speichert die App nur, was sich nicht ändert und niemanden betrifft: Schrift, Farben, Bilder und die Offline-Seite. Seiten mit Terminen und Kunden kommen immer frisch vom Server und bleiben nicht im Gerätespeicher. Das ist gut für den Tresen-PC und das geteilte Tablet. Melde dich auf solchen Geräten trotzdem ab, wenn du gehst. Mehr unter <a href="/sicherheit#app">Daten und Sicherheit</a>.</p>
+    <p>Die App entfernst du wie jede andere, zum Beispiel durch langes Drücken auf das Symbol. An deinem Konto ändert das nichts.</p>
+
+    <p class="hilfe-weiter"><a href="/hilfe/sprache">Weiter: Sprache und kammzeit.com</a></p>
+  </article>
+  {{template "hilfe-nav" .}}
+</div>
+{{template "hilfe-kontakt"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "hilfe-sprache"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/hilfe">Hilfe</a></li><li><a href="/hilfe#team-und-app">Team, App, Sprache</a></li><li aria-current="page">Sprache und kammzeit.com</li></ol></nav>
+      <h1>Sprache und kammzeit.com</h1>
+      <p class="lead">Kammzeit gibt es auf Deutsch unter kammzeit.de und auf Englisch unter kammzeit.com. Ein Konto gilt für beide, und deine Buchungsseite kann jede der beiden Sprachen sprechen.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/eu.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <h2 id="buchungsseite">Sprache der Buchungsseite</h2>
+    <ol class="hilfe-schritte">
+      <li>Menü <b class="ui">Einstellungen</b>, Abschnitt „Aussehen“.</li>
+      <li>Unter <b class="ui">Sprache der Buchungsseite</b> Deutsch oder English wählen und <b class="ui">Speichern</b>.</li>
+    </ol>
+    <p>In dieser Sprache sehen deine Kunden die Buchungsseite, die Absage-Seite und die Warteschlange, und in dieser Sprache bekommen sie alle Mails zu ihren Terminen. Gut für Salons in Städten mit vielen internationalen Kunden.</p>
+    <p>Mit English ändert sich auch die Adresse oben unter „Deine Buchungsseite“: Aus <code>salon-muster.kammzeit.de</code> wird <code>salon-muster.kammzeit.com</code>. Beide Adressen funktionieren und zeigen dieselbe Seite in der gewählten Sprache. Links, die du schon geteilt hast, gehen also weiter.</p>
+
+    <h2 id="konto">Ein Konto für beide Seiten</h2>
+    <ul>
+      <li>Das Dashboard ist auf kammzeit.de deutsch und auf kammzeit.com englisch. Du nutzt überall dasselbe Konto mit derselben E-Mail-Adresse.</li>
+      <li>Eine Anmeldung gilt nur für die Seite, auf der du dich angemeldet hast. Willst du beide nutzen, meld dich auf beiden einmal an.</li>
+      <li>Der Login-Link führt immer auf die Seite, auf der du ihn angefordert hast.</li>
+    </ul>
+
+    <h2 id="mails">Mails in deiner Sprache</h2>
+    <ul>
+      <li><b>Mails an dich</b>, also Login-Links und Infos zu neuen Buchungen und Absagen, kommen in der Sprache der Seite, auf der du zuletzt einen Login-Link angefordert hast.</li>
+      <li><b>Mails an deine Kunden</b> kommen in der Sprache deiner Buchungsseite, egal welche Sprache dein Dashboard hat.</li>
+      <li><b>Einladungen an Mitarbeiter</b> gehen in der Sprache deiner Buchungsseite raus. Meldet sich ein Mitarbeiter später über die andere Seite an, bekommt er seine Mails in deren Sprache.</li>
+    </ul>
+
+    <h2 id="website">Die Website</h2>
+    <p>Oben auf jeder Seite von kammzeit.de wechselst du mit „English“ zur englischen Fassung auf kammzeit.com, dort mit „Deutsch“ zurück. Preise und Funktionen sind auf beiden Seiten gleich. Die Rechtstexte auf kammzeit.com sind Übersetzungen, maßgeblich ist die deutsche Fassung.</p>
+    <p>Die Zeitzone deines Salons stellst du unabhängig von der Sprache in den <a href="/hilfe/buchungsregeln#zeitzone">Buchungsregeln</a> ein.</p>
+
+    <p class="hilfe-weiter"><a href="/hilfe/pro-und-kuendigen">Weiter: Pro und Kündigen</a></p>
   </article>
   {{template "hilfe-nav" .}}
 </div>
@@ -760,7 +1130,7 @@ Termin online buchen
           <tr><th scope="row">Server, Updates, Sicherungen</th><td>machen wir</td><td>machst du</td></tr>
           <tr><th scope="row">Adresse</th><td>salonname.kammzeit.de</td><td>deine Domain, z. B. termine.dein-salon.de</td></tr>
           <tr><th scope="row">Mailversand</th><td>über unsere Mailserver</td><td>über deinen SMTP-Zugang</td></tr>
-          <tr><th scope="row">Mitarbeiter</th><td>Gratis 1, Pro unbegrenzt</td><td>unbegrenzt, ohne Kammzeit-Hinweis</td></tr>
+          <tr><th scope="row">Mitarbeiter und Pro-Funktionen</th><td>Gratis 1 Mitarbeiter, mit Pro unbegrenzt plus Mitarbeiter-Logins, Warteschlange, Titelbild, Design und Galerie</td><td>alles inklusive, ohne Kammzeit-Hinweis</td></tr>
           <tr><th scope="row">Kosten</th><td>Gratis oder Pro ab 14,90 € im Monat</td><td>keine Lizenzkosten, nur dein Server</td></tr>
           <tr><th scope="row">Rechtliches</th><td>Auftragsverarbeitungsvertrag mit uns</td><td>du bist selbst verantwortlich, mit eigenen Rechtstexten</td></tr>
           <tr><th scope="row">Hilfe</th><td>per Mail an kontakt@kammzeit.de</td><td>Issues auf GitHub, ohne Zusage</td></tr>
@@ -858,7 +1228,7 @@ termine.dein-salon.de {
     <div><dt>Anmeldung</dt><dd>Einmal-Link per E-Mail statt Passwort.</dd></div>
     <div><dt>Verbindung</dt><dd>Durchgehend per TLS verschlüsselt.</dd></div>
     <div><dt>Sicherungen</dt><dd>Regelmäßig, höchstens 30 Tage aufbewahrt.</dd></div>
-    <div><dt>Tracking</dt><dd>Keins. Keine Analyse-Dienste, keine Inhalte von Drittanbietern.</dd></div>
+    <div><dt>Tracking</dt><dd>Keins. Keine Analyse-Dienste, keine Inhalte von Drittanbietern, nur technisch nötige Cookies.</dd></div>
   </dl>
 
   <div class="hilfe-layout hilfe-layout-sicherheit">
@@ -874,12 +1244,23 @@ termine.dein-salon.de {
       <h2 id="trennung">Mandantentrennung</h2>
       <p>Alle Salons liegen in einer gemeinsamen Datenbank, getrennt wird in der Anwendung: Jeder Datensatz gehört genau einem Salon, und jede Abfrage im Dashboard ist auf den angemeldeten Salon beschränkt. Ein Salon-Konto sieht nur die eigenen Daten. Jede Buchungsseite hat eine eigene Subdomain. Das Programm läuft als eigener, eingeschränkter Systembenutzer, der nur in sein Datenverzeichnis schreiben darf.</p>
 
-      <h2 id="anmeldung">Anmeldung</h2>
+      <h2 id="rollen">Rollen im Salon</h2>
+      <p>Mit Pro kann die Inhaberin oder der Inhaber Mitarbeitern eigene Logins geben. Jeder Login hat eine eigene E-Mail-Adresse und meldet sich selbst per Link an. Geteilte Zugänge braucht es nicht.</p>
+      <ul>
+        <li>Mitarbeiter sehen Kalender, Kunden mit Notizen und die Warteschlange und pflegen ihre eigenen Arbeitszeiten.</li>
+        <li>Keinen Zugriff haben sie auf Abo, Einstellungen, Leistungen und Team, auf den Datenexport, den CSV-Export der Kunden, das Löschen von Kunden und das Löschen des Kontos. Das prüft der Server bei jeder Anfrage, nicht nur das Menü.</li>
+        <li>Entfernt die Inhaberin einen Zugang, sind alle Anmeldungen dieses Logins sofort beendet. Ist ein Mitarbeiter inaktiv oder endet Pro, kann sich der Login nicht mehr anmelden.</li>
+      </ul>
+      <p>Wie das im Dashboard geht, steht unter <a href="/hilfe/mitarbeiter-logins">Mitarbeiter einladen</a>.</p>
+
+      <h2 id="anmeldung">Anmeldung und Cookies</h2>
       <ul>
         <li>Kein Passwort: Zum Anmelden schicken wir einen Link an deine E-Mail-Adresse. Er gilt 15 Minuten und nur einmal.</li>
         <li>Links und Sitzungskennungen speichern wir nur als SHA-256-Hashwert, nicht im Klartext.</li>
-        <li>Das Sitzungs-Cookie <code>kz_session</code> ist für Skripte nicht lesbar (HttpOnly), geht nur über verschlüsselte Verbindungen (Secure), gilt nur für kammzeit.de, läuft nach 30 Tagen ab und ist beim Abmelden sofort ungültig.</li>
-        <li>Änderungen im Dashboard gehen nur über Formulare, deren Herkunft geprüft wird. Eine Content-Security-Policy verhindert, dass fremde Skripte nachgeladen werden. Anmeldung und Buchung sind gegen massenhafte Anfragen begrenzt.</li>
+        <li>Das Sitzungs-Cookie <code>kz_session</code> ist für Skripte nicht lesbar (HttpOnly), geht nur über verschlüsselte Verbindungen (Secure), gilt nur für die Seite, auf der du dich angemeldet hast, läuft nach 30 Tagen ab und ist beim Abmelden sofort ungültig.</li>
+        <li>Das Cookie <code>kz_queue</code> setzt die <a href="/hilfe/warteschlange">Warteschlange</a> auf dem Handy eines Kunden, der sich anstellt. Es merkt sich nur seinen Platz von heute, gilt nur für die Warteschlange des Salons, ist für Skripte nicht lesbar und läuft nach 12 Stunden ab.</li>
+        <li>Weitere Cookies setzt Kammzeit nicht, auch keine für Statistik oder Werbung.</li>
+        <li>Änderungen im Dashboard gehen nur über Formulare, deren Herkunft geprüft wird. Eine Content-Security-Policy verhindert, dass fremde Skripte nachgeladen werden. Anmeldung, Buchung, Warteschlange und Uploads sind gegen massenhafte Anfragen begrenzt.</li>
       </ul>
       <div class="hilfe-hinweis">
         <p><b>Dein Teil:</b> Wer dein E-Mail-Postfach öffnen kann, kann sich anmelden. Schütz es mit einem sicheren Passwort und am besten mit Zwei-Faktor-Anmeldung, meld dich auf fremden Geräten ab und sag uns sofort Bescheid, wenn dir etwas komisch vorkommt.</p>
@@ -888,13 +1269,21 @@ termine.dein-salon.de {
       <h2 id="verschluesselung">Verschlüsselung</h2>
       <p>Alle Verbindungen zur Website, zu den Buchungsseiten und zum Dashboard sind per TLS verschlüsselt, die Server administrieren wir über SSH. Notizen in der Kundenkartei verschlüsselt Kammzeit nicht zusätzlich. Gesundheitsdaten wie Allergien gehören nur mit ausdrücklicher Einwilligung in die Kartei, siehe <a href="/hilfe/kundenkartei#notizen">Kundenkartei</a>.</p>
 
+      <h2 id="app">App und Gerätespeicher</h2>
+      <p>Das Dashboard lässt sich als App installieren, siehe <a href="/hilfe/app-installieren">App installieren</a>. Der Service Worker der App speichert auf dem Gerät nur feste Dateien wie Stylesheet, Schrift, Bilder und die Offline-Seite. Seiten mit Terminen, Kunden, Anmeldung oder Sitzung lädt er immer aus dem Netz und legt sie nie im Gerätespeicher ab. Auf einem Tresen-PC oder geteilten Tablet bleiben so keine Kundendaten liegen.</p>
+      <p>Im Speicher des Browsers merkt sich Kammzeit nur zwei Kleinigkeiten: dass du den Hinweis zum Installieren geschlossen hast und dass du die Tour durchs Dashboard schon gesehen hast. Darin stehen keine personenbezogenen Inhalte.</p>
+
+      <h2 id="bilder">Hochgeladene Bilder</h2>
+      <p>Logo, Titelbild und Fotos der Galerie nehmen wir nur als PNG, JPEG oder WebP an, kein SVG, weil darin Skripte stecken können. Jedes Bild wird geprüft, verkleinert und neu gespeichert. Dabei fallen alle Metadaten weg: Kameradaten, Aufnahmezeit und GPS-Standort aus den EXIF-Daten. Die Bilder liegen in der Datenbank, gehören wie alle Daten genau einem Salon, werden mit ihr gesichert und beim Löschen des Kontos mit entfernt. Sie sind auf deiner Buchungsseite öffentlich zu sehen, lade also nur hoch, was dort stehen soll.</p>
+
       <h2 id="sicherungen">Sicherungen und Löschung</h2>
-      <p>Die Datenbank wird regelmäßig auf Systemen von InstantNode in der EU gesichert, jede Sicherung höchstens 30 Tage aufbewahrt. Löschst du dein Konto, entfernen wir sofort alle Daten deines Salons: Kundenkartei, Termine, Mitarbeiter, Leistungen, Anmeldelinks und Sitzungen. Aus den Sicherungen verschwinden sie spätestens 30 Tage später. Abgelaufene Sitzungen löschen wir automatisch.</p>
+      <p>Die Datenbank wird regelmäßig auf Systemen von InstantNode in der EU gesichert, jede Sicherung höchstens 30 Tage aufbewahrt. Löschst du dein Konto, entfernen wir sofort alle Daten deines Salons: Kundenkartei, Termine, Mitarbeiter und ihre Logins, Leistungen, Bilder, Anmeldelinks und Sitzungen. Aus den Sicherungen verschwinden sie spätestens 30 Tage später. Abgelaufene Sitzungen löschen wir automatisch, Einträge der Warteschlange am Folgetag.</p>
 
       <h2 id="kontrolle">Deine Kontrolle</h2>
       <ul>
         <li>Alle Daten jederzeit als Datei: <a href="/hilfe/daten-export-und-loeschen">Export und Löschen</a>.</li>
         <li>Kunden einsehen, ändern, als CSV exportieren und löschen, zum Beispiel wenn ein Kunde Auskunft oder Löschung verlangt: <a href="/hilfe/kundenkartei">Kundenkartei</a>.</li>
+        <li>Zugänge von Mitarbeitern jederzeit entfernen: <a href="/hilfe/mitarbeiter-logins#entfernen">Mitarbeiter einladen</a>.</li>
         <li>Konto endgültig löschen, jederzeit im Dashboard.</li>
       </ul>
 
@@ -921,8 +1310,11 @@ termine.dein-salon.de {
         <li><a href="#standort">Wo die Daten liegen</a></li>
         <li><a href="#zugriff">Wer Zugriff hat</a></li>
         <li><a href="#trennung">Mandantentrennung</a></li>
-        <li><a href="#anmeldung">Anmeldung</a></li>
+        <li><a href="#rollen">Rollen im Salon</a></li>
+        <li><a href="#anmeldung">Anmeldung und Cookies</a></li>
         <li><a href="#verschluesselung">Verschlüsselung</a></li>
+        <li><a href="#app">App und Gerätespeicher</a></li>
+        <li><a href="#bilder">Hochgeladene Bilder</a></li>
         <li><a href="#sicherungen">Sicherungen und Löschung</a></li>
         <li><a href="#kontrolle">Deine Kontrolle</a></li>
         <li><a href="#avv">Auftragsverarbeitung</a></li>
@@ -957,6 +1349,7 @@ termine.dein-salon.de {
       <ul>
         <li><a href="#allgemein">Allgemein</a></li>
         <li><a href="#preise">Preise</a></li>
+        <li><a href="#salon">Im Salon</a></li>
         <li><a href="#kunden">Kunden</a></li>
         <li><a href="#daten">Daten</a></li>
         <li><a href="#technik">Technik</a></li>
@@ -970,11 +1363,13 @@ termine.dein-salon.de {
           <details><summary>Was ist Kammzeit?</summary>
             <p>Online-Terminbuchung für Friseure, Barbershops, Kosmetik- und Nagelstudios. Deine Kunden buchen auf deiner eigenen Buchungsseite, etwa salonname.kammzeit.de, und du siehst alles im Kalender im Dashboard, zusammen mit den Terminen, die du selbst einträgst.</p></details>
           <details><summary>Für welche Salons passt Kammzeit?</summary>
-            <p>Für Salons mit festen Leistungen und Arbeitszeiten, vom Ein-Personen-Studio bis zum Team. Nicht passend ist es, wenn du Räume, Kabinen oder Geräte mit einplanen musst oder mehrere Standorte in einem Konto führen willst. Das kann Kammzeit nicht. Für jeden Standort bräuchtest du ein eigenes Konto mit eigener E-Mail-Adresse.</p></details>
+            <p>Für Salons mit festen Leistungen und Arbeitszeiten, vom Ein-Personen-Studio bis zum Team, mit oder ohne Laufkundschaft. Nicht passend ist es, wenn du Räume, Kabinen oder Geräte mit einplanen musst oder mehrere Standorte in einem Konto führen willst. Das kann Kammzeit nicht. Für jeden Standort bräuchtest du ein eigenes Konto mit eigener E-Mail-Adresse.</p></details>
           <details><summary>Brauche ich oder brauchen meine Kunden eine App?</summary>
-            <p>Nein. Kammzeit läuft im Browser, auf dem Handy wie am Rechner. Deine Kunden buchen ohne App und ohne Kundenkonto.</p></details>
+            <p>Deine Kunden nicht: Sie buchen im Browser, ohne App und ohne Kundenkonto. Für dich läuft das Dashboard ebenfalls im Browser und lässt sich zusätzlich auf Handy, Tablet oder Computer wie eine App installieren, ohne App Store. <a href="/hilfe/app-installieren">App installieren</a></p></details>
+          <details><summary>Welche Sprachen gibt es?</summary>
+            <p>Deutsch und Englisch. Ein Konto gilt für beide Seiten: Das Dashboard ist auf kammzeit.de deutsch und auf kammzeit.com englisch. Die Sprache deiner Buchungsseite wählst du in den Einstellungen unter „Sprache der Buchungsseite“. In dieser Sprache buchen deine Kunden und bekommen ihre Mails. <a href="/hilfe/sprache">Sprache und kammzeit.com</a></p></details>
           <details><summary>Kann ich Kammzeit vorher ansehen?</summary>
-            <p>Ja. Im <a href="https://demo.kammzeit.de">Demo-Salon</a> siehst du die Buchungsseite so, wie deine Kunden sie sehen. Oder du legst gratis einen eigenen Salon an und schaust dir das Dashboard an, ohne Zahlungsdaten.</p></details>
+            <p>Ja. Im <a href="https://demo.kammzeit.de">Demo-Salon</a> siehst du die Buchungsseite so, wie deine Kunden sie sehen. Oder du legst gratis einen eigenen Salon an und schaust dir das Dashboard an, ohne Zahlungsdaten. Eine kurze Tour zeigt dir beim ersten Login, wo du was findest.</p></details>
         </div>
       </section>
 
@@ -983,26 +1378,41 @@ termine.dein-salon.de {
         <h2 id="f2">Was es kostet</h2>
         <div class="faq">
           <details><summary>Was kostet Kammzeit?</summary>
-            <p>Gratis mit einem aktiven Mitarbeiter und dem Hinweis „Online-Termine mit Kammzeit“ auf der Buchungsseite. Pro kostet 14,90 € im Monat oder 149 € im Jahr, mit beliebig vielen Mitarbeitern und ohne Hinweis. Das sind Endpreise, als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p></details>
+            <p>Gratis mit einem aktiven Mitarbeiter und dem Hinweis „Online-Termine mit Kammzeit“ auf der Buchungsseite. Pro kostet 14,90 € im Monat oder 149 € im Jahr: beliebig viele Mitarbeiter, eigene Logins fürs Team, Warteschlange für Laufkundschaft, Titelbild, Design und Fotogalerie, ohne Hinweis. Das sind Endpreise, als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer. <a href="/hilfe/pro-und-kuendigen">Gratis und Pro im Vergleich</a></p></details>
           <details><summary>Gibt es Kosten pro Buchung oder für Mails?</summary>
             <p>Nein. Keine Gebühr pro Buchung, keine Kosten für Bestätigungen und Erinnerungen, keine Einrichtungsgebühr.</p></details>
           <details><summary>Ist der Gratis-Plan zeitlich begrenzt?</summary>
             <p>Nein, er läuft unbefristet und ohne Zahlungsdaten. Du kannst ihn jederzeit beenden, indem du dein Konto löschst. Laut <a href="/agb">AGB</a> können auch wir ihn kündigen, mit vier Wochen Frist.</p></details>
           <details><summary>Wie kündige ich Pro?</summary>
-            <p>Im Dashboard unter Pro, „Abo verwalten / kündigen“. Pro läuft bis zum Ende des bezahlten Zeitraums, danach geht dein Konto in den Gratis-Plan über, deine Daten bleiben. <a href="/hilfe/pro-und-kuendigen">Anleitung</a></p></details>
+            <p>Im Dashboard unter Abo, „Abo verwalten / kündigen“. Pro läuft bis zum Ende des bezahlten Zeitraums, danach geht dein Konto in den Gratis-Plan über. Deine Daten bleiben, Mitarbeiter-Logins sind pausiert, Titelbild, Design und Galerie ausgeblendet. <a href="/hilfe/pro-und-kuendigen">Anleitung</a></p></details>
         </div>
       </section>
 
-      <section class="hilfe-faq-gruppe" id="kunden" aria-labelledby="f3">
-        <p class="section-num"><span>03</span> / Kunden</p>
-        <h2 id="f3">Für deine Kunden</h2>
+      <section class="hilfe-faq-gruppe" id="salon" aria-labelledby="f3">
+        <p class="section-num"><span>03</span> / Im Salon</p>
+        <h2 id="f3">Team, Laufkundschaft, Gestaltung</h2>
+        <div class="faq">
+          <details><summary>Bekommen meine Mitarbeiter eigene Logins?</summary>
+            <p>Ja, mit Pro. Du lädst sie unter Team mit ihrer E-Mail-Adresse ein, sie melden sich wie du per Link an, ohne Passwort. <a href="/hilfe/mitarbeiter-logins">Mitarbeiter einladen</a></p></details>
+          <details><summary>Was sehen Mitarbeiter mit eigenem Login?</summary>
+            <p>Kalender, Kunden mit Notizen und die Warteschlange. Sie tragen Termine ein, verschieben und sagen ab und pflegen ihre eigenen Arbeitszeiten unter „Meine Zeiten“. Abo, Einstellungen, Leistungen, Team, Export und das Löschen von Kunden bleiben bei dir.</p></details>
+          <details><summary>Gibt es eine Warteschlange für Kunden ohne Termin?</summary>
+            <p>Ja, mit Pro. Kunden scannen einen QR-Code im Laden, tragen ihren Vornamen ein und sehen auf dem Handy, wann sie dran sind. Wer eine Mail-Adresse angibt, bekommt eine Mail, wenn er aufgerufen wird. Ein Bildschirm im Laden kann die Nummern zeigen. <a href="/hilfe/warteschlange">Warteschlange</a></p></details>
+          <details><summary>Kann ich die Buchungsseite mit meinem Logo gestalten?</summary>
+            <p>Ja. Logo, Akzentfarbe, Social-Links und Öffnungszeiten gibt es für alle. Mit Pro kommen Titelbild, Schrift, runde Ecken, ein dunkles Design, ein Begrüßungstext und eine Fotogalerie mit bis zu 12 Bildern dazu. <a href="/hilfe/buchungsseite-gestalten">Buchungsseite gestalten</a></p></details>
+        </div>
+      </section>
+
+      <section class="hilfe-faq-gruppe" id="kunden" aria-labelledby="f4">
+        <p class="section-num"><span>04</span> / Kunden</p>
+        <h2 id="f4">Für deine Kunden</h2>
         <div class="faq">
           <details><summary>Brauchen meine Kunden ein Konto?</summary>
             <p>Nein. Sie geben beim Buchen Name und E-Mail-Adresse an, die Telefonnummer ist freiwillig.</p></details>
           <details><summary>Welche Mails bekommen meine Kunden?</summary>
-            <p>Eine Bestätigung mit Kalendereintrag und Absage-Link, eine Erinnerung 24 Stunden vor dem Termin und, wenn sie absagen, eine Bestätigung der Absage. Du bekommst eine Mail bei jeder neuen Buchung und jeder Absage.</p></details>
+            <p>Eine Bestätigung mit Kalendereintrag und Absage-Link, eine Erinnerung 24 Stunden vor dem Termin, eine Mail mit der neuen Zeit, wenn du verschiebst und das anhakst, und bei einer Absage eine Bestätigung. Alles in der Sprache deiner Buchungsseite. Du bekommst eine Mail bei jeder neuen Buchung und jeder Absage.</p></details>
           <details><summary>Können Kunden selbst absagen oder verschieben?</summary>
-            <p>Absagen ja, über den Link in ihrer Mail, bis zu der Frist, die du einstellst. Verschieben heißt absagen und neu buchen. <a href="/hilfe/absagen-und-no-shows">Mehr zu Absagen</a></p></details>
+            <p>Absagen ja, über den Link in ihrer Mail, bis zu der Frist, die du einstellst. Zum Verschieben sagen sie ab und buchen neu. Du selbst kannst jeden Termin im Dashboard verschieben. <a href="/hilfe/absagen-und-no-shows">Mehr zu Absagen</a></p></details>
           <details><summary>Gibt es SMS-Erinnerungen?</summary>
             <p>Nein, Kammzeit erinnert nur per E-Mail.</p></details>
           <details><summary>Können Kunden online anzahlen oder bezahlen?</summary>
@@ -1012,9 +1422,9 @@ termine.dein-salon.de {
         </div>
       </section>
 
-      <section class="hilfe-faq-gruppe" id="daten" aria-labelledby="f4">
-        <p class="section-num"><span>04</span> / Daten</p>
-        <h2 id="f4">Deine Daten</h2>
+      <section class="hilfe-faq-gruppe" id="daten" aria-labelledby="f5">
+        <p class="section-num"><span>05</span> / Daten</p>
+        <h2 id="f5">Deine Daten</h2>
         <div class="faq">
           <details><summary>Wo liegen die Daten?</summary>
             <p>Auf eigenen Servern in einem Rechenzentrum in Eygelshoven in den Niederlanden, also in der EU. Es werden keine Daten in Länder außerhalb der EU übermittelt. <a href="/sicherheit">Daten und Sicherheit</a></p></details>
@@ -1024,23 +1434,27 @@ termine.dein-salon.de {
             <p>Ja, jederzeit: alle Daten als JSON-Datei in den Einstellungen, die Kundenkartei zusätzlich als CSV für Excel. <a href="/hilfe/daten-export-und-loeschen">Anleitung</a></p></details>
           <details><summary>Was passiert mit den Daten, wenn ich aufhöre?</summary>
             <p>Löschst du dein Konto, sind die Daten sofort aus dem laufenden Betrieb entfernt und spätestens 30 Tage später auch aus den Sicherungen. Kündigst du nur Pro, bleibt alles im Gratis-Plan erhalten.</p></details>
+          <details><summary>Schickt ihr mir Newsletter oder Werbung?</summary>
+            <p>Nur, wenn du die Kammzeit-News bestellst: freiwillig, mit Bestätigung per Mail und jederzeit abbestellbar über den Link in jeder Mail oder in den Einstellungen. Darin geht es nur um Kammzeit, nie um Werbung für andere. Mails zu deinem Konto, etwa Login-Links und Buchungen, bekommst du unabhängig davon. <a href="/hilfe/daten-export-und-loeschen#news">Kammzeit-News</a></p></details>
+          <details><summary>Werden Fotos mit Standortdaten veröffentlicht?</summary>
+            <p>Nein. Beim Hochladen von Logo, Titelbild und Galerie-Fotos entfernt Kammzeit alle Metadaten, auch Kameradaten und GPS-Standort. <a href="/sicherheit#bilder">Mehr dazu</a></p></details>
           <details><summary>Darf ich Allergien oder Unverträglichkeiten notieren?</summary>
             <p>Das sind Gesundheitsdaten nach Art. 9 DSGVO. Notier sie nur mit ausdrücklicher Einwilligung der Person. Kammzeit verschlüsselt Notizen nicht zusätzlich. <a href="/hilfe/kundenkartei#notizen">Mehr dazu</a></p></details>
         </div>
       </section>
 
-      <section class="hilfe-faq-gruppe" id="technik" aria-labelledby="f5">
-        <p class="section-num"><span>05</span> / Technik</p>
-        <h2 id="f5">Technik und Selbsthosten</h2>
+      <section class="hilfe-faq-gruppe" id="technik" aria-labelledby="f6">
+        <p class="section-num"><span>06</span> / Technik</p>
+        <h2 id="f6">Technik und Selbsthosten</h2>
         <div class="faq">
           <details><summary>Kann ich eine eigene Domain verwenden?</summary>
-            <p>Bei kammzeit.de noch nicht, das ist geplant. Bis dahin hat deine Buchungsseite die Adresse salonname.kammzeit.de. Wenn du Kammzeit selbst hostest, geht jede Domain.</p></details>
+            <p>Bei kammzeit.de noch nicht, das ist geplant. Bis dahin hat deine Buchungsseite die Adresse salonname.kammzeit.de, auf Englisch salonname.kammzeit.com. Wenn du Kammzeit selbst hostest, geht jede Domain.</p></details>
           <details><summary>Gibt es eine Verbindung zu Google Kalender?</summary>
             <p>Noch nicht, ein Abgleich mit Google Kalender ist geplant. Deine Kunden bekommen mit jeder Buchung einen Kalendereintrag für ihr Handy.</p></details>
-          <details><summary>Bekommen meine Mitarbeiter eigene Logins?</summary>
-            <p>Nein. Es gibt einen Login pro Salon, per Link an eine E-Mail-Adresse. Wer Zugriff auf dieses Postfach hat, kommt ins Dashboard.</p></details>
+          <details><summary>Funktioniert Kammzeit ohne Internet?</summary>
+            <p>Nein. Termine und Kunden werden nicht auf dem Gerät gespeichert, deshalb zeigt die App ohne Verbindung nur einen Hinweis und lädt neu, sobald du wieder online bist.</p></details>
           <details><summary>Kann ich Kammzeit selbst hosten?</summary>
-            <p>Ja. Der Code steht unter der AGPL-3.0, du brauchst einen Linux-Server, eine Domain und einen SMTP-Zugang. <a href="/open-source">Open Source und Selbsthosten</a></p></details>
+            <p>Ja. Der Code steht unter der AGPL-3.0, du brauchst einen Linux-Server, eine Domain und einen SMTP-Zugang. Selbst gehostet sind alle Pro-Funktionen dabei. <a href="/open-source">Open Source und Selbsthosten</a></p></details>
         </div>
       </section>
     </div>

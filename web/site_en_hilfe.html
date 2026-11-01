@@ -1,8 +1,9 @@
 {{/* Help centre (/help, /help/<slug>), Open source, Data and security, FAQ for kammzeit.com (English).
      Registration: site_en_hilfe.go. Styling: web/static/site-hilfe.css (shared with the German pages).
      Menu items, field names and button labels follow the glossary in the i18n contract and the English
-     dashboard. If a label changes there, update it here. No dashboard screenshots: the existing ones
-     under img/shots show the German interface. */}}
+     dashboard (i18n_*.go). If a label changes there, update it here. No dashboard screenshots: the
+     existing ones under img/shots show the German interface. Order of the guides (next links, sidebar,
+     /help) as in site_en_hilfe.go. */}}
 
 {{/* ===== Shared parts ===== */}}
 
@@ -14,6 +15,7 @@
     <li><a href="/help/services"{{if eq .Path "/help/services"}} aria-current="page"{{end}}>Services</a></li>
     <li><a href="/help/working-hours"{{if eq .Path "/help/working-hours"}} aria-current="page"{{end}}>Team and working hours</a></li>
     <li><a href="/help/booking-rules"{{if eq .Path "/help/booking-rules"}} aria-current="page"{{end}}>Booking rules</a></li>
+    <li><a href="/help/customise-booking-page"{{if eq .Path "/help/customise-booking-page"}} aria-current="page"{{end}}>Customise your booking page</a></li>
     <li><a href="/help/share-link"{{if eq .Path "/help/share-link"}} aria-current="page"{{end}}>Share your booking link</a></li>
   </ul>
   <p class="hilfe-aside-gruppe">02 / Day to day</p>
@@ -21,8 +23,15 @@
     <li><a href="/help/add-appointments"{{if eq .Path "/help/add-appointments"}} aria-current="page"{{end}}>Add appointments</a></li>
     <li><a href="/help/customer-records"{{if eq .Path "/help/customer-records"}} aria-current="page"{{end}}>Customer records</a></li>
     <li><a href="/help/cancellations-and-no-shows"{{if eq .Path "/help/cancellations-and-no-shows"}} aria-current="page"{{end}}>Cancellations and no-shows</a></li>
+    <li><a href="/help/queue"{{if eq .Path "/help/queue"}} aria-current="page"{{end}}>Queue</a></li>
   </ul>
-  <p class="hilfe-aside-gruppe">03 / Account and plan</p>
+  <p class="hilfe-aside-gruppe">03 / Team, app, language</p>
+  <ul>
+    <li><a href="/help/staff-logins"{{if eq .Path "/help/staff-logins"}} aria-current="page"{{end}}>Invite your staff</a></li>
+    <li><a href="/help/install-app"{{if eq .Path "/help/install-app"}} aria-current="page"{{end}}>Install the app</a></li>
+    <li><a href="/help/language"{{if eq .Path "/help/language"}} aria-current="page"{{end}}>Language and kammzeit.de</a></li>
+  </ul>
+  <p class="hilfe-aside-gruppe">04 / Account and plan</p>
   <ul>
     <li><a href="/help/pro-and-cancelling"{{if eq .Path "/help/pro-and-cancelling"}} aria-current="page"{{end}}>Pro and cancelling</a></li>
     <li><a href="/help/export-and-delete"{{if eq .Path "/help/export-and-delete"}} aria-current="page"{{end}}>Export and delete</a></li>
@@ -63,7 +72,7 @@
     </span>
     <span class="hilfe-start-knopf">Let's go <img src="/static/img/icons/pfeil-rechts.svg" width="24" height="24" alt=""></span>
   </a>
-  <p class="hilfe-tour" style="margin: 1rem 0 0">Already signed up? Kammi shows you around the dashboard in two minutes: <a href="/dashboard?tour=1">Start the dashboard tour</a></p>
+  <p class="hilfe-tour" style="margin: 1rem 0 0">Already signed up? Kammi shows you around the dashboard in two minutes. The tour starts by itself the first time you log in, and you can restart it at any time with the question mark at the top of the dashboard or right here: <a href="/dashboard?tour=1">Start the dashboard tour</a></p>
 </div>
 
 <section class="section hilfe-gruppe" id="set-up">
@@ -73,7 +82,8 @@
       <li><a class="hilfe-karte" href="/help/getting-started"><img src="/static/img/icons/start.svg" width="48" height="48" alt=""><b>Getting started</b><span>Sign up, log in with the link, set up in about ten minutes.</span></a></li>
       <li><a class="hilfe-karte" href="/help/services"><img src="/static/img/icons/schere.svg" width="48" height="48" alt=""><b>Services</b><span>Duration, price, description, order, deactivating.</span></a></li>
       <li><a class="hilfe-karte" href="/help/working-hours"><img src="/static/img/icons/team.svg" width="48" height="48" alt=""><b>Team and working hours</b><span>Staff, breaks with two blocks, holidays.</span></a></li>
-      <li><a class="hilfe-karte" href="/help/booking-rules"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><b>Booking rules</b><span>Minimum notice, cancellation deadline, booking window.</span></a></li>
+      <li><a class="hilfe-karte" href="/help/booking-rules"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><b>Booking rules</b><span>Minimum notice, cancellation deadline, booking window, time zone.</span></a></li>
+      <li><a class="hilfe-karte" href="/help/customise-booking-page"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><b>Customise your booking page</b><span>Logo, social links, opening hours. With Pro: cover image, design and gallery.</span></a></li>
       <li><a class="hilfe-karte" href="/help/share-link"><img src="/static/img/icons/link.svg" width="48" height="48" alt=""><b>Share your booking link</b><span>Instagram, Google, WhatsApp, a button for your website.</span></a></li>
     </ul>
   </div>
@@ -81,28 +91,40 @@
 
 <section class="section section-alt hilfe-gruppe" id="day-to-day">
   <div class="wrap">
-    <div class="section-head"><p class="section-num"><span>02</span> / Day to day</p><h2>Appointments, customers, cancellations</h2></div>
+    <div class="section-head"><p class="section-num"><span>02</span> / Day to day</p><h2>Appointments, customers, cancellations, walk-ins</h2></div>
     <ul class="hilfe-karten">
       <li><a class="hilfe-karte" href="/help/add-appointments"><img src="/static/img/icons/telefon.svg" width="48" height="48" alt=""><b>Add appointments</b><span>Phone bookings into the calendar, rescheduling, no double bookings.</span></a></li>
       <li><a class="hilfe-karte" href="/help/customer-records"><img src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><b>Customer records</b><span>Notes such as colour formulas, history, CSV export.</span></a></li>
       <li><a class="hilfe-karte" href="/help/cancellations-and-no-shows"><img src="/static/img/icons/absage.svg" width="48" height="48" alt=""><b>Cancellations and no-shows</b><span>Cancelling by link, reminders, no-shows.</span></a></li>
+      <li><a class="hilfe-karte" href="/help/queue"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><b>Queue</b><span>Walk-ins join the queue with a QR code. With Pro.</span></a></li>
     </ul>
   </div>
 </section>
 
-<section class="section hilfe-gruppe" id="account">
+<section class="section hilfe-gruppe" id="team-and-app">
   <div class="wrap">
-    <div class="section-head"><p class="section-num"><span>03</span> / Account and plan</p><h2>Plan, export, deletion</h2></div>
+    <div class="section-head"><p class="section-num"><span>03</span> / Team, app, language</p><h2>With your team, on your phone, in two languages</h2></div>
+    <ul class="hilfe-karten">
+      <li><a class="hilfe-karte" href="/help/staff-logins"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><b>Invite your staff</b><span>Their own logins, who sees what, My hours. With Pro.</span></a></li>
+      <li><a class="hilfe-karte" href="/help/install-app"><img src="/static/img/icons/handy.svg" width="48" height="48" alt=""><b>Install the app</b><span>Your dashboard on iPhone, Android or computer, no app store.</span></a></li>
+      <li><a class="hilfe-karte" href="/help/language"><img src="/static/img/icons/eu.svg" width="48" height="48" alt=""><b>Language and kammzeit.de</b><span>Booking page in English or German, one account for both sites.</span></a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt hilfe-gruppe" id="account">
+  <div class="wrap">
+    <div class="section-head"><p class="section-num"><span>04</span> / Account and plan</p><h2>Plan, export, deletion</h2></div>
     <ul class="hilfe-karten">
       <li><a class="hilfe-karte" href="/help/pro-and-cancelling"><img src="/static/img/icons/pro.svg" width="48" height="48" alt=""><b>Pro and cancelling</b><span>Upgrading, invoices, customer portal, cancelling.</span></a></li>
-      <li><a class="hilfe-karte" href="/help/export-and-delete"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""><b>Export and delete</b><span>All your data as a file, deleting your account for good.</span></a></li>
+      <li><a class="hilfe-karte" href="/help/export-and-delete"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""><b>Export, news, delete</b><span>All your data as a file, unsubscribing from Kammzeit news, deleting your account.</span></a></li>
     </ul>
   </div>
 </section>
 
 <section class="section hilfe-gruppe" id="more">
   <div class="wrap">
-    <div class="section-head"><p class="section-num"><span>04</span> / More</p><h2>Background</h2></div>
+    <div class="section-head"><p class="section-num"><span>05</span> / More</p><h2>Background</h2></div>
     <ul class="hilfe-karten hilfe-karten-mehr">
       <li><a class="hilfe-karte" href="/faq"><img src="/static/img/icons/hilfe.svg" width="48" height="48" alt=""><b>FAQ</b><span>Prices, customers, data and technology, answered briefly.</span></a></li>
       <li><a class="hilfe-karte" href="/security"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><b>Data and security</b><span>Where the data is stored, who has access, how it is deleted.</span></a></li>
@@ -131,24 +153,24 @@
   <article class="prose hilfe-artikel">
     <h2 id="create">1. Create your salon</h2>
     <ol class="hilfe-schritte">
-      <li>Open the <a href="/registrieren">sign-up page</a>, for example with the <b class="ui">Start for free</b> button on this website.</li>
+      <li>Open the <a href="/signup">sign-up page</a>, for example with the <b class="ui">Start for free</b> button on this website.</li>
       <li>Under <b class="ui">Salon name</b>, enter the name as it should appear on your booking page.</li>
       <li>Below it, Kammzeit suggests an address for your booking page, for example <code>salon-example.kammzeit.com</code>. You can use a-z, 0-9 and hyphens, 3 to 40 characters. Next to the field you can see whether the address is still available. It cannot be changed later.</li>
       <li>Under <b class="ui">Your first name</b>, enter your name. Customers book with you under this name. You can add more staff later.</li>
       <li>Under <b class="ui">Email</b>, enter the address you want to log in with. There is no password.</li>
-      <li>Tick the box to confirm that you are signing up the salon as a business and accept the <a href="/terms">terms</a> and the <a href="/dpa">data processing agreement</a>. Then click <b class="ui">Create salon</b>.</li>
+      <li>Tick the box to confirm that you are signing up the salon as a business and accept the <a href="/terms">terms</a> and the <a href="/dpa">data processing agreement</a>. The box for Kammzeit news below it is optional. Then click <b class="ui">Create salon</b>.</li>
     </ol>
 
     <h2 id="log-in">2. Log in with the link</h2>
     <p>You will see “Almost done”, and we send an email with your login link to the address you entered.</p>
     <ol class="hilfe-schritte">
       <li>Open the link on the device you want to use Kammzeit on. It is valid for 15 minutes and works only once.</li>
-      <li>Click <b class="ui">Log in now</b>. You are now in your dashboard, in the <b class="ui">Calendar</b>.</li>
+      <li>Click <b class="ui">Log in now</b>. You are now in your dashboard, in the <b class="ui">Calendar</b>. The first time, Kammi shows you around in a short tour.</li>
     </ol>
-    <p>No email? Check your spam folder. On the <a href="/login">login page</a> you can request a new link at any time.</p>
+    <p>No email? Check your spam folder. On the <a href="/login">login page</a> you can request a new link at any time. If you ticked Kammzeit news, a second email asks you to confirm. We only send news once you have confirmed.</p>
     <h3>Logging in again later</h3>
     <p>Open the <a href="/login">login page</a>, enter your <b class="ui">Email</b>, click <b class="ui">Send login link</b>, open the link in the email and click <b class="ui">Log in now</b>. You stay logged in on that device for 30 days. <b class="ui">Log out</b> is at the top right of the dashboard.</p>
-    <p>A login belongs to exactly one salon. Staff members do not get their own logins.</p>
+    <p>Your login belongs to exactly one salon. With Pro you can give your team their own logins, see <a href="/help/staff-logins">Invite your staff</a>.</p>
 
     <h2 id="example">3. What is already there</h2>
     <p>So you don't start from scratch, Kammzeit sets up a starting point when you sign up:</p>
@@ -165,8 +187,7 @@
       <li><b class="ui">Team</b>: open your staff member, check the working hours and the services they offer. Breaks go into the second block. See <a href="/help/working-hours">Team and working hours</a>.</li>
       <li><b class="ui">Settings</b>, Salon section: phone, address, website, the link to your salon's legal notice (imprint) and a few lines about your salon. All of this appears on your booking page.</li>
       <li>In the same section, check the <b class="ui">Email for booking notifications</b>. New bookings and cancellations are sent there. It is prefilled with your login address.</li>
-      <li>Choose the <b class="ui">Booking page language</b>: English or German. Your booking page and the emails to your customers use this language.</li>
-      <li>Appearance section: the <b class="ui">Accent colour</b> for buttons and highlights on your booking page.</li>
+      <li>Appearance section: your <b class="ui">Logo</b>, the <b class="ui">Accent colour</b> for buttons and highlights and the <b class="ui">Booking page language</b> (English or Deutsch). Your booking page and the emails to your customers use this language. See <a href="/help/customise-booking-page">Customise your booking page</a>.</li>
       <li>Booking rules section: how short-notice customers may book and cancel. The defaults are a minimum notice of 1 hour, cancellation up to the start of the appointment and a booking window of 60 days. See <a href="/help/booking-rules">Booking rules</a>.</li>
     </ol>
     <p>Finish each page with <b class="ui">Save</b>. A confirmation then appears at the top.</p>
@@ -182,7 +203,7 @@
     <p>Now your customers just need to find the page: in your Instagram bio, your Google Business Profile, your WhatsApp status or as a button on your website. <a href="/help/share-link">Share your booking link</a> explains how.</p>
 
     <div class="hilfe-hinweis">
-      <p><b>Free and Pro:</b> On the Free plan, one staff member can be active, and a small Kammzeit notice appears at the bottom of your booking page. Pro gives you unlimited staff and no notice. See <a href="/help/pro-and-cancelling">Pro and cancelling</a>.</p>
+      <p><b>Free and Pro:</b> On the Free plan, one staff member can be active, and a small Kammzeit notice appears at the bottom of your booking page. Pro gives you unlimited staff, logins for your team, the queue for walk-ins, a cover image, design options and a photo gallery, and no notice. See <a href="/help/pro-and-cancelling">Pro and cancelling</a>.</p>
     </div>
 
     <p class="hilfe-weiter"><a href="/help/services">Next: Services</a></p>
@@ -288,7 +309,7 @@
 
     <h2 id="several">More than one staff member</h2>
     <p>On the Free plan, one staff member can be active. If you add or activate a second one, the dashboard tells you that the Free plan allows only one active staff member and offers <b class="ui">Upgrade to Pro</b>. Inactive staff members don't count. With <a href="/help/pro-and-cancelling">Pro</a> you can have as many as you like.</p>
-    <p>Staff members don't have their own login. The dashboard has one login per salon.</p>
+    <p>With Pro, each staff member can also get their own dashboard login and then keep their working hours up to date under <b class="ui">My hours</b>. See <a href="/help/staff-logins">Invite your staff</a>.</p>
 
     <h2 id="holidays">Holidays and days off</h2>
     <p>Kammzeit does not yet have a feature for absences such as holidays or sick leave. Here is how to manage in the meantime:</p>
@@ -343,9 +364,9 @@
     <p>This is how far into the future your booking page shows free times. A short window (14 or 30 days) keeps you flexible if your hours change often. A long one (90 or 180 days) suits regulars who like to book their next appointment straight away.</p>
 
     <h2 id="time-zone">Time zone</h2>
-    <p>Also in the Booking rules section: the time zone of your salon. All times on your booking page, in emails and in the calendar are shown in this time zone. Choose the one your salon is in.</p>
+    <p>Also in the Booking rules section: the time zone of your salon. All times on your booking page, in emails and in the calendar are shown in this time zone. You can choose any EU country or Switzerland, so just pick the country your salon is in.</p>
 
-    <p class="hilfe-weiter"><a href="/help/share-link">Next: Share your booking link</a></p>
+    <p class="hilfe-weiter"><a href="/help/customise-booking-page">Next: Customise your booking page</a></p>
   </article>
   {{template "enhelp-nav" .}}
 </div>
@@ -368,6 +389,7 @@
   <article class="prose hilfe-artikel">
     <h2 id="address">Find your address</h2>
     <p>Open <b class="ui">Settings</b> in the menu. Right at the top, under “Your booking page”, you will find the address, for example <code>https://salon-example.kammzeit.com</code>. Click <b class="ui">Copy link</b> to copy it. Or click <b class="ui">Booking page</b> at the top right of the dashboard and copy the address from your browser's address bar.</p>
+    <p>If your booking page is set to German, its address ends in <code>.kammzeit.de</code>. The <code>.kammzeit.com</code> address keeps working too, see <a href="/help/language">Language and kammzeit.de</a>.</p>
     <p>Your own domain, such as <code>bookings.your-salon.com</code>, is not available on kammzeit.com yet. It is planned. If you <a href="/open-source">host Kammzeit yourself</a>, you can already use any domain.</p>
 
     <h2 id="instagram">Instagram</h2>
@@ -404,7 +426,7 @@ Book online
     <h2 id="more">More places</h2>
     <ul>
       <li>Your email signature and your Facebook page (the “Website” field).</li>
-      <li>Appointment cards, business cards and your shop window: the address is short enough to type. For the window, a QR code with the address works well. Any QR code generator can make one.</li>
+      <li>Appointment cards, business cards and your shop window: the address is short enough to type. For the window, a QR code with the address works well. Any QR code generator can make one. For walk-ins, Pro comes with a separate QR code for joining the queue, see <a href="/help/queue">Queue</a>.</li>
       <li>Your voicemail greeting: “You can also book online at …”</li>
     </ul>
     <p class="note">Instagram, Google and WhatsApp rename their menus from time to time. If in doubt, look for “Link” or “Website”.</p>
@@ -513,7 +535,7 @@ Book online
 
     <h2 id="csv">CSV export</h2>
     <p>Under <b class="ui">Customers</b>, below the list, click <b class="ui">Download all customers as a CSV file</b>. You get a file with name, email, phone, notes, the date the customer was added and the number of visits. It is saved in UTF-8 with semicolons between the columns, so accents and special characters come out right. If everything ends up in one column in Excel, import it via Data › From Text/CSV and choose the semicolon as the delimiter. LibreOffice and Numbers ask for the delimiter when opening.</p>
-    <p>The file contains your customers' personal data. Don't leave it on a computer that others use, and delete it when you no longer need it.</p>
+    <p>The file contains your customers' personal data. Don't leave it on a computer that others use, and delete it when you no longer need it. Only the salon owner can export and delete customers, not a <a href="/help/staff-logins">staff login</a>.</p>
 
     <h2 id="delete">Changing or deleting a customer</h2>
     <p>Change contact details with <b class="ui">Edit contact details and notes</b>. To delete a customer, click <b class="ui">Delete customer</b> at the bottom of the customer card, then <b class="ui">Delete permanently</b>. This removes the contact details, notes and all appointments of this customer, including upcoming ones. The customer is not notified. This is how you fulfil a customer's request to have their data erased, for example.</p>
@@ -574,7 +596,7 @@ Book online
       <li>Kammzeit cannot take deposits or charge cancellation fees yet. Deposits are planned.</li>
     </ul>
 
-    <p class="hilfe-weiter"><a href="/help/pro-and-cancelling">Next: Pro and cancelling</a></p>
+    <p class="hilfe-weiter"><a href="/help/queue">Next: Queue</a></p>
   </article>
   {{template "enhelp-nav" .}}
 </div>
@@ -588,7 +610,7 @@ Book online
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#account">Account and plan</a></li><li aria-current="page">Pro and cancelling</li></ol></nav>
       <h1>Pro and cancelling</h1>
-      <p class="lead">Free is enough for one staff member. Pro is for teams and for anyone who doesn't want the Kammzeit notice on their booking page.</p>
+      <p class="lead">Free is enough for one staff member. Pro is for teams, for salons with walk-ins and for anyone who wants their booking page without the Kammzeit notice and with their own design.</p>
     </div>
     <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/pro.svg" width="48" height="48" alt=""></span></div>
   </div>
@@ -601,12 +623,16 @@ Book online
         <thead><tr><th scope="col"><span class="vh">Feature</span></th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead>
         <tbody>
           <tr><th scope="row">Active staff members</th><td>1</td><td>unlimited</td></tr>
+          <tr><th scope="row">Logins for your staff</th><td>no</td><td>yes</td></tr>
+          <tr><th scope="row">Queue for walk-in customers</th><td>no</td><td>yes</td></tr>
+          <tr><th scope="row">Logo, social links, opening hours on your booking page</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Cover image, design and photo gallery</th><td>no</td><td>yes</td></tr>
           <tr><th scope="row">Kammzeit notice at the bottom of your booking page</th><td>yes</td><td>no</td></tr>
           <tr><th scope="row">Price</th><td>€0</td><td>€14.90 per month or €149 per year</td></tr>
         </tbody>
       </table>
     </div>
-    <p>Everything else is the same on both plans: booking page, calendar, customer records, reminders and export. All prices are final prices. No VAT is charged (German small business scheme, § 19 UStG). For business customers in other EU countries the reverse charge procedure may apply.</p>
+    <p>Everything else is the same on both plans: booking page, calendar, customer records, reminders, app and export. All prices are final prices. No VAT is charged (German small business scheme, § 19 UStG). For business customers in other EU countries the reverse charge procedure may apply.</p>
 
     <h2 id="upgrade">Switching to Pro</h2>
     <ol class="hilfe-schritte">
@@ -621,7 +647,16 @@ Book online
       <li>Open <b class="ui">Plan</b> in the menu and click <b class="ui">Manage / cancel plan</b>.</li>
       <li>In Stripe's customer portal you can change your payment method, download invoices or cancel.</li>
     </ol>
-    <p>Cancelling takes effect at the end of the period you have already paid for, that is the current month or year. Pro stays active until then. After that, your account continues on the Free plan. Your data stays, and the limits of the Free plan apply again.</p>
+    <p>Cancelling takes effect at the end of the period you have already paid for, that is the current month or year. Pro stays active until then. After that, your account continues on the Free plan. Your data stays, and the limits of the Free plan apply again. Only the salon owner can manage the plan.</p>
+
+    <h2 id="after-pro">What happens when Pro ends</h2>
+    <p>Nothing is deleted. Some things just rest until you upgrade again:</p>
+    <ul>
+      <li><b>Staff logins</b> are paused. Anyone trying to log in sees that their access is paused. The logins stay saved and work again as soon as you have Pro. See <a href="/help/staff-logins#without-pro">Invite your staff</a>.</li>
+      <li>The <b>queue</b> can no longer be used. The menu item then shows what Pro offers.</li>
+      <li>The <b>cover image, design and photo gallery</b> are hidden on your booking page, which goes back to the standard design. Logo, social links and opening hours stay.</li>
+      <li>Only one active staff member can be booked online, and the Kammzeit notice appears at the bottom of your booking page again.</li>
+    </ul>
 
     <h2 id="leave">Stopping completely</h2>
     <p>If you don't want to use Kammzeit at all any more, cancel your plan first and then delete your account. <a href="/help/export-and-delete">Export and delete</a> explains how.</p>
@@ -641,7 +676,7 @@ Book online
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#account">Account and plan</a></li><li aria-current="page">Export and delete</li></ol></nav>
       <h1>Export your data and delete your account</h1>
-      <p class="lead">You can take your data with you at any time. And when you leave, we delete it.</p>
+      <p class="lead">You can take your data with you and unsubscribe from Kammzeit news at any time. And when you leave, we delete everything.</p>
     </div>
     <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""></span></div>
   </div>
@@ -653,13 +688,21 @@ Book online
       <li>Open <b class="ui">Settings</b> in the menu and scroll down to the Your data section.</li>
       <li>Click <b class="ui">Export data</b>. You get a file called <code>kammzeit-your-address.json</code>.</li>
     </ol>
-    <p>It contains your salon settings, team, services, who offers which service, working hours, your customer records with notes and all appointments with status and appointment note. It does not contain the cancellation links of the appointments or payment details, which are kept by Stripe.</p>
-    <p>JSON is an open text format that other software can read. A text editor is enough to look at it. For a spreadsheet of your customers, the <a href="/help/customer-records#csv">CSV export of your customer records</a> is more practical.</p>
+    <p>It contains your salon settings, team, services, who offers which service, working hours, your customer records with notes, all appointments with status and appointment note, and the list of your uploaded images with their address. It does not contain the cancellation links of the appointments or payment details, which are kept by Stripe.</p>
+    <p>JSON is an open text format that other software can read. A text editor is enough to look at it. For a spreadsheet of your customers, the <a href="/help/customer-records#csv">CSV export of your customer records</a> is more practical. Only the salon owner can export.</p>
+
+    <h2 id="news">Kammzeit news by email</h2>
+    <p>Now and then we send news about Kammzeit, such as new features. Only Kammzeit, no ads for anyone else, and only if you ask for it:</p>
+    <ul>
+      <li><b>Subscribe:</b> tick the optional box when you sign up, or later go to <b class="ui">Settings</b>, section Kammzeit news by email, and click <b class="ui">Subscribe</b>. You get an email with a link to confirm. Only then does the section show Subscribed. If no email arrived, click <b class="ui">Resend email</b>.</li>
+      <li><b>Unsubscribe:</b> with the link in every news email or in Settings with <b class="ui">Unsubscribe</b>. This works at any time and straight away.</li>
+    </ul>
+    <p>Emails that belong to your account, such as login links, new bookings, cancellations and your plan, reach you regardless of the news.</p>
 
     <h2 id="delete">Delete your account</h2>
     <ol class="hilfe-schritte">
       <li>Open <b class="ui">Settings</b> in the menu and click <b class="ui">Delete account</b> at the bottom.</li>
-      <li>Read the notes. Your booking page, team, services, working hours, customer records, all appointments and your login will be deleted.</li>
+      <li>Read the notes. Your booking page, team, services, working hours, customer records, all appointments, images, your login and your staff's logins will be deleted.</li>
       <li>To confirm, type the address of your salon, that is the part before <code>.kammzeit.com</code>.</li>
       <li>Click <b class="ui">Delete permanently</b>.</li>
     </ol>
@@ -680,6 +723,319 @@ Book online
     <p>To delete individual customers, use their customer card, see <a href="/help/customer-records#delete">Customer records</a>. How we handle data is described under <a href="/security">Data and security</a>.</p>
 
     <p class="hilfe-weiter"><a href="/help">Back to the overview</a></p>
+  </article>
+  {{template "enhelp-nav" .}}
+</div>
+{{template "enhelp-contact"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "enhelp-customise-booking-page"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#set-up">Set up</a></li><li aria-current="page">Customise your booking page</li></ol></nav>
+      <h1>Customise your booking page</h1>
+      <p class="lead">Logo, social links and opening hours are available to everyone. Pro adds a cover image, your own font, rounded corners, a dark design, a welcome message and a photo gallery.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <p>You will find everything under <b class="ui">Settings</b> in the menu, which only the salon owner can see. In the Appearance section, the <b class="ui">Preview of your booking page</b> shows every change straight away. Nothing is saved until you click <b class="ui">Save</b> at the bottom.</p>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead><tr><th scope="col"><span class="vh">Feature</span></th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Logo</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Accent colour</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Social links</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Opening hours</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Cover image</th><td>no</td><td>yes</td></tr>
+          <tr><th scope="row">Font, corners, light or dark, welcome message</th><td>no</td><td>yes</td></tr>
+          <tr><th scope="row">Photo gallery with up to 12 photos</th><td>no</td><td>yes</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="logo">Logo</h2>
+    <ol class="hilfe-schritte">
+      <li>Open <b class="ui">Settings</b>, go to the Appearance section and choose a file for the <b class="ui">Logo</b>.</li>
+      <li>PNG, JPG or WebP up to 5 MB work, ideally with a transparent background. We don't accept SVG files.</li>
+      <li>Click <b class="ui">Save</b>.</li>
+    </ol>
+    <p>We resize the logo to at most 512 pixels and remove camera and location data. It appears on your booking page, in the emails to your customers and at the top of the dashboard next to your salon's name. To remove it, tick <b class="ui">Remove logo</b> and save.</p>
+    <p>The same section holds the <b class="ui">Accent colour</b> for buttons and highlights and the <b class="ui">Booking page language</b>, see <a href="/help/language">Language and kammzeit.de</a>.</p>
+
+    <h2 id="social">Social links</h2>
+    <p>In the Social links section, add where else people can find you. The links appear as buttons on your booking page, and empty fields are left out.</p>
+    <ul>
+      <li><b class="ui">Instagram</b> and <b class="ui">TikTok</b>: your name, such as <code>@yoursalon</code>, or the link to your profile.</li>
+      <li><b class="ui">Facebook</b>: the name or link of your Facebook page.</li>
+      <li><b class="ui">Google Maps</b>: the link to your listing, where customers can also see your reviews. In Google Maps: Share, then Copy link.</li>
+      <li><b class="ui">WhatsApp</b>: your number with country code, for example <code>+34 612 345 678</code>. Customers can then message you directly.</li>
+    </ul>
+
+    <h2 id="opening-hours">Opening hours</h2>
+    <p>Below the social links you will find <b class="ui">Show opening hours on the booking page</b>. It is ticked from the start. Kammzeit combines the working hours of all active staff for each day of the week. So you don't enter separate opening hours: change them through the working hours under <a href="/help/working-hours">Team</a>.</p>
+
+    <h2 id="pro">Cover image and design (Pro)</h2>
+    <p>Further down in the Appearance section is the area <b class="ui">Cover image, design and gallery</b>. Without Pro it is locked and shows <b class="ui">Upgrade to Pro</b>.</p>
+    <ul>
+      <li><b class="ui">Cover image</b>: a wide photo, for example the inside of your salon. It is shown at the top of your booking page, cropped a little narrower on phones. Remove it with <b class="ui">Remove cover image</b>.</li>
+      <li><b class="ui">Font</b>: Simple, Modern or Classic.</li>
+      <li><b class="ui">Corners</b>: Square or Rounded, for buttons and boxes.</li>
+      <li><b class="ui">Light or dark</b>: Light or Dark as the basic look of the page.</li>
+      <li><b class="ui">Welcome message</b>: highlighted at the top of your booking page, for example a welcome or a current notice such as “We're on holiday from 1 to 14 August”. Up to 300 characters.</li>
+    </ul>
+
+    <h2 id="gallery">Photo gallery (Pro)</h2>
+    <ol class="hilfe-schritte">
+      <li>In the area Cover image, design and gallery, click <b class="ui">Manage photo gallery</b>. Next to it you can see how many of the 12 places are taken.</li>
+      <li>Under <b class="ui">Add photos</b>, choose one or more photos: JPG, PNG or WebP, up to 5 MB each and 20 MB in total. Then click <b class="ui">Upload</b>.</li>
+      <li>Give each photo a short <b class="ui">Description</b>, for example “honey blonde balayage”, and click <b class="ui">Save</b>. It helps people who can't see images, and search engines.</li>
+      <li>Change the order with <b class="ui">Move forward</b> and <b class="ui">Move back</b>, and remove a photo with <b class="ui">Delete</b>.</li>
+    </ol>
+    <p>On your booking page, the photos appear as squares below the booking form. We remove camera and location data when you upload.</p>
+    <div class="hilfe-hinweis">
+      <p><b>Photos of customers:</b> only show customers with their consent, and only use photos you took yourself or are allowed to use. Everything in the gallery is publicly visible on your booking page.</p>
+    </div>
+
+    <h2 id="without-pro">When Pro ends</h2>
+    <p>Nothing is deleted. The cover image, design and gallery are just hidden, and your booking page shows the standard design. If you upgrade again, everything is back as before. You can still describe, reorder and delete gallery photos without Pro. Logo, social links and opening hours stay in any case.</p>
+
+    <p class="hilfe-weiter"><a href="/help/share-link">Next: Share your booking link</a></p>
+  </article>
+  {{template "enhelp-nav" .}}
+</div>
+{{template "enhelp-contact"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "enhelp-queue"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#day-to-day">Day to day</a></li><li aria-current="page">Queue</li></ol></nav>
+      <h1>A queue for walk-in customers</h1>
+      <p class="lead">Walk-ins scan a QR code, enter their first name and see on their phone when it's their turn. You call them with one click. The queue comes with Pro.</p>
+    </div>
+    <div class="page-head-media"><img class="ill hilfe-ill" src="/static/img/ill/schritt-termin.webp" width="1200" height="900" alt="" loading="lazy"></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <h2 id="turn-on">Turn it on</h2>
+    <ol class="hilfe-schritte">
+      <li>Open <b class="ui">Queue</b> in the menu and click <b class="ui">Turn queue on</b>. The page now shows On.</li>
+      <li>If you like, add a few words under <b class="ui">Note for customers</b>. They appear above the form, for example “Please stay close by, we'll call you.” Up to 300 characters, then click <b class="ui">Save note</b>.</li>
+    </ol>
+    <p>Customers can only join while someone is working according to your <a href="/help/working-hours">working hours</a>. Outside those hours they see a notice that you are closed. While the queue is on and you are open, your booking page also shows “Dropping in without an appointment? Join the queue”.</p>
+    <p>Only the salon owner can turn the queue on or off and change the note. Staff members with their own login work the list. On the Free plan, the menu item explains what the queue can do and offers <b class="ui">Upgrade to Pro</b>.</p>
+
+    <h2 id="qr-code">Print the QR code</h2>
+    <ol class="hilfe-schritte">
+      <li>On the <b class="ui">Queue</b> page, in the box For your customers, click <b class="ui">Print QR code</b>.</li>
+      <li>A sheet opens with your salon's name, “No appointment? Join the queue online.”, the QR code, three short steps and the address to type in. Click <b class="ui">Print</b>.</li>
+      <li>Put the sheet on the door, in the window or at the front desk.</li>
+    </ol>
+    <p>The address for joining is also shown on the Queue page, for example <code>salon-example.kammzeit.com/warteschlange</code>. You can share it just like your booking link.</p>
+
+    <h2 id="screen">Screen for your salon</h2>
+    <p><b class="ui">Screen for your salon</b> opens a page in a new tab for a TV or tablet in your salon: “Now serving” in large type with the numbers that have been called, the waiting numbers below and a QR code with “Join here”. <b class="ui">Full screen</b> hides everything else. The screen updates itself every few seconds and only shows numbers, never names.</p>
+
+    <h2 id="customers">What your customers see</h2>
+    <ol class="hilfe-schritte">
+      <li>They scan the QR code, enter their <b class="ui">First name</b>, an email address and the service if they like, and tap <b class="ui">Join the queue</b>. They don't need an account.</li>
+      <li>Their phone shows their number, how many people are ahead of them and the estimated wait. The page updates by itself.</li>
+      <li>Anyone who decides not to wait taps <b class="ui">I'm not coming after all</b>.</li>
+    </ol>
+    <p>Kammzeit estimates the wait from the duration of the chosen services (20 minutes per person if none is chosen), divided by the number of staff working today.</p>
+
+    <h2 id="serve">Call, Serving, Done, Not here</h2>
+    <p>The <b class="ui">Queue</b> page lists everyone waiting today with their number, waiting time and chosen service. The list refreshes every ten seconds.</p>
+    <ul>
+      <li><b class="ui">Call</b>: it's this person's turn. Their phone says it's their turn and asks them to come to the reception, and the screen in your salon shows their number.</li>
+      <li><b class="ui">Serving</b>: the person is in the chair. You can also use it straight away without calling first.</li>
+      <li><b class="ui">Done</b>: finished, the person leaves the list.</li>
+      <li><b class="ui">Not here</b>: called but didn't turn up. Their phone asks them to check in at the reception.</li>
+      <li><b class="ui">Remove</b>: takes someone off the list without further ado.</li>
+    </ul>
+    <p>If someone asks at the counter, add them on the right under <b class="ui">Add a person</b> with their name and click <b class="ui">Add to queue</b>.</p>
+
+    <h2 id="email">An email when it's their turn</h2>
+    <p>If someone gave an email address when joining, they get an email “It's your turn” with their number as soon as you click <b class="ui">Call</b>. So they can pop out for a coffee in the meantime. In the list, these people are marked “gets an email”. The email is sent in the language of your booking page.</p>
+
+    <h2 id="data">Data</h2>
+    <p>We only need the first name and email address for today's queue. The next day, Kammzeit deletes the previous day's entries. So that customers find their place again after reloading, their phone remembers it in a cookie (<code>kz_queue</code>) for up to 12 hours. More under <a href="/security#login">Data and security</a>.</p>
+
+    <p class="hilfe-weiter"><a href="/help/staff-logins">Next: Invite your staff</a></p>
+  </article>
+  {{template "enhelp-nav" .}}
+</div>
+{{template "enhelp-contact"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "enhelp-staff-logins"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#team-and-app">Team, app, language</a></li><li aria-current="page">Invite your staff</li></ol></nav>
+      <h1>Invite your staff</h1>
+      <p class="lead">With Pro, every staff member can get their own login. Your team sees the calendar and customers, while the plan, settings, services and team stay with you.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <h2 id="roles">Two roles</h2>
+    <p>There are owners and staff. Whoever signed up the salon is the owner. Every invited login is linked to a staff member in your team.</p>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead><tr><th scope="col"><span class="vh">Area</span></th><th scope="col">Owner</th><th scope="col">Staff</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Calendar: add, reschedule and cancel appointments, mark no-shows</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">View and add customers, keep notes</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Delete customers, CSV export</th><td>yes</td><td>no</td></tr>
+          <tr><th scope="row">Work the queue</th><td>yes</td><td>yes</td></tr>
+          <tr><th scope="row">Turn the queue on and off, note for customers</th><td>yes</td><td>no</td></tr>
+          <tr><th scope="row">Working hours</th><td>everyone's, under Team</td><td>only their own, under My hours</td></tr>
+          <tr><th scope="row">Services, team, settings, data export, deleting the account, plan</th><td>yes</td><td>no</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Staff only see <b class="ui">Calendar</b>, <b class="ui">Customers</b>, <b class="ui">Queue</b> and <b class="ui">My hours</b> in the menu. Their name and “Staff member” appear at the top right. If they try to open an owner page anyway, Kammzeit tells them that only the salon owner can do this.</p>
+
+    <h2 id="invite">Invite</h2>
+    <ol class="hilfe-schritte">
+      <li>Open <b class="ui">Team</b> in the menu and click the staff member. A new staff member has to be saved first.</li>
+      <li>Below the form you will find the card <b class="ui">Dashboard login</b>. Enter the staff member's address under <b class="ui">Login email</b>.</li>
+      <li>Click <b class="ui">Send invitation</b>.</li>
+    </ol>
+    <p>Your staff member receives an invitation with a login link. The link is valid for 15 minutes. After that they simply log in on the login page, just like you. Nobody needs a password. The invitation is sent in the language of your booking page.</p>
+    <ul>
+      <li>Each email address can only belong to one Kammzeit login. So you can't use your own address, use your staff member's.</li>
+      <li>You can only invite active staff members.</li>
+      <li>If the link expired before it was used: <b class="ui">Resend invitation</b>.</li>
+    </ul>
+    <p>The team list shows the status of every staff member: no login, invited, login active or login paused. The card also shows when they last logged in.</p>
+
+    <h2 id="my-hours">My hours</h2>
+    <p>Staff keep their own working hours up to date: <b class="ui">My hours</b> in the menu, two blocks per weekday as described in <a href="/help/working-hours#breaks">Team and working hours</a>, then <b class="ui">Save</b>. They can only be booked online during these hours. They can't change anyone else's hours.</p>
+    <p>The first time they log in, Kammi gives staff a short tour too, without the owner areas.</p>
+
+    <h2 id="remove">Remove access</h2>
+    <p>Open <b class="ui">Team</b>, click the staff member and, in the Dashboard login card, click <b class="ui">Remove access</b>. All sessions of this login end immediately. The staff member stays in your team with their appointments, only the login is gone. You can invite them again later.</p>
+    <p>If you set a staff member to inactive, they can't log in either, but their access stays saved.</p>
+
+    <h2 id="without-pro">Without Pro</h2>
+    <p>Staff logins are only available on the Pro plan. When Pro ends, they are paused: anyone trying to log in is told that their access is paused. Nothing is deleted, and all logins work again as soon as you have Pro. On the Free plan, the Dashboard login card shows <b class="ui">See Pro</b> instead.</p>
+    <div class="hilfe-hinweis">
+      <p><b>Shared device at the front desk:</b> log out when you leave, so nobody carries on with your login. Everyone in the team should use their own login. That way staff don't see owner pages either.</p>
+    </div>
+
+    <p class="hilfe-weiter"><a href="/help/install-app">Next: Install the app</a></p>
+  </article>
+  {{template "enhelp-nav" .}}
+</div>
+{{template "enhelp-contact"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "enhelp-install-app"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#team-and-app">Team, app, language</a></li><li aria-current="page">Install the app</li></ol></nav>
+      <h1>Install Kammzeit as an app</h1>
+      <p class="lead">Your dashboard can be installed like an app on phones, tablets and computers. No app store, no manual updates. Your customers don't need an app, they book in the browser.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/handy.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <p>Log in in your browser first. A notice “Kammzeit as an app” then appears once at the bottom of the dashboard. <b class="ui">Close</b> hides it on that device.</p>
+
+    <h2 id="iphone">iPhone and iPad</h2>
+    <ol class="hilfe-schritte">
+      <li>Open the <a href="/login">login page</a> in Safari and log in.</li>
+      <li>Tap the Share icon (the square with the arrow pointing up).</li>
+      <li>Choose <b class="ui">Add to Home Screen</b>, then <b class="ui">Add</b>.</li>
+    </ol>
+    <p>Kammzeit now sits on your home screen with the comb icon. It opens without an address bar, just like an app.</p>
+
+    <h2 id="android">Android</h2>
+    <ol class="hilfe-schritte">
+      <li>Open Kammzeit in Chrome and log in.</li>
+      <li>Tap <b class="ui">Install app</b> in the notice at the bottom. If you closed it: open the menu with the three dots at the top right, then <b class="ui">Install app</b> or <b class="ui">Add to Home screen</b>.</li>
+      <li>Confirm. Kammzeit is then with your other apps.</li>
+    </ol>
+
+    <h2 id="computer">Computer</h2>
+    <p>In Chrome, Edge and other Chromium browsers: click <b class="ui">Install app</b> in the notice or the install icon on the right of the address bar. Kammzeit then opens in its own window and can be pinned to the taskbar. In Safari on a Mac, use <b class="ui">File</b> › <b class="ui">Add to Dock</b>. Firefox on computers can't install web apps. There you simply keep using Kammzeit in the browser, with the same features.</p>
+
+    <h2 id="shortcuts">Shortcuts</h2>
+    <p>On Android, press and hold the Kammzeit icon. On a computer, right-click the icon in the taskbar. You can then jump straight to <b class="ui">New appointment</b>, <b class="ui">Customers</b> or <b class="ui">Queue</b>.</p>
+
+    <h2 id="offline">Without internet</h2>
+    <p>Kammzeit needs a connection. If you are offline, the app shows “You are offline” and reloads by itself as soon as you are back online. Appointments and customers are not available offline, because they are never stored on the device.</p>
+
+    <h2 id="device">No customer data on the device</h2>
+    <p>The app only stores things that don't change and don't concern anyone on the device: the font, colours, images and the offline page. Pages with appointments and customers always come fresh from the server and are never kept in the device's storage. That is good for the computer at the front desk and the shared tablet. Still log out on such devices when you leave. More under <a href="/security#app">Data and security</a>.</p>
+    <p>You remove the app like any other, for example by pressing and holding the icon. That doesn't change anything in your account.</p>
+
+    <p class="hilfe-weiter"><a href="/help/language">Next: Language and kammzeit.de</a></p>
+  </article>
+  {{template "enhelp-nav" .}}
+</div>
+{{template "enhelp-contact"}}
+{{template "site-bottom" .}}{{end}}
+
+{{define "enhelp-language"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-hilfe.css">
+<section class="page-head hilfe-kopf">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/help">Help</a></li><li><a href="/help#team-and-app">Team, app, language</a></li><li aria-current="page">Language and kammzeit.de</li></ol></nav>
+      <h1>Language and kammzeit.de</h1>
+      <p class="lead">Kammzeit is available in English at kammzeit.com and in German at kammzeit.de. One account works on both, and your booking page can speak either language.</p>
+    </div>
+    <div class="page-head-media"><span class="hilfe-medaillon"><img src="/static/img/icons/eu.svg" width="48" height="48" alt=""></span></div>
+  </div>
+</section>
+<div class="wrap hilfe-layout">
+  <article class="prose hilfe-artikel">
+    <h2 id="booking-page">Booking page language</h2>
+    <ol class="hilfe-schritte">
+      <li>Open <b class="ui">Settings</b> in the menu and go to the Appearance section.</li>
+      <li>Under <b class="ui">Booking page language</b>, choose English or Deutsch and click <b class="ui">Save</b>.</li>
+    </ol>
+    <p>Your customers see the booking page, the cancellation page and the queue in this language, and they receive all emails about their appointments in it. Handy if your salon is in a city with lots of international customers, or if most of your customers speak German.</p>
+    <p>The address under “Your booking page” changes with the language: an English booking page has an address like <code>salon-example.kammzeit.com</code>, a German one <code>salon-example.kammzeit.de</code>. Both addresses work and show the same page in the language you chose, so links you have already shared keep working.</p>
+
+    <h2 id="account">One account for both sites</h2>
+    <ul>
+      <li>The dashboard is in English on kammzeit.com and in German on kammzeit.de. You use the same account with the same email address on both.</li>
+      <li>A login is only valid on the site where you logged in. If you want to use both, log in once on each.</li>
+      <li>The login link always takes you to the site where you requested it.</li>
+    </ul>
+
+    <h2 id="emails">Emails in your language</h2>
+    <ul>
+      <li><b>Emails to you</b>, such as login links and notifications about new bookings and cancellations, are sent in the language of the site where you last requested a login link.</li>
+      <li><b>Emails to your customers</b> are sent in the language of your booking page, whatever language your dashboard is in.</li>
+      <li><b>Invitations to staff</b> are sent in the language of your booking page. If a staff member later logs in through the other site, they receive their emails in that site's language.</li>
+    </ul>
+
+    <h2 id="website">The website</h2>
+    <p>At the top of every page on kammzeit.com, “Deutsch” takes you to the German version on kammzeit.de, and “English” brings you back. Prices and features are the same on both sites. The legal texts on kammzeit.com are translations; the German versions are legally binding.</p>
+    <p>The time zone of your salon is set separately from the language, in the <a href="/help/booking-rules#time-zone">booking rules</a>.</p>
+
+    <p class="hilfe-weiter"><a href="/help/pro-and-cancelling">Next: Pro and cancelling</a></p>
   </article>
   {{template "enhelp-nav" .}}
 </div>
@@ -750,7 +1106,7 @@ Book online
           <tr><th scope="row">Servers, updates, backups</th><td>we take care of them</td><td>you take care of them</td></tr>
           <tr><th scope="row">Address</th><td>your-salon.kammzeit.com</td><td>your own domain, e.g. bookings.your-salon.com</td></tr>
           <tr><th scope="row">Sending emails</th><td>through our mail servers</td><td>through your own SMTP account</td></tr>
-          <tr><th scope="row">Staff</th><td>Free 1, Pro unlimited</td><td>unlimited, without the Kammzeit notice</td></tr>
+          <tr><th scope="row">Staff and Pro features</th><td>Free 1 staff member, Pro unlimited plus staff logins, queue, cover image, design and gallery</td><td>everything included, without the Kammzeit notice</td></tr>
           <tr><th scope="row">Cost</th><td>Free, or Pro from €14.90 per month</td><td>no licence fees, just your server</td></tr>
           <tr><th scope="row">Legal</th><td>data processing agreement with us</td><td>you are responsible yourself, with your own legal texts</td></tr>
           <tr><th scope="row">Help</th><td>by email to kontakt@kammzeit.de</td><td>issues on GitHub, without any guarantee</td></tr>
@@ -782,7 +1138,7 @@ CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o kammzeit .
 bookings.your-salon.com {
 	reverse_proxy 127.0.0.1:8080
 }</code></pre>
-        <p class="hilfe-unter">All commands, updates, Docker and running many salons are covered in the full guide <a href="https://github.com/luxend0/kammzeit/blob/main/docs/selbsthosten.md">docs/selbsthosten.md</a> in the repository (currently in German).</p>
+        <p class="hilfe-unter">All commands, updates, Docker and running many salons are covered in the full guide <a href="https://github.com/luxend0/kammzeit/blob/main/docs/self-hosting.md">docs/self-hosting.md</a> in the repository.</p>
       </div>
     </div>
   </div>
@@ -816,7 +1172,7 @@ bookings.your-salon.com {
     <div>
       <h2>Rather not run it yourself?</h2>
       <p>On kammzeit.com we take care of servers, updates and backups. Start for free, no payment details needed.</p>
-      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/security">Data and security</a></p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="/security">Data and security</a></p>
     </div>
   </div>
 </section>
@@ -848,7 +1204,7 @@ bookings.your-salon.com {
     <div><dt>Login</dt><dd>A one-time link by email instead of a password.</dd></div>
     <div><dt>Connection</dt><dd>Encrypted with TLS all the way.</dd></div>
     <div><dt>Backups</dt><dd>Regular, each kept for 30 days at most.</dd></div>
-    <div><dt>Tracking</dt><dd>None. No analytics services, no third-party content.</dd></div>
+    <div><dt>Tracking</dt><dd>None. No analytics services, no third-party content, only technically necessary cookies.</dd></div>
   </dl>
 
   <div class="hilfe-layout hilfe-layout-sicherheit">
@@ -864,12 +1220,23 @@ bookings.your-salon.com {
       <h2 id="separation">Separation between salons</h2>
       <p>All salons share one database, and the separation happens in the application: every record belongs to exactly one salon, and every query in the dashboard is limited to the salon that is logged in. A salon account can only see its own data. Every booking page has its own subdomain. The program runs as a separate, restricted system user that can only write to its own data directory.</p>
 
-      <h2 id="login">Login</h2>
+      <h2 id="roles">Roles in your salon</h2>
+      <p>With Pro, the salon owner can give staff their own logins. Every login has its own email address and logs in by itself with a link. There is no need to share one login.</p>
+      <ul>
+        <li>Staff see the calendar, customers with their notes and the queue, and keep their own working hours up to date.</li>
+        <li>They have no access to the plan, settings, services and team, the data export, the CSV export of customers, deleting customers or deleting the account. The server checks this on every request, not just the menu.</li>
+        <li>When the owner removes an access, all sessions of that login end immediately. If a staff member is inactive or Pro ends, the login can no longer be used.</li>
+      </ul>
+      <p>How this works in the dashboard is described in <a href="/help/staff-logins">Invite your staff</a>.</p>
+
+      <h2 id="login">Login and cookies</h2>
       <ul>
         <li>No password: to log in, we send a link to your email address. It is valid for 15 minutes and works only once.</li>
         <li>We store login links and session IDs only as SHA-256 hashes, never in plain text.</li>
-        <li>The session cookie <code>kz_session</code> cannot be read by scripts (HttpOnly), is only sent over encrypted connections (Secure), is only valid for the domain you logged in on, expires after 30 days and becomes invalid as soon as you log out.</li>
-        <li>Changes in the dashboard are only accepted from forms whose origin is checked. A Content Security Policy prevents scripts from other sources from being loaded. Login and booking are rate-limited against mass requests.</li>
+        <li>The session cookie <code>kz_session</code> cannot be read by scripts (HttpOnly), is only sent over encrypted connections (Secure), is only valid for the site you logged in on, expires after 30 days and becomes invalid as soon as you log out.</li>
+        <li>The cookie <code>kz_queue</code> is set by the <a href="/help/queue">queue</a> on the phone of a customer who joins. It only remembers their place for today, is only valid for that salon's queue, can't be read by scripts and expires after 12 hours.</li>
+        <li>Kammzeit sets no other cookies, none for statistics or advertising either.</li>
+        <li>Changes in the dashboard are only accepted from forms whose origin is checked. A Content Security Policy prevents scripts from other sources from being loaded. Login, booking, the queue and uploads are rate-limited against mass requests.</li>
       </ul>
       <div class="hilfe-hinweis">
         <p><b>Your part:</b> anyone who can open your email inbox can log in. Protect it with a strong password and ideally two-factor authentication, log out on shared devices and tell us straight away if something seems wrong.</p>
@@ -878,13 +1245,21 @@ bookings.your-salon.com {
       <h2 id="encryption">Encryption</h2>
       <p>All connections to the website, the booking pages and the dashboard are encrypted with TLS. We administer the servers via SSH. Kammzeit does not additionally encrypt notes in your customer records. Health data such as allergies should only go into the records with explicit consent, see <a href="/help/customer-records#notes">Customer records</a>.</p>
 
+      <h2 id="app">App and device storage</h2>
+      <p>The dashboard can be installed as an app, see <a href="/help/install-app">Install the app</a>. The app's service worker only stores fixed files on the device, such as the stylesheet, font, images and the offline page. Pages with appointments, customers, login or session data are always loaded from the network and never kept in the device's storage. So no customer data is left behind on a front desk computer or a shared tablet.</p>
+      <p>In the browser's storage, Kammzeit only remembers two small things: that you closed the install notice and that you have already seen the dashboard tour. Neither contains personal content.</p>
+
+      <h2 id="images">Uploaded images</h2>
+      <p>We only accept the logo, cover image and gallery photos as PNG, JPEG or WebP, no SVG, because SVG files can contain scripts. Every image is checked, resized and saved anew. This removes all metadata: camera details, the time it was taken and the GPS location from the EXIF data. The images are stored in the database, belong to exactly one salon like all other data, are backed up with it and removed when the account is deleted. They are publicly visible on your booking page, so only upload what should be shown there.</p>
+
       <h2 id="backups">Backups and deletion</h2>
-      <p>The database is backed up regularly on InstantNode systems in the EU, and each backup is kept for 30 days at most. If you delete your account, we immediately remove all of your salon's data: customer records, appointments, staff, services, login links and sessions. It disappears from the backups no later than 30 days afterwards. Expired sessions are deleted automatically.</p>
+      <p>The database is backed up regularly on InstantNode systems in the EU, and each backup is kept for 30 days at most. If you delete your account, we immediately remove all of your salon's data: customer records, appointments, staff and their logins, services, images, login links and sessions. It disappears from the backups no later than 30 days afterwards. Expired sessions are deleted automatically, queue entries the following day.</p>
 
       <h2 id="control">Your control</h2>
       <ul>
         <li>All your data as a file at any time: <a href="/help/export-and-delete">Export and delete</a>.</li>
         <li>View, change, export (CSV) and delete customers, for example when a customer asks for access to or erasure of their data: <a href="/help/customer-records">Customer records</a>.</li>
+        <li>Remove your staff's access at any time: <a href="/help/staff-logins#remove">Invite your staff</a>.</li>
         <li>Delete your account for good, at any time, in the dashboard.</li>
       </ul>
 
@@ -911,8 +1286,11 @@ bookings.your-salon.com {
         <li><a href="#location">Where the data is stored</a></li>
         <li><a href="#access">Who has access</a></li>
         <li><a href="#separation">Separation between salons</a></li>
-        <li><a href="#login">Login</a></li>
+        <li><a href="#roles">Roles in your salon</a></li>
+        <li><a href="#login">Login and cookies</a></li>
         <li><a href="#encryption">Encryption</a></li>
+        <li><a href="#app">App and device storage</a></li>
+        <li><a href="#images">Uploaded images</a></li>
         <li><a href="#backups">Backups and deletion</a></li>
         <li><a href="#control">Your control</a></li>
         <li><a href="#processing">Data processing</a></li>
@@ -947,6 +1325,7 @@ bookings.your-salon.com {
       <ul>
         <li><a href="#general">General</a></li>
         <li><a href="#prices">Prices</a></li>
+        <li><a href="#salon">In your salon</a></li>
         <li><a href="#customers">Customers</a></li>
         <li><a href="#data">Data</a></li>
         <li><a href="#technical">Technical</a></li>
@@ -960,13 +1339,13 @@ bookings.your-salon.com {
           <details><summary>What is Kammzeit?</summary>
             <p>Online booking for hairdressers, barbershops, beauty salons and nail salons. Your customers book on your own booking page, such as your-salon.kammzeit.com, and you see everything in the calendar in your dashboard, together with the appointments you add yourself.</p></details>
           <details><summary>Which salons is Kammzeit for?</summary>
-            <p>For salons with set services and working hours, from one-person studios to teams. It is not the right fit if you need to schedule rooms, treatment cabins or equipment, or want to run several locations from one account. Kammzeit can't do that. Each location would need its own account with its own email address.</p></details>
+            <p>For salons with set services and working hours, from one-person studios to teams, with or without walk-ins. It is not the right fit if you need to schedule rooms, treatment cabins or equipment, or want to run several locations from one account. Kammzeit can't do that. Each location would need its own account with its own email address.</p></details>
           <details><summary>Do I or my customers need an app?</summary>
-            <p>No. Kammzeit runs in the browser, on phones as well as computers. Your customers book without an app and without creating an account.</p></details>
+            <p>Your customers don't: they book in the browser, without an app and without creating an account. Your dashboard runs in the browser too, and you can also install it like an app on your phone, tablet or computer, without an app store. <a href="/help/install-app">Install the app</a></p></details>
           <details><summary>Which languages does Kammzeit support?</summary>
-            <p>English and German. One account works on both sites: the dashboard is in English on kammzeit.com and in German on kammzeit.de. For your booking page, you choose the language under Booking page language in Settings. Your customers then book and receive their emails in that language.</p></details>
+            <p>English and German. One account works on both sites: the dashboard is in English on kammzeit.com and in German on kammzeit.de. For your booking page, you choose the language under Booking page language in Settings. Your customers then book and receive their emails in that language. <a href="/help/language">Language and kammzeit.de</a></p></details>
           <details><summary>Can I try Kammzeit first?</summary>
-            <p>Yes. The Free plan has no time limit and needs no payment details. Create a salon, look around the dashboard and make a test booking on your own booking page. <a href="/help/getting-started">Getting started</a></p></details>
+            <p>Yes. The <a href="https://demo-en.kammzeit.com">demo salon</a> shows the booking page as your customers see it. The Free plan has no time limit and needs no payment details: create a salon, look around the dashboard and make a test booking on your own booking page. A short tour shows you around the first time you log in. <a href="/help/getting-started">Getting started</a></p></details>
         </div>
       </section>
 
@@ -975,7 +1354,7 @@ bookings.your-salon.com {
         <h2 id="f2">What it costs</h2>
         <div class="faq">
           <details><summary>How much does Kammzeit cost?</summary>
-            <p>Free gives you one active staff member, with a small Kammzeit notice on your booking page. Pro costs €14.90 per month or €149 per year, with unlimited staff and no notice. Customers pay nothing to book.</p></details>
+            <p>Free gives you one active staff member, with a small Kammzeit notice on your booking page. Pro costs €14.90 per month or €149 per year: unlimited staff, logins for your team, a queue for walk-ins, cover image, design and photo gallery, and no notice. Customers pay nothing to book. <a href="/help/pro-and-cancelling">Free and Pro compared</a></p></details>
           <details><summary>Is VAT added?</summary>
             <p>No. All prices are final prices. No VAT is charged (German small business scheme, § 19 UStG). For business customers in other EU countries the reverse charge procedure may apply. If in doubt about how to record this in your own accounts, ask your tax adviser.</p></details>
           <details><summary>Do I get invoices?</summary>
@@ -985,20 +1364,35 @@ bookings.your-salon.com {
           <details><summary>Is the Free plan limited in time?</summary>
             <p>No, it runs indefinitely and without payment details. You can end it at any time by deleting your account. Under our <a href="/terms">terms</a>, we can also end it with four weeks' notice.</p></details>
           <details><summary>How do I cancel Pro?</summary>
-            <p>In the dashboard under Plan, Manage / cancel plan. Pro runs until the end of the period you have paid for, then your account moves to the Free plan and your data stays. <a href="/help/pro-and-cancelling">Guide</a></p></details>
+            <p>In the dashboard under Plan, Manage / cancel plan. Pro runs until the end of the period you have paid for, then your account moves to the Free plan. Your data stays, staff logins are paused, and the cover image, design and gallery are hidden. <a href="/help/pro-and-cancelling">Guide</a></p></details>
           <details><summary>Can I show my prices in another currency?</summary>
             <p>Not at the moment. Service prices are entered and shown in euros, including on your booking page.</p></details>
         </div>
       </section>
 
-      <section class="hilfe-faq-gruppe" id="customers" aria-labelledby="f3">
-        <p class="section-num"><span>03</span> / Customers</p>
-        <h2 id="f3">For your customers</h2>
+      <section class="hilfe-faq-gruppe" id="salon" aria-labelledby="f3">
+        <p class="section-num"><span>03</span> / In your salon</p>
+        <h2 id="f3">Team, walk-ins, design</h2>
+        <div class="faq">
+          <details><summary>Do my staff get their own logins?</summary>
+            <p>Yes, with Pro. You invite them under Team with their email address, and they log in with a link just like you, without a password. <a href="/help/staff-logins">Invite your staff</a></p></details>
+          <details><summary>What can staff with their own login see?</summary>
+            <p>The calendar, customers with their notes and the queue. They add, reschedule and cancel appointments and keep their own working hours up to date under My hours. The plan, settings, services, team, exports and deleting customers stay with you.</p></details>
+          <details><summary>Is there a queue for walk-in customers?</summary>
+            <p>Yes, with Pro. Customers scan a QR code in your salon, enter their first name and see on their phone when it's their turn. Anyone who leaves an email address gets an email when they are called. A screen in your salon can show the numbers. <a href="/help/queue">Queue</a></p></details>
+          <details><summary>Can I add my logo and style the booking page?</summary>
+            <p>Yes. Logo, accent colour, social links and opening hours are available to everyone. Pro adds a cover image, font, rounded corners, a dark design, a welcome message and a photo gallery with up to 12 photos. <a href="/help/customise-booking-page">Customise your booking page</a></p></details>
+        </div>
+      </section>
+
+      <section class="hilfe-faq-gruppe" id="customers" aria-labelledby="f4">
+        <p class="section-num"><span>04</span> / Customers</p>
+        <h2 id="f4">For your customers</h2>
         <div class="faq">
           <details><summary>Do my customers need an account?</summary>
             <p>No. When booking, they enter their name and email address. The phone number is optional.</p></details>
           <details><summary>Which emails do my customers receive?</summary>
-            <p>A confirmation with a calendar file and a cancellation link, a reminder 24 hours before the appointment and, if they cancel, a cancellation confirmation. You receive an email for every new booking and every cancellation.</p></details>
+            <p>A confirmation with a calendar file and a cancellation link, a reminder 24 hours before the appointment, an email with the new time if you reschedule and tick the box, and a cancellation confirmation if they cancel. All in the language of your booking page. You receive an email for every new booking and every cancellation.</p></details>
           <details><summary>Can customers cancel or reschedule themselves?</summary>
             <p>They can cancel using the link in their email, up to the deadline you set. To reschedule, they cancel and book again. You can reschedule any appointment in the dashboard. <a href="/help/cancellations-and-no-shows">More about cancellations</a></p></details>
           <details><summary>Are there text message reminders?</summary>
@@ -1010,9 +1404,9 @@ bookings.your-salon.com {
         </div>
       </section>
 
-      <section class="hilfe-faq-gruppe" id="data" aria-labelledby="f4">
-        <p class="section-num"><span>04</span> / Data</p>
-        <h2 id="f4">Your data</h2>
+      <section class="hilfe-faq-gruppe" id="data" aria-labelledby="f5">
+        <p class="section-num"><span>05</span> / Data</p>
+        <h2 id="f5">Your data</h2>
         <div class="faq">
           <details><summary>Where is the data stored?</summary>
             <p>On our own servers in a data centre in Eygelshoven in the Netherlands, so in the EU. No data is transferred to countries outside the EU. <a href="/security">Data and security</a></p></details>
@@ -1024,23 +1418,27 @@ bookings.your-salon.com {
             <p>Yes, at any time: all data as a JSON file in Settings, and your customer records as a CSV file for spreadsheets as well. <a href="/help/export-and-delete">Guide</a></p></details>
           <details><summary>What happens to the data if I stop?</summary>
             <p>If you delete your account, the data is removed from the live system immediately and from the backups no later than 30 days afterwards. If you only cancel Pro, everything stays on the Free plan.</p></details>
+          <details><summary>Do you send newsletters or advertising?</summary>
+            <p>Only if you subscribe to Kammzeit news: it is optional, confirmed by email and you can unsubscribe at any time with the link in every email or in Settings. It is only about Kammzeit, never ads for anyone else. Emails about your account, such as login links and bookings, reach you regardless. <a href="/help/export-and-delete#news">Kammzeit news</a></p></details>
+          <details><summary>Are photos published with location data?</summary>
+            <p>No. When you upload a logo, cover image or gallery photos, Kammzeit removes all metadata, including camera details and the GPS location. <a href="/security#images">More on this</a></p></details>
           <details><summary>May I note allergies or intolerances?</summary>
             <p>That is health data under Art. 9 GDPR. Only note it with the person's explicit consent. Kammzeit does not additionally encrypt notes. <a href="/help/customer-records#notes">More on this</a></p></details>
         </div>
       </section>
 
-      <section class="hilfe-faq-gruppe" id="technical" aria-labelledby="f5">
-        <p class="section-num"><span>05</span> / Technical</p>
-        <h2 id="f5">Technology and self-hosting</h2>
+      <section class="hilfe-faq-gruppe" id="technical" aria-labelledby="f6">
+        <p class="section-num"><span>06</span> / Technical</p>
+        <h2 id="f6">Technology and self-hosting</h2>
         <div class="faq">
           <details><summary>Can I use my own domain?</summary>
-            <p>Not on kammzeit.com yet, it is planned. Until then your booking page has an address like your-salon.kammzeit.com. If you host Kammzeit yourself, you can use any domain.</p></details>
+            <p>Not on kammzeit.com yet, it is planned. Until then your booking page has an address like your-salon.kammzeit.com, or your-salon.kammzeit.de in German. If you host Kammzeit yourself, you can use any domain.</p></details>
           <details><summary>Does it connect to Google Calendar?</summary>
             <p>Not yet, syncing with Google Calendar is planned. With every booking, your customers get a calendar file for their phone.</p></details>
-          <details><summary>Do my staff get their own logins?</summary>
-            <p>No. There is one login per salon, by link to one email address. Anyone with access to that inbox can get into the dashboard.</p></details>
+          <details><summary>Does Kammzeit work without internet?</summary>
+            <p>No. Appointments and customers are not stored on the device, so without a connection the app only shows a notice and reloads as soon as you are back online.</p></details>
           <details><summary>Can I host Kammzeit myself?</summary>
-            <p>Yes. The code is published under the AGPL-3.0. You need a Linux server, a domain and an SMTP account. <a href="/open-source">Open source and self-hosting</a></p></details>
+            <p>Yes. The code is published under the AGPL-3.0. You need a Linux server, a domain and an SMTP account. Self-hosted, all Pro features are included. <a href="/open-source">Open source and self-hosting</a></p></details>
         </div>
       </section>
     </div>
