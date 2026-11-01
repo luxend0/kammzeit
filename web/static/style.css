@@ -1,0 +1,47 @@
+:root {
+  --accent: #3b82f6; /* Salon überschreibt per style="--accent: ..." */
+  --fg: #111;
+  --bg: #fff;
+  --muted: #666;
+  --line: #ddd;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
+main, footer { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+footer { padding-top: 0; color: var(--muted); font-size: .875rem; }
+a { color: inherit; }
+h1 { font-size: 2.25rem; line-height: 1.1; margin: 0 0 6px; letter-spacing: -.02em; }
+.lead { margin: 0 0 8px; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+
+fieldset { border: 0; border-top: 2px solid var(--fg); margin: 28px 0 0; padding: 12px 0 0; min-width: 0; }
+legend { font-weight: 700; padding-right: 8px; }
+
+.opt { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.opt span { flex: 1; }
+.opt small { color: var(--muted); white-space: nowrap; }
+.opt input { accent-color: var(--accent); }
+
+#slots { margin-top: 12px; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; }
+.slot { position: relative; cursor: pointer; }
+.slot input { position: absolute; opacity: 0; inset: 0; }
+.slot span { display: block; text-align: center; padding: 10px 0; border: 1px solid var(--fg); font-variant-numeric: tabular-nums; }
+.slot input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; }
+.slot input:focus-visible + span { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+.field { display: block; margin: 10px 0; font-size: .875rem; font-weight: 600; }
+input[type=text], input[type=email], input[type=tel], input[type=date] {
+  display: block; width: 100%; margin-top: 4px; padding: 10px; font: inherit; font-weight: 400;
+  border: 1px solid var(--fg); border-radius: 0; background: var(--bg); color: var(--fg);
+}
+input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+button { display: block; width: 100%; margin-top: 24px; padding: 14px 20px; font: inherit; font-weight: 700;
+  color: #fff; background: var(--fg); border: 0; border-radius: 0; cursor: pointer; }
+button:hover, button:focus-visible { background: var(--accent); }
+
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 20px 0; }
+dt { color: var(--muted); }
+dd { margin: 0; font-weight: 600; }
