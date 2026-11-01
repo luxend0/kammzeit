@@ -218,22 +218,19 @@ func (a *app) reminderLoop(ctx context.Context) {
 	}
 }
 
-// sendReminders mailt einmalig 24 h vor jedem gebuchten Termin.
+// sendReminders mailt einmalig 24 h vor jedem gebuchten Termin, nur an Kunden
+// mit E-Mail-Adresse (Laufkundschaft aus dem Dashboard hat keine).
 func (a *app) sendReminders(now time.Time) {
 	type due struct {
-		id                                int64
-		start                             time.Time
-		token, cust, email, svc, stf, sal string
-		slug, tz                          string
+		id, salonID int64
+		token       string
 	}
 	rows, err := a.db.Query(`
-		SELECT a.id, a.starts_at, a.cancel_token, c.name, c.email, sv.name, st.name, sa.name, sa.slug, sa.timezone
+		SELECT a.id, a.salon_id, a.cancel_token
 		FROM appointments a
 		JOIN customers c ON c.id = a.customer_id
-		JOIN services sv ON sv.id = a.service_id
-		JOIN staff st ON st.id = a.staff_id
-		JOIN salons sa ON sa.id = a.salon_id
-		WHERE a.status = 'booked' AND a.reminder_sent_at IS NULL AND a.starts_at > ? AND a.starts_at <= ?`,
+		WHERE a.status = 'booked' AND a.reminder_sent_at IS NULL AND a.starts_at > ? AND a.starts_at <= ?
+			AND c.email IS NOT NULL AND c.email <> ''`,
 		now.Unix(), now.Add(24*time.Hour).Unix())
 	if err != nil {
 		log.Printf("Erinnerungen: %v", err)
@@ -242,19 +239,33 @@ func (a *app) sendReminders(now time.Time) {
 	var list []due
 	for rows.Next() {
 		var d due
-		var start int64
-		if err := rows.Scan(&d.id, &start, &d.token, &d.cust, &d.email, &d.svc, &d.stf, &d.sal, &d.slug, &d.tz); err != nil {
+		if err := rows.Scan(&d.id, &d.salonID, &d.token); err != nil {
 			log.Printf("Erinnerungen: %v", err)
 			continue
 		}
-		d.start = time.Unix(start, 0).In(location(d.tz))
 		list = append(list, d)
 	}
-	rows.Close() // vor den Updates, es gibt nur eine Verbindung
+	rows.Close() // vor den weiteren Queries, es gibt nur eine Verbindung
+	salons := map[int64]*salon{}
 	for _, d := range list {
-		body := fmt.Sprintf("Hallo %s,\n\nwir erinnern an deinen Termin bei %s:\n\n%s\n%s bei %s\n\nAbsagen: %s\n",
-			d.cust, d.sal, deDate(d.start), d.svc, d.stf, a.link(d.slug, "/storno/"+d.token))
-		if err := a.mail.send(d.email, "Erinnerung: dein Termin bei "+d.sal, body); err != nil {
+		s := salons[d.salonID]
+		if s == nil {
+			if s, err = a.loadSalon(d.salonID); err != nil {
+				log.Printf("Erinnerung %d: %v", d.id, err)
+				continue
+			}
+			salons[d.salonID] = s
+		}
+		b, err := a.findBooking(s, d.token)
+		if err != nil {
+			log.Printf("Erinnerung %d: %v", d.id, err)
+			continue
+		}
+		if _, err := mail.ParseAddress(b.Email); err != nil {
+			continue // von Hand eingetragene, unbrauchbare Adresse: kein Header-Einschleusen
+		}
+		body := a.customerMail(s, b, "wir erinnern dich an deinen Termin bei "+s.Name+":")
+		if err := a.mail.send(b.Email, "Erinnerung: dein Termin bei "+s.Name, body); err != nil {
 			log.Printf("Erinnerung %d: %v", d.id, err) // nächster Versuch in einer Minute
 			continue
 		}
