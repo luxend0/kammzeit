@@ -1,0 +1,216 @@
+{{/* Kalender und Termine (dash_calendar.go). Alle Namen mit Präfix "kal-". */}}
+
+{{define "kal-style"}}<style>
+.kal-stats { display: flex; flex-wrap: wrap; gap: 12px 48px; margin: 0 0 20px; }
+.kal-stats .stat a { text-decoration: none; }
+.kal-stats .stat a:hover { color: var(--accent); }
+.kal-title { margin-bottom: 4px; }
+.kal-jump { display: flex; gap: 6px; align-items: center; margin: 0; }
+.kal-jump input { width: auto; margin: 0; padding: 4px 8px; }
+.kal-toggle a { text-decoration: none; margin-right: 12px; border-bottom: 2px solid transparent; }
+.kal-toggle a[aria-current] { border-bottom-color: var(--accent); font-weight: 600; }
+.kal-scroll { overflow-x: auto; border: 1px solid var(--fg); }
+.kal-grid { display: grid; grid-template-columns: 52px repeat(var(--cols), minmax(150px, 1fr)); min-width: calc(52px + var(--cols) * 150px); }
+.kal-corner, .kal-axis { position: sticky; left: 0; z-index: 6; background: var(--bg); }
+.kal-corner, .kal-name { border-bottom: 2px solid var(--fg); }
+.kal-name { padding: 8px; font-weight: 700; border-left: 1px solid var(--line); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kal-axis span { position: absolute; right: 6px; transform: translateY(-50%); font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.kal-axis span:first-child { transform: none; }
+.kal-col { position: relative; background: #ebebeb; border-left: 1px solid var(--line); }
+.kal-work { position: absolute; left: 0; right: 0; background: var(--bg); }
+/* Stundenlinien: 72px je Stunde = kalHourPx in dash_calendar.go */
+.kal-lines { position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(#f3f3f3 1px, transparent 1px);
+  background-size: 100% 72px, 100% 36px; }
+.kal-slot { position: absolute; left: 0; right: 0; z-index: 1; padding: 1px 6px; font-size: .75rem; color: transparent; text-decoration: none; }
+.kal-slot:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.kal-appt { position: absolute; z-index: 2; overflow: hidden; padding: 2px 6px; font-size: .75rem; line-height: 1.3; text-decoration: none;
+  color: var(--fg); background: color-mix(in srgb, var(--accent) 15%, #fff); border-left: 3px solid var(--accent); box-shadow: 0 0 0 1px #fff; }
+.kal-appt:hover, .kal-appt:focus-visible { background: color-mix(in srgb, var(--accent) 28%, #fff); z-index: 4; }
+.kal-appt span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kal-appt.kal-short { white-space: nowrap; }
+.kal-appt.kal-short span { display: inline; }
+.kal-time { font-weight: 700; font-variant-numeric: tabular-nums; }
+.kal-appt.kal-cancelled { background: var(--bg); border: 1px dashed #999; color: #888; z-index: 1; }
+.kal-cancelled .kal-who { text-decoration: line-through; }
+.kal-appt.kal-noshow { background: var(--bg); border-left-color: var(--danger); }
+.kal-flag { color: var(--danger); font-weight: 600; }
+.kal-now { position: absolute; left: 0; right: 0; z-index: 5; border-top: 2px solid var(--fg); pointer-events: none; }
+.kal-row-cancelled td { color: #888; }
+.kal-row-cancelled .kal-who { text-decoration: line-through; }
+.kal-week h2 a { text-decoration: none; }
+.kal-week h2 a:hover { color: var(--accent); }
+.kal-fieldset { border: 1px solid var(--line); padding: 12px 14px 4px; margin: 0 0 14px; }
+.kal-fieldset legend { font-weight: 700; padding: 0 4px; }
+.kal-side form { margin: 0 0 16px; }
+</style>{{end}}
+
+{{define "kal-status"}}{{if eq . "cancelled"}}<span class="badge badge-muted">abgesagt</span>{{else if eq . "noshow"}}<span class="badge badge-danger">nicht erschienen</span>{{else}}<span class="badge">gebucht</span>{{end}}{{end}}
+
+{{define "kal-leer"}}<div class="card">
+  <h2>So geht es los</h2>
+  <p>Damit Termine eingetragen und online gebucht werden können, braucht dein Salon mindestens einen Mitarbeiter mit Arbeitszeiten und eine Leistung.</p>
+  <ul>
+    {{if not .HasStaff}}<li><a href="/dashboard/team">Mitarbeiter anlegen</a></li>{{end}}
+    {{if not .HasServices}}<li><a href="/dashboard/leistungen">Leistungen anlegen</a></li>{{end}}
+  </ul>
+</div>{{end}}
+
+{{define "kal-kopf"}}
+<div class="kal-stats">
+  <div><div class="muted small">Termine heute</div><div class="stat">{{.TodayCount}}</div></div>
+  <div><div class="muted small">Nächster Termin</div>
+    {{with .Next}}<div class="stat"><a href="/dashboard/termine/{{.ID}}">{{.When}}</a></div><div>{{.Customer}}</div>
+    {{else}}<div class="stat">-</div>{{end}}</div>
+</div>
+{{if not (and .HasStaff .HasServices)}}{{template "kal-leer" .}}{{end}}
+<h1 class="kal-title">{{.DayTitle}}</h1>
+<div class="toolbar">
+  <a class="btn btn-secondary btn-small" href="{{.PrevHref}}">{{if .Week}}Vorwoche{{else}}Vortag{{end}}</a>
+  <a class="btn btn-secondary btn-small" href="{{.TodayHref}}">Heute</a>
+  <a class="btn btn-secondary btn-small" href="{{.NextHref}}">{{if .Week}}Folgewoche{{else}}Folgetag{{end}}</a>
+  <form class="kal-jump" method="get" action="/dashboard">
+    {{if .Week}}<input type="hidden" name="ansicht" value="woche">{{end}}
+    <input type="date" name="tag" value="{{.Day}}" aria-label="Datum">
+    <button class="btn btn-secondary btn-small" type="submit">Zeigen</button>
+  </form>
+  <span class="kal-toggle"><a href="{{.DayHref}}"{{if not .Week}} aria-current="page"{{end}}>Tag</a><a href="{{.WeekHref}}"{{if .Week}} aria-current="page"{{end}}>Woche</a></span>
+  <span class="spacer"></span>
+  {{if and .HasStaff .HasServices}}<a class="btn btn-small" href="/dashboard/termine/neu?tag={{.Day}}">+ Termin</a>{{end}}
+</div>
+{{end}}
+
+{{define "kal-tag"}}{{template "dash-top" .}}{{template "kal-style"}}
+{{template "kal-kopf" .}}
+{{if .Cols}}
+<p class="muted small">{{.DayCount}} {{if eq .DayCount 1}}Termin{{else}}Termine{{end}}. Klick in eine freie Stelle trägt dort einen Termin ein.</p>
+<div class="kal-scroll">
+<div class="kal-grid" style="--cols: {{len .Cols}}">
+  <div class="kal-corner"></div>
+  {{range .Cols}}<div class="kal-name">{{.Name}}{{if .Inactive}} <span class="muted small">(inaktiv)</span>{{end}}</div>{{end}}
+  <div class="kal-axis" style="height: {{.HeightPx}}px">{{range .Hours}}<span style="top: {{printf "%.3f" .Top}}%">{{.Time}}</span>{{end}}</div>
+  {{range $col := .Cols}}<div class="kal-col" style="height: {{$.HeightPx}}px">
+    {{range .Work}}<div class="kal-work" style="top: {{printf "%.3f" .Top}}%; height: {{printf "%.3f" .Height}}%"></div>{{end}}
+    <div class="kal-lines"></div>
+    {{range $.Slots}}<a class="kal-slot" href="/dashboard/termine/neu?tag={{$.Day}}&amp;mitarbeiter={{$col.ID}}&amp;zeit={{.Time}}" style="top: {{printf "%.3f" .Top}}%; height: {{printf "%.3f" .Height}}%" tabindex="-1" aria-hidden="true">+ {{.Time}}</a>{{end}}
+    {{range .Appts}}<a class="kal-appt kal-{{.Status}}{{if .Short}} kal-short{{end}}" href="/dashboard/termine/{{.ID}}" title="{{.Title}}"
+      style="top: {{printf "%.3f" .Top}}%; height: {{printf "%.3f" .Height}}%; left: {{printf "%.3f" .Left}}%; width: calc({{printf "%.3f" .Width}}% - 3px)">
+      <span class="kal-time">{{.Time}}</span> <span class="kal-who">{{.Customer}}</span> <span class="muted">{{.Service}}</span>
+      {{if eq .Status "noshow"}}<span class="kal-flag">nicht erschienen</span>{{end}}</a>{{end}}
+    {{with $.NowTop}}<div class="kal-now" style="top: {{printf "%.3f" .}}%"></div>{{end}}
+  </div>{{end}}
+</div>
+</div>
+{{end}}
+{{template "dash-bottom" .}}{{end}}
+
+{{define "kal-woche"}}{{template "dash-top" .}}{{template "kal-style"}}
+{{template "kal-kopf" .}}
+<div class="kal-week">
+{{range .Days}}
+<h2><a href="{{.Href}}">{{.Label}}</a>{{if .Today}} <span class="badge badge-accent">heute</span>{{end}}</h2>
+{{if .Appts}}<div class="table-wrap"><table class="table">
+  <tbody>{{range .Appts}}<tr{{if eq .Status "cancelled"}} class="kal-row-cancelled"{{end}}>
+    <td class="nowrap"><a href="/dashboard/termine/{{.ID}}">{{.Time}}</a></td>
+    <td class="kal-who">{{.Customer}}</td><td>{{.Service}}</td><td>{{.Staff}}</td>
+    <td>{{if ne .Status "booked"}}{{template "kal-status" .Status}}{{end}}</td>
+  </tr>{{end}}</tbody>
+</table></div>{{else}}<p class="muted">Keine Termine.</p>{{end}}
+{{end}}
+</div>
+{{template "dash-bottom" .}}{{end}}
+
+{{define "kal-termin"}}{{template "dash-top" .}}{{template "kal-style"}}
+<p><a href="{{.BackHref}}">Zurück zum Kalender</a></p>
+{{with .T}}
+<div class="grid">
+<div>
+  <dl class="kv">
+    <dt>Zeit</dt><dd>{{.When}} ({{.Minutes}} Min.)</dd>
+    <dt>Leistung</dt><dd>{{.Service}}</dd>
+    <dt>Preis</dt><dd>{{euro .Price}}</dd>
+    <dt>Mitarbeiter</dt><dd>{{.Staff}}</dd>
+    <dt>Kunde</dt><dd><a href="/dashboard/kunden/{{.CustomerID}}">{{.Customer}}</a></dd>
+    <dt>E-Mail</dt><dd>{{with .Email}}<a href="mailto:{{.}}">{{.}}</a>{{else}}<span class="muted">keine</span>{{end}}</dd>
+    <dt>Telefon</dt><dd>{{if .Tel}}<a href="{{.Tel}}">{{.Phone}}</a>{{else if .Phone}}{{.Phone}}{{else}}<span class="muted">keine</span>{{end}}</dd>
+    <dt>Quelle</dt><dd>{{if eq .Source "manual"}}Manuell eingetragen{{else}}Online gebucht{{end}}</dd>
+    <dt>Status</dt><dd>{{template "kal-status" .Status}}</dd>
+    <dt>Eingetragen</dt><dd>{{.Created}}</dd>
+  </dl>
+  <p class="muted small">Der Preis ist der aktuelle Preis der Leistung.</p>
+</div>
+<div class="kal-side">
+  <form class="card" method="post" action="/dashboard/termine/{{.ID}}/notiz">
+    <h2>Interne Notiz</h2>
+    <label class="field">Nur für dich sichtbar, höchstens 1000 Zeichen
+      <textarea name="notiz" maxlength="1000">{{.Note}}</textarea></label>
+    <button class="btn btn-small" type="submit">Notiz speichern</button>
+  </form>
+  {{if eq .Status "booked"}}
+  <form class="card" method="post" action="/dashboard/termine/{{.ID}}/absagen">
+    <h2>Termin absagen</h2>
+    {{if and .Email $.Future}}<label class="check"><input type="checkbox" name="informieren" value="1" checked> Kunde per Mail informieren</label>{{end}}
+    <button class="btn btn-danger btn-small" type="submit">Absagen</button>
+  </form>
+  {{if not $.Future}}
+  <form class="card" method="post" action="/dashboard/termine/{{.ID}}/nicht-erschienen">
+    <h2>Nicht erschienen</h2>
+    <p class="small muted">Markiert den Termin als nicht wahrgenommen.</p>
+    <button class="btn btn-secondary btn-small" type="submit">Als nicht erschienen markieren</button>
+  </form>
+  {{end}}
+  {{end}}
+</div>
+</div>
+{{end}}
+{{template "dash-bottom" .}}{{end}}
+
+{{define "kal-treffer"}}{{range .Hits}}<label class="check"><input type="radio" name="kunde" value="{{.ID}}"{{if .Checked}} checked{{end}}>
+  <span><strong>{{.Name}}</strong>{{with .Contact}} <span class="muted">{{.}}</span>{{end}}</span></label>
+{{else}}{{if .Q}}<p class="muted small">Kein Kunde gefunden.</p>{{end}}{{end}}{{end}}
+
+{{define "kal-neu"}}{{template "dash-top" .}}{{template "kal-style"}}
+{{if and .HasStaff .HasServices}}
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{/* Eigenes Formular für die Suche: Enter im Suchfeld schickt so nicht den Termin ab. */}}
+<form id="kal-suche" method="get" action="/dashboard/termine/neu" hx-get="/dashboard/termine/kundensuche" hx-target="#kal-treffer"></form>
+<form class="form" method="post" action="/dashboard/termine/neu">
+  <div class="row">
+    <label class="field">Leistung
+      <select name="leistung" required>
+        <option value="">Bitte wählen</option>
+        {{range .Services}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Service}} selected{{end}}>{{.Name}} ({{.Duration}} Min., {{euro .PriceCents}})</option>{{end}}
+      </select></label>
+    <label class="field">Mitarbeiter
+      <select name="mitarbeiter" required>
+        {{range .Staff}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Staff}} selected{{end}}>{{.Name}}</option>{{end}}
+      </select></label>
+  </div>
+  <div class="row">
+    <label class="field">Datum<input type="date" name="tag" value="{{.F.Date}}" required></label>
+    <label class="field">Uhrzeit<input type="time" name="zeit" value="{{.F.Time}}" step="300" required>
+      <span class="hint">5-Minuten-Raster, auch außerhalb der Arbeitszeit.</span></label>
+  </div>
+  <fieldset class="kal-fieldset">
+    <legend>Kunde</legend>
+    <label class="field">Bestehenden Kunden suchen
+      <input type="search" name="q" value="{{.Q}}" form="kal-suche" autocomplete="off" placeholder="Name, E-Mail oder Telefon"
+        hx-get="/dashboard/termine/kundensuche" hx-trigger="input changed delay:250ms, search" hx-target="#kal-treffer"></label>
+    <div id="kal-treffer" aria-live="polite">{{template "kal-treffer" .}}</div>
+    <label class="check"><input type="radio" name="kunde" value=""{{if not .F.Customer}} checked{{end}}> Neuer Kunde</label>
+    <div class="row">
+      <label class="field">Name<input type="text" name="name" value="{{.F.Name}}" maxlength="100" autocomplete="off"></label>
+      <label class="field">E-Mail (optional)<input type="email" name="email" value="{{.F.Email}}" maxlength="200" autocomplete="off"></label>
+      <label class="field">Telefon (optional)<input type="tel" name="telefon" value="{{.F.Phone}}" maxlength="40" autocomplete="off"></label>
+    </div>
+    <p class="hint small muted">Gibt es die E-Mail-Adresse schon in deiner Kundenliste, wird dieser Kunde verwendet.</p>
+  </fieldset>
+  <label class="field">Interne Notiz (optional)<textarea name="notiz" maxlength="1000">{{.F.Note}}</textarea></label>
+  <label class="check"><input type="checkbox" name="bestaetigung" value="1"{{if .F.Confirm}} checked{{end}}> Bestätigung mit Absage-Link per Mail senden (nur mit E-Mail-Adresse)</label>
+  <div class="actions">
+    <button class="btn" type="submit">Termin eintragen</button>
+    <a href="/dashboard?tag={{.F.Date}}">Abbrechen</a>
+  </div>
+</form>
+{{else}}{{template "kal-leer" .}}{{end}}
+{{template "dash-bottom" .}}{{end}}
