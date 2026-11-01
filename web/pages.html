@@ -34,6 +34,7 @@
     </span>
   </address>
 </header>
+{{if .QueueLink}}<p class="notice">{{t .Lang "Ohne Termin vorbeikommen?"}} <a href="/warteschlange">{{t .Lang "Online anstellen"}}</a></p>{{end}}
 {{if .Services}}
 <form method="post" action="/book">
   <fieldset hx-get="/mitarbeiter" hx-trigger="change" hx-target="#staff" hx-include="[name=service],[name=staff]">

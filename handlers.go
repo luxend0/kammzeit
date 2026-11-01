@@ -75,6 +75,7 @@ func (a *app) routes() http.Handler {
 	a.routesCatalog(mux)   // dash_catalog.go: /dashboard/leistungen, /dashboard/team
 	a.routesSettings(mux)  // dash_settings.go: /dashboard/einstellungen
 	a.routesBilling(mux)   // billing.go: /dashboard/abo, /stripe/webhook
+	a.routesQueue(mux)     // queue.go: /dashboard/warteschlange, /warteschlange
 	a.routesSite(mux)      // site.go: öffentliche Seiten, sitemap.xml, robots.txt
 	a.routesPWA(mux)       // pwa.go: /manifest.webmanifest, /sw.js, /offline
 	return securityHeaders(a.langRedirect(mux))
@@ -251,6 +252,7 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 	if s.CancelNoticeMin > 0 {
 		d["CancelNotice"] = noticeFor(s.Lang, s.CancelNoticeMin)
 	}
+	d["QueueLink"] = a.queueBookingLink(s)
 	a.render(w, http.StatusOK, "book", d)
 }
 
