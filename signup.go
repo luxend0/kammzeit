@@ -1,6 +1,6 @@
 package main
 
-// Registrierung neuer Salons: /registrieren.
+// Registrierung neuer Salons: /registrieren (kammzeit.de), /signup (kammzeit.com).
 
 import (
 	"database/sql"
@@ -16,16 +16,29 @@ import (
 )
 
 func (a *app) routesSignup(mux *http.ServeMux) {
-	mux.HandleFunc("GET /registrieren", a.signupPage)
-	mux.HandleFunc("GET /registrieren/adresse", a.signupSlug)
-	mux.HandleFunc("POST /registrieren", a.signup)
+	// Dieselben Handler unter beiden Pfaden. Die Seite selbst leitet auf den Pfad
+	// der Domain-Sprache um (signupPage). ponytail: Live-Prüfung und Absenden
+	// nehmen beide Pfade an, damit ein schon offenes Formular weiter funktioniert.
+	for _, p := range []string{"/registrieren", "/signup"} {
+		mux.HandleFunc("GET "+p, a.signupPage)
+		mux.HandleFunc("GET "+p+"/adresse", a.signupSlug)
+		mux.HandleFunc("POST "+p, a.signup)
+	}
 	a.routesMarketing(mux) // marketing.go: /newsletter/...
+}
+
+// signupPath = Pfad der Registrierung in einer Sprache.
+func signupPath(lang string) string {
+	if lang == "en" {
+		return "/signup"
+	}
+	return "/registrieren"
 }
 
 // Adressen, die kein Salon bekommen darf (Technik, eigene Seiten, Verwechslung).
 var reservedSlugs = []string{"www", "mail", "smtp", "imap", "pop", "mx", "ns1", "ns2", "admin", "api", "app",
 	"dashboard", "login", "logout", "static", "assets", "cdn", "demo", "kammzeit", "hilfe", "help", "support",
-	"status", "blog", "docs", "test", "dev", "staging", "billing", "stripe", "abo", "konto", "registrieren",
+	"status", "blog", "docs", "test", "dev", "staging", "billing", "stripe", "abo", "konto", "registrieren", "signup",
 	"impressum", "datenschutz", "agb", "avv", "autoconfig", "autodiscover", "_dmarc", "mta-sts", "webmail"}
 
 // ponytail: im Speicher wie alle Limiter, zählt nur gültige Anmeldungen (die Mails auslösen).
@@ -93,7 +106,7 @@ func suggestSlug(name string) string {
 // Ersteinrichtung, solange es noch keinen Salon gibt. Antwortet sonst selbst.
 func (a *app) signupOpen(w http.ResponseWriter, r *http.Request) bool {
 	if !a.onRootHost(r) {
-		http.Redirect(w, r, a.siteURLFor(r)+"/registrieren", http.StatusFound)
+		http.Redirect(w, r, a.siteURLFor(r)+signupPath(a.langFor(r)), http.StatusFound)
 		return false
 	}
 	if a.cfg.SingleTenant {
@@ -125,10 +138,20 @@ func signupHasSalon(q querier) (bool, error) {
 	return n == 1, err
 }
 
+// signupPage zeigt das Formular. Falscher Pfad für die Domain (/signup auf
+// kammzeit.de, /registrieren auf kammzeit.com): dauerhaft auf den richtigen.
 func (a *app) signupPage(w http.ResponseWriter, r *http.Request) {
-	if a.signupOpen(w, r) {
-		a.signupForm(w, r, http.StatusOK, nil, "")
+	if !a.signupOpen(w, r) {
+		return
 	}
+	if p := signupPath(a.langFor(r)); r.URL.Path != p {
+		if r.URL.RawQuery != "" {
+			p += "?" + r.URL.RawQuery
+		}
+		http.Redirect(w, r, p, http.StatusMovedPermanently)
+		return
+	}
+	a.signupForm(w, r, http.StatusOK, nil, "")
 }
 
 // signupForm zeigt das Formular, nach einem Fehler mit den Eingaben von eben.
@@ -140,14 +163,16 @@ func (a *app) signupForm(w http.ResponseWriter, r *http.Request, status int, err
 	if a.cfg.SingleTenant {
 		title = "Ersteinrichtung"
 	}
-	d := a.authPage(r, title, "/registrieren")
-	lang := d["Lang"].(string)
+	lang := a.langFor(r)
+	path := signupPath(lang)
+	d := a.authPage(r, title, path)
+	d["SignupPath"] = path
 	if !a.cfg.SingleTenant { // steht in der Sitemap, darf in die Suche
-		d["Index"], d["Canonical"] = true, a.siteURLFor(r)+"/registrieren"
+		d["Index"], d["Canonical"] = true, a.siteURLFor(r)+path
 		d["Description"] = tr(lang, "Salon bei Kammzeit registrieren: eigene Buchungsseite, gratis für einen Mitarbeiter, ohne Zahlungsdaten.")
-		alt := []alternate{{lang, a.siteURLLang(lang) + "/registrieren"}}
+		alt := []alternate{{lang, a.siteURLLang(lang) + path}}
 		if other, otherLang := a.otherSite(lang); other != "" {
-			alt = append(alt, alternate{otherLang, other + "/registrieren"})
+			alt = append(alt, alternate{otherLang, other + signupPath(otherLang)})
 		}
 		d["Alternates"] = alt
 	}
@@ -167,7 +192,8 @@ func (a *app) signupSlug(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.URL.Query()
 	slug := strings.ToLower(strings.TrimSpace(q.Get("slug")))
-	d := map[string]any{"Domain": a.signupDomain(r), "Lang": a.langFor(r)}
+	lang := a.langFor(r)
+	d := map[string]any{"Domain": a.signupDomain(r), "Lang": lang, "SignupPath": signupPath(lang)}
 	tpl := "signup-status"
 	if q.Has("name") {
 		auto := q.Get("slug_auto")
@@ -364,7 +390,7 @@ func (a *app) signupCreate(name, first, slug, email, lang string) (userID int64,
 // signupDone: dieselbe Seite für neue und bestehende Konten. Der Hinweis auf die
 // zweite Mail (Kammzeit-News) hängt nur am Häkchen, nicht am Konto.
 func (a *app) signupDone(w http.ResponseWriter, r *http.Request, email string, mailFailed, marketing bool) {
-	d := a.authPage(r, "Fast geschafft", "/registrieren")
+	d := a.authPage(r, "Fast geschafft", signupPath(a.langFor(r)))
 	d["Email"], d["MailFailed"], d["Marketing"] = email, mailFailed, marketing
 	a.render(w, http.StatusOK, "signup-done", d)
 }

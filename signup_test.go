@@ -32,6 +32,7 @@ func TestSlugStatus(t *testing.T) {
 		"www":                   "vergeben",
 		"admin":                 "vergeben",
 		"registrieren":          "vergeben",
+		"signup":                "vergeben",
 		"autodiscover":          "vergeben",
 		"mta-sts":               "vergeben",
 		"webmail":               "vergeben",
@@ -244,8 +245,10 @@ func TestSignupSingleTenant(t *testing.T) {
 	}
 	signupCounts(t, a, map[string]int{`SELECT COUNT(*) FROM salons WHERE slug = 'salon'`: 1, // "test" ist gesperrt
 		`SELECT COUNT(*) FROM staff WHERE name = 'Chef'`: 1})
-	if rec := signupDo(h, httptest.NewRequest("GET", "/registrieren", nil)); rec.Code != http.StatusNotFound {
-		t.Errorf("zweiter Aufruf: %d", rec.Code)
+	for _, p := range []string{"/registrieren", "/signup"} {
+		if rec := signupDo(h, httptest.NewRequest("GET", p, nil)); rec.Code != http.StatusNotFound {
+			t.Errorf("zweiter Aufruf %s: %d", p, rec.Code)
+		}
 	}
 	rec = postSignup(h, url.Values{"name": {"Noch einer"}, "vorname": {"Bea"}, "email": {"b@example.com"}}, "198.51.100.2")
 	if rec.Code != http.StatusNotFound {
@@ -328,11 +331,15 @@ func TestSignupEnglish(t *testing.T) {
 	h := a.routes()
 	newsBox := regexp.MustCompile(`<input type="checkbox" name="marketing" value="1"[^>]*>`)
 	for host, want := range map[string][]string{
-		"kammzeit.test": {`<html lang="de">`, `og:locale" content="de_DE"`, "Salon anlegen", `<span>.kammzeit.test</span>`, marketingConsentDE, `href="/agb"`},
+		"kammzeit.test": {`<html lang="de">`, `og:locale" content="de_DE"`, "Salon anlegen", `<span>.kammzeit.test</span>`, marketingConsentDE, `href="/agb"`,
+			`action="/registrieren"`, `hx-get="/registrieren/adresse"`, `rel="canonical" href="https://kammzeit.test/registrieren"`,
+			`hreflang="en" href="https://kammzeit-en.test/signup"`, `og:image" content="https://kammzeit.de/static/img/og.png"`},
 		"kammzeit-en.test": {`<html lang="en">`, "Create salon", `<span>.kammzeit-en.test</span>`, template.HTMLEscapeString(tr("en", marketingConsentDE)),
-			`href="/terms"`, `href="/dpa"`, "at yoursalon.kammzeit-en.test", `og:locale" content="en_GB"`, `hreflang="de" href="https://kammzeit.test/registrieren"`},
+			`href="/terms"`, `href="/dpa"`, "at yoursalon.kammzeit-en.test", `og:locale" content="en_GB"`, `hreflang="de" href="https://kammzeit.test/registrieren"`,
+			`action="/signup"`, `hx-get="/signup/adresse"`, `rel="canonical" href="https://kammzeit-en.test/signup"`, `hreflang="en" href="https://kammzeit-en.test/signup"`,
+			`og:image" content="https://kammzeit.com/static/img/og-en.png"`},
 	} {
-		req := httptest.NewRequest("GET", "/registrieren", nil)
+		req := httptest.NewRequest("GET", signupPath(a.langFor(&http.Request{Host: host})), nil)
 		req.Host = host
 		body := signupDo(h, req).Body.String()
 		for _, w := range want {
@@ -344,20 +351,57 @@ func TestSignupEnglish(t *testing.T) {
 			t.Errorf("%s: Häkchen Kammzeit-News fehlt oder ist vorausgewählt: %q", host, box)
 		}
 	}
+	if rec := signupDo(h, httptest.NewRequest("GET", "/static/img/og-en.png", nil)); rec.Code != http.StatusOK || rec.Header().Get("Content-Type") != "image/png" {
+		t.Errorf("og-en.png: %d %s", rec.Code, rec.Header().Get("Content-Type"))
+	}
 	if tr("en", marketingConsentDE) == marketingConsentDE {
 		t.Fatal("englischer Einwilligungstext fehlt")
 	}
 
-	// Live-Prüfung englisch.
-	req := httptest.NewRequest("GET", "/registrieren/adresse?slug=a_b", nil)
+	// Englischer Pfad /signup: der jeweils andere Pfad leitet dauerhaft um (mit
+	// Query), Subdomains schicken auf die Hauptdomain ihrer Sprache.
+	for _, c := range []struct{ host, path, code, loc string }{
+		{"kammzeit-en.test", "/registrieren", "301", "/signup"},
+		{"kammzeit-en.test", "/registrieren?utm_source=x", "301", "/signup?utm_source=x"},
+		{"kammzeit.test", "/signup", "301", "/registrieren"},
+		{"salon.kammzeit-en.test", "/signup", "302", "https://kammzeit-en.test/signup"},
+		{"salon.kammzeit-en.test", "/registrieren", "302", "https://kammzeit-en.test/signup"},
+		{"salon.kammzeit.test", "/signup", "302", "https://kammzeit.test/registrieren"},
+	} {
+		req := httptest.NewRequest("GET", c.path, nil)
+		req.Host = c.host
+		rec := signupDo(h, req)
+		if fmt.Sprint(rec.Code) != c.code || rec.Header().Get("Location") != c.loc {
+			t.Errorf("%s%s: %d %q, want %s %q", c.host, c.path, rec.Code, rec.Header().Get("Location"), c.code, c.loc)
+		}
+	}
+	sitemap := func(host string) string {
+		req := httptest.NewRequest("GET", "/sitemap.xml", nil)
+		req.Host = host
+		return signupDo(h, req).Body.String()
+	}
+	if sm := sitemap("kammzeit-en.test"); !strings.Contains(sm, "<loc>https://kammzeit-en.test/signup</loc>") || strings.Contains(sm, "/registrieren") {
+		t.Errorf("sitemap.xml en: %s", sm)
+	}
+	if sm := sitemap("kammzeit.test"); !strings.Contains(sm, "<loc>https://kammzeit.test/registrieren</loc>") || strings.Contains(sm, "/signup") {
+		t.Errorf("sitemap.xml de: %s", sm)
+	}
+
+	// Live-Prüfung englisch, unter dem englischen Pfad; neuer Vorschlag behält ihn.
+	req := httptest.NewRequest("GET", "/signup/adresse?slug=a_b", nil)
 	req.Host = "kammzeit-en.test"
 	if body := signupDo(h, req).Body.String(); !strings.Contains(body, "Invalid address: only a-z") {
 		t.Errorf("Live-Prüfung en: %s", body)
 	}
+	req = httptest.NewRequest("GET", "/signup/adresse?name=Salon+Paris&slug=&slug_auto=", nil)
+	req.Host = "kammzeit-en.test"
+	if body := signupDo(h, req).Body.String(); !strings.Contains(body, `value="salon-paris"`) || !strings.Contains(body, `hx-get="/signup/adresse"`) {
+		t.Errorf("Vorschlag en: %s", body)
+	}
 
 	form := url.Values{"name": {"Salon London"}, "vorname": {"Liz"}, "slug": {"salon-london"}, "email": {"liz@example.com"}, "agb": {"1"}}
 	post := func(f url.Values, ip string) *httptest.ResponseRecorder {
-		req := httptest.NewRequest("POST", "/registrieren", strings.NewReader(f.Encode()))
+		req := httptest.NewRequest("POST", "/signup", strings.NewReader(f.Encode()))
 		req.Host = "kammzeit-en.test"
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		req.Header.Set("Origin", "https://kammzeit-en.test")
@@ -382,7 +426,8 @@ func TestSignupEnglish(t *testing.T) {
 	}
 	form.Del("agb")
 	form.Set("slug", "salon-london-2")
-	if rec := post(form, "198.51.100.62"); rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "Please confirm that you are acting as a business") {
+	if rec := post(form, "198.51.100.62"); rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "Please confirm that you are acting as a business") ||
+		!strings.Contains(rec.Body.String(), `action="/signup"`) {
 		t.Fatalf("AGB en: %d %s", rec.Code, rec.Body)
 	}
 }

@@ -119,7 +119,7 @@ func (a *app) sitemap(w http.ResponseWriter, r *http.Request) {
 	}
 	extra := []string{"/registrieren", "/impressum", "/datenschutz", "/agb", "/avv"}
 	if d.Lang == "en" {
-		extra = []string{"/registrieren"}
+		extra = []string{signupPath("en")}
 	}
 	for _, p := range extra {
 		urls = append(urls, u{base + p})

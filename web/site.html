@@ -36,7 +36,7 @@
 {{define "site-assets"}}<meta property="og:type" content="website">
 <meta property="og:locale" content="{{if and . (eq (print .Lang) "en")}}en_GB{{else}}de_DE{{end}}">
 <meta property="og:site_name" content="Kammzeit">
-<meta property="og:image" content="https://kammzeit.de/static/img/og.png">
+<meta property="og:image" content="{{if and . (eq (print .Lang) "en")}}https://kammzeit.com/static/img/og-en.png{{else}}https://kammzeit.de/static/img/og.png{{end}}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">

@@ -9,13 +9,13 @@
     <h1>{{.Heading}}</h1>
     <p class="konto-lead">{{if .Single}}{{t .Lang "Lege deinen Salon an. Danach kommst du per Link aus einer E-Mail in dein Dashboard."}}{{else}}{{t .Lang "Gratis starten, ohne Zahlungsdaten."}}{{end}}</p>
     {{with .Error}}<p class="signup-error" role="alert">{{.}}</p>{{else}}{{if .Errors}}<p class="signup-error" role="alert">{{t .Lang "Bitte die markierten Felder prüfen."}}</p>{{end}}{{end}}
-    <form class="konto-form signup-form" method="post" action="/registrieren">
+    <form class="konto-form signup-form" method="post" action="{{.SignupPath}}">
       <fieldset>
         <legend>{{t .Lang "Dein Salon"}}</legend>
         <div class="field">
           <label>{{t .Lang "Salonname"}}
             <input type="text" name="name" value="{{.Name}}" minlength="2" maxlength="80" required autocomplete="organization"{{if .Errors.name}} aria-invalid="true" aria-describedby="signup-err-name"{{end}}{{if not .Single}}
-              hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-include="#signup-slug-box" hx-target="#signup-slug-box" hx-swap="outerHTML"{{end}}>
+              hx-get="{{.SignupPath}}/adresse" hx-trigger="input changed delay:300ms" hx-include="#signup-slug-box" hx-target="#signup-slug-box" hx-swap="outerHTML"{{end}}>
           </label>
           {{with .Errors.name}}<span class="field-error" id="signup-err-name">{{.}}</span>{{end}}
         </div>
@@ -70,7 +70,7 @@
   <label>{{t .Lang "Wunsch-Adresse deiner Buchungsseite"}}
     <span class="signup-slug"><input id="signup-slug" type="text" name="slug" value="{{.Slug}}" minlength="3" maxlength="40" required
       autocapitalize="off" autocomplete="off" spellcheck="false" aria-describedby="signup-status{{if .Errors.slug}} signup-err-slug{{end}}"{{if .Errors.slug}} aria-invalid="true"{{end}}
-      hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-target="#signup-status"><span>.{{.Domain}}</span></span>
+      hx-get="{{.SignupPath}}/adresse" hx-trigger="input changed delay:300ms" hx-target="#signup-status"><span>.{{.Domain}}</span></span>
   </label>
   <input type="hidden" name="slug_auto" value="{{.SlugAuto}}">
   {{with .Errors.slug}}<span class="field-error" id="signup-err-slug">{{.}}</span>{{end}}

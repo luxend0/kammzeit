@@ -1,10 +1,11 @@
 <!doctype html>
-<!-- Vorlage fuer web/static/img/og.png (1200x630). Neu bauen:
-     1. szene.png = Ausschnitt aus der Hero-Illustration (PNG, 2000x1500):
-        magick hero.png -crop 1150x1010+838+318 +repage szene.png
+<!-- Vorlage fuer web/static/img/og.png (Deutsch) und og-en.png (Englisch, kammzeit.com), 1200x630. Neu bauen:
+     1. szene.png = Ausschnitt aus der Hero-Illustration (2000x1500, web/static/img/ill/hero.webp):
+        magick hero.webp -crop 1150x1010+838+318 +repage szene.png
      2. display.woff2 (web/static/fonts/display.woff2, Plus Jakarta Sans) neben diese Datei legen.
      3. brave --headless=new --disable-gpu --hide-scrollbars --window-size=1200,630 --screenshot=og.png file://.../og.html
-        danach: magick og.png -alpha off -strip web/static/img/og.png -->
+        danach: magick og.png -alpha off -strip web/static/img/og.png
+        Englisch: dieselbe Datei mit ?en aufrufen (file://.../og.html?en), Ergebnis nach web/static/img/og-en.png. -->
 <html lang="de">
 <head>
 <meta charset="utf-8">
@@ -32,10 +33,17 @@ body { position: relative; font-family: "Display", system-ui, sans-serif; color:
 </svg>
 <div class="card"><img src="szene.png" alt=""></div>
 <div class="wm">Kammzeit</div>
-<div class="tag">Online-Terminbuchung für Salons</div>
-<div class="pill">kammzeit.de</div>
+<div class="tag" id="tag">Online-Terminbuchung für Salons</div>
+<div class="pill" id="pill">kammzeit.de</div>
 <svg class="deco" style="left:430px;top:92px" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="12" fill="none" stroke="#FF7A59" stroke-width="5"/></svg>
 <svg class="deco" style="left:470px;top:520px" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M5 5l16 16M21 5L5 21" stroke="#3CCF91" stroke-width="5" stroke-linecap="round"/></svg>
 <svg class="deco" style="left:70px;top:84px" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#FFC93C"/></svg>
+<script>
+if (location.search === "?en") { // englische Fassung (og-en.png)
+  document.documentElement.lang = "en";
+  document.getElementById("tag").innerHTML = "Online booking<br>for salons";
+  document.getElementById("pill").textContent = "kammzeit.com";
+}
+</script>
 </body>
 </html>
