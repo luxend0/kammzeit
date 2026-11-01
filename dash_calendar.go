@@ -1032,6 +1032,10 @@ func (a *app) kalCreate(w http.ResponseWriter, r *http.Request, c *dctx) {
 	case len(f.Phone) > 40:
 		bad("telefon", "Die Telefonnummer ist zu lang.")
 		return
+	case hasControl(f.Name) || hasControl(f.Phone):
+		// Name und Telefon landen in Mails: keine Zeilenumbrüche einschleusen.
+		bad("name", "Bitte Name und Telefonnummer ohne Zeilenumbrüche oder Tabulatoren eintragen.")
+		return
 	case utf8.RuneCountInString(f.Note) > 1000:
 		bad("notiz", "Die Notiz ist zu lang (höchstens 1000 Zeichen).")
 		return

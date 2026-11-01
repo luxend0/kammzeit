@@ -71,8 +71,13 @@
   .kal-appt.kal-half { white-space: nowrap; }
   .kal-appt.kal-half > span { display: inline; }
 }
+@media (max-width: 700px) {
+  .kal-appt.kal-half > .muted { display: none; } /* nur Zeit und Name, die Leistung passt nicht mehr */
+}
 /* Handy: drei Spalten passen auf 390 px; bei mehr Mitarbeitern zeigt ein Schatten rechts, dass es weitergeht. */
 @media (max-width: 600px) {
+  /* schmale Spalte: Status ab 45 Min. in eigener Zeile unter der Uhrzeit, sonst wäre er abgeschnitten */
+  .kal-appt:not(.kal-short):not(.kal-half) .kal-time > span { display: block; overflow: hidden; text-overflow: ellipsis; }
   .kal-grid { grid-template-columns: 44px repeat(var(--cols), minmax(100px, 1fr)); min-width: calc(44px + var(--cols) * 100px); }
   .kal-more { position: relative; }
   .kal-more::after { content: ""; position: absolute; top: 1px; right: 1px; bottom: 1px; width: 18px; pointer-events: none;
