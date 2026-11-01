@@ -1,0 +1,153 @@
+{{/* Kundenkartei (dash_customers.go). Seiten: kunden-liste (Fragment kunden-tabelle für die Live-Suche),
+     kunden-neu, kunden-karte, kunden-loeschen. */}}
+
+{{define "kunden-liste"}}{{template "dash-top" .}}
+{{if .Deleted}}<p class="flash" role="status">Kunde gelöscht.</p>{{end}}
+<form class="toolbar" method="get" action="/dashboard/kunden" role="search">
+  <input type="search" name="q" value="{{.Q}}" maxlength="100" autocomplete="off" aria-label="Kunden suchen"
+    placeholder="Name, E-Mail oder Telefon" style="max-width: 340px; margin-top: 0"
+    hx-get="/dashboard/kunden" hx-trigger="input changed delay:300ms, search" hx-target="#kunden-tabelle" hx-push-url="true">
+  <button class="btn btn-secondary" type="submit">Suchen</button>
+  <span class="spacer"></span>
+  <a class="btn btn-secondary" href="/dashboard/kunden.csv">CSV-Export</a>
+  <a class="btn" href="/dashboard/kunden/neu">Kunde anlegen</a>
+</form>
+<div id="kunden-tabelle">{{template "kunden-tabelle" .}}</div>
+{{template "dash-bottom" .}}{{end}}
+
+{{define "kunden-tabelle"}}
+{{if .Customers}}
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Name</th><th>Kontakt</th><th class="num">Besuche</th><th>Letzter Besuch</th><th>Nächster Termin</th></tr></thead>
+  <tbody>
+  {{range .Customers}}<tr>
+    <td><a href="/dashboard/kunden/{{.ID}}"><strong>{{.Name}}</strong></a></td>
+    <td>{{if or .Email .Phone}}{{.Email}}{{if and .Email .Phone}}<br>{{end}}{{.Phone}}{{else}}<span class="muted">-</span>{{end}}</td>
+    <td class="num">{{.Visits}}</td>
+    <td class="nowrap">{{or .LastVisit "-"}}</td>
+    <td class="nowrap">{{or .NextAppt "-"}}</td>
+  </tr>{{end}}
+  </tbody>
+</table>
+</div>
+{{else if .Q}}
+<p class="empty">Keine Kunden gefunden für „{{.Q}}“.</p>
+{{else if .PrevURL}}
+<p class="empty">Keine weiteren Kunden.</p>
+{{else}}
+<div class="empty">
+  <p><strong>Noch keine Kunden.</strong></p>
+  <p>Kunden landen automatisch hier, sobald sie online buchen. Stammkunden ohne Online-Buchung kannst du selbst anlegen.</p>
+  <p><a class="btn" href="/dashboard/kunden/neu">Kunde anlegen</a></p>
+</div>
+{{end}}
+{{if or .PrevURL .NextURL}}<nav class="actions" aria-label="Seiten">
+  {{with .PrevURL}}<a class="btn btn-secondary btn-small" href="{{.}}">Zurück</a>{{end}}
+  {{with .NextURL}}<a class="btn btn-secondary btn-small" href="{{.}}">Weiter</a>{{end}}
+</nav>{{end}}
+{{end}}
+
+{{define "kunden-felder"}}
+<label class="field">Name
+  <input type="text" name="name" value="{{.Name}}" required maxlength="100" autocomplete="off">
+</label>
+<div class="row">
+  <label class="field">E-Mail <span class="hint">Optional. Bucht der Kunde online mit dieser Adresse, landet der Termin hier.</span>
+    <input type="email" name="email" value="{{.Email}}" maxlength="200" autocomplete="off">
+  </label>
+  <label class="field">Telefon <span class="hint">Optional.</span>
+    <input type="tel" name="phone" value="{{.Phone}}" maxlength="40" autocomplete="off">
+  </label>
+</div>
+<label class="field">Notizen <span class="hint">Nur im Dashboard sichtbar, z. B. Farbrezeptur „7/1 + 20 Vol.“ oder Lieblingsschnitt.</span>
+  <textarea name="notes" maxlength="2000" rows="5">{{.Notes}}</textarea>
+</label>
+{{end}}
+
+{{define "kunden-neu"}}{{template "dash-top" .}}
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+<form class="form" method="post" action="/dashboard/kunden/neu">
+  {{template "kunden-felder" .Form}}
+  <div class="actions"><button class="btn" type="submit">Kunde anlegen</button><a href="/dashboard/kunden">Abbrechen</a></div>
+</form>
+{{template "dash-bottom" .}}{{end}}
+
+{{define "kunden-termine"}}
+<div class="table-wrap">
+<table class="table">
+  <thead><tr><th>Termin</th><th>Leistung</th><th>Mitarbeiter</th><th class="num">Preis</th><th>Status</th></tr></thead>
+  <tbody>
+  {{range .}}<tr>
+    <td><a href="/dashboard/termine/{{.ID}}">{{.When}}</a></td>
+    <td>{{.Service}}</td>
+    <td>{{.Staff}}</td>
+    <td class="num nowrap">{{euro .PriceCents}}</td>
+    <td><span class="badge {{.Badge}}">{{.Status}}</span></td>
+  </tr>{{end}}
+  </tbody>
+</table>
+</div>
+{{end}}
+
+{{define "kunden-karte"}}{{template "dash-top" .}}
+<style>
+  .kunden-notiz { white-space: pre-wrap; margin: 0 0 16px; padding: 12px 14px; border-left: 4px solid var(--fg); background: var(--soft); }
+  .kunden-bearbeiten { margin: 0 0 8px; }
+  .kunden-bearbeiten > summary { list-style: none; margin-bottom: 16px; }
+  .kunden-bearbeiten > summary::-webkit-details-marker { display: none; }
+</style>
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+<div class="toolbar">
+  <a class="btn" href="/dashboard/termine/neu?kunde={{.Customer.ID}}">Termin anlegen</a>
+  <span class="spacer"></span>
+  <a href="/dashboard/kunden">Alle Kunden</a>
+</div>
+<div class="grid">
+  <section class="card">
+    <h2>Kontakt</h2>
+    <dl class="kv">
+      <dt>E-Mail</dt><dd>{{with .Customer.Email}}<a href="mailto:{{.}}">{{.}}</a>{{else}}<span class="muted">-</span>{{end}}</dd>
+      <dt>Telefon</dt><dd>{{with .Customer.Phone}}<a href="tel:{{.}}">{{.}}</a>{{else}}<span class="muted">-</span>{{end}}</dd>
+      <dt>Kunde seit</dt><dd>{{.Customer.Created}}</dd>
+    </dl>
+  </section>
+  <section class="card">
+    <h2>Besuche</h2>
+    <p class="stat" style="margin: 0 0 8px">{{.Visits}}</p>
+    <dl class="kv">
+      <dt>Nächster Termin</dt><dd>{{or .Next "-"}}</dd>
+      <dt>Umsatz bisher</dt><dd>{{euro .Revenue}}<br><span class="muted small">Summe der aktuellen Leistungspreise, nur zur Info</span></dd>
+    </dl>
+  </section>
+</div>
+
+<h2>Notizen</h2>
+{{with .Customer.Notes}}<p class="kunden-notiz">{{.}}</p>{{else}}<p class="muted">Noch keine Notizen. Hier passt zum Beispiel die Farbrezeptur hin („7/1 + 20 Vol.“).</p>{{end}}
+
+<details class="kunden-bearbeiten"{{if .Error}} open{{end}}>
+  <summary class="btn btn-secondary">Kontakt und Notizen bearbeiten</summary>
+  <form class="form" method="post" action="/dashboard/kunden/{{.Customer.ID}}">
+    {{template "kunden-felder" .Form}}
+    <div class="actions"><button class="btn" type="submit">Speichern</button></div>
+  </form>
+</details>
+
+<h2>Kommende Termine</h2>
+{{if .Upcoming}}{{template "kunden-termine" .Upcoming}}{{else}}<p class="muted">Kein kommender Termin.</p>{{end}}
+
+<h2>Vergangene Termine</h2>
+{{if .Past}}{{template "kunden-termine" .Past}}{{else}}<p class="muted">Noch keine vergangenen Termine.</p>{{end}}
+
+<p class="small" style="margin-top: 40px"><a href="/dashboard/kunden/{{.Customer.ID}}/loeschen">Kunde löschen</a></p>
+{{template "dash-bottom" .}}{{end}}
+
+{{define "kunden-loeschen"}}{{template "dash-top" .}}
+<p><strong>{{.Customer.Name}}</strong> wird endgültig gelöscht, mit Kontaktdaten, Notizen und {{.Appts}}.</p>
+{{if .Upcoming}}<p class="error">Darunter {{if eq .Upcoming 1}}ein kommender Termin. Er verschwindet{{else}}{{.Upcoming}} kommende Termine. Sie verschwinden{{end}} aus dem Kalender, der Kunde bekommt keine Nachricht.</p>{{end}}
+<p>Das lässt sich nicht rückgängig machen.</p>
+<form class="actions" method="post" action="/dashboard/kunden/{{.Customer.ID}}/loeschen">
+  <button class="btn btn-danger" type="submit">Endgültig löschen</button>
+  <a href="/dashboard/kunden/{{.Customer.ID}}">Abbrechen</a>
+</form>
+{{template "dash-bottom" .}}{{end}}
