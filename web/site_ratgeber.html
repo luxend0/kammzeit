@@ -1,11 +1,13 @@
 {{/* Ratgeber (site_ratgeber.go). Präfix "ratgeber-". Ein Template pro Artikel ("ratgeber-<slug>"),
-     dazu Übersicht, Artikelkarten, Deko und Abschluss. Farbe je Thema über die Klasse am .rg-Element
-     (rg-blau, rg-koralle, rg-gelb, rg-mint, rg-himmel). Lesezeiten stehen in den Karten UND im
-     Artikelkopf, site_ratgeber_test.go prüft beide gegen die Wortzahl (200 Wörter/Minute, aufgerundet). */}}
+     dazu Übersicht, Artikelkarten, Deko und Abschluss. Bausteine aus site.css (.page-head, .card, .blob,
+     .deco, .prose, .section-alt, .cta-band), Rest in site-ratgeber.css. Farbe je Thema über die Klasse
+     am .rg-Element bzw. an der Karte (rg-blau, rg-koralle, rg-gelb, rg-mint, rg-himmel).
+     Lesezeiten stehen in den Karten UND im Artikelkopf, site_ratgeber_test.go prüft beide gegen
+     die Wortzahl (200 Wörter/Minute, aufgerundet). */}}
 
 {{define "ratgeber-liste"}}<ol class="rg-cards">
-{{if ne .Path "/ratgeber/online-terminbuchung-friseur"}}<li class="rg-card rg-blau"><a href="/ratgeber/online-terminbuchung-friseur">
-  <span class="rg-card-fig"><img src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt="" loading="lazy"></span>
+{{if ne .Path "/ratgeber/online-terminbuchung-friseur"}}<li class="rg-card rg-blau"><a class="card" href="/ratgeber/online-terminbuchung-friseur">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt="" loading="lazy"></span>
   <span class="rg-card-body">
     <span class="rg-kicker">Terminbuchung</span>
     <h3>Online-Terminbuchung im Friseursalon</h3>
@@ -13,8 +15,8 @@
     <span class="rg-card-meta"><span class="rg-dur" data-slug="online-terminbuchung-friseur">5 Min.</span> Lesezeit</span>
   </span>
 </a></li>{{end}}
-{{if ne .Path "/ratgeber/no-shows-reduzieren"}}<li class="rg-card rg-koralle"><a href="/ratgeber/no-shows-reduzieren">
-  <span class="rg-card-fig"><img src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt="" loading="lazy"></span>
+{{if ne .Path "/ratgeber/no-shows-reduzieren"}}<li class="rg-card rg-koralle"><a class="card" href="/ratgeber/no-shows-reduzieren">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt="" loading="lazy"></span>
   <span class="rg-card-body">
     <span class="rg-kicker">Ausfälle</span>
     <h3>No-Shows im Salon reduzieren</h3>
@@ -22,8 +24,8 @@
     <span class="rg-card-meta"><span class="rg-dur" data-slug="no-shows-reduzieren">6 Min.</span> Lesezeit</span>
   </span>
 </a></li>{{end}}
-{{if ne .Path "/ratgeber/buchungslink-instagram-google"}}<li class="rg-card rg-gelb"><a href="/ratgeber/buchungslink-instagram-google">
-  <span class="rg-card-fig"><img src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt="" loading="lazy"></span>
+{{if ne .Path "/ratgeber/buchungslink-instagram-google"}}<li class="rg-card rg-gelb"><a class="card" href="/ratgeber/buchungslink-instagram-google">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt="" loading="lazy"></span>
   <span class="rg-card-body">
     <span class="rg-kicker">Sichtbarkeit</span>
     <h3>Buchungslink in Instagram, Google und WhatsApp</h3>
@@ -31,8 +33,8 @@
     <span class="rg-card-meta"><span class="rg-dur" data-slug="buchungslink-instagram-google">5 Min.</span> Lesezeit</span>
   </span>
 </a></li>{{end}}
-{{if ne .Path "/ratgeber/preisliste-und-dauer"}}<li class="rg-card rg-mint"><a href="/ratgeber/preisliste-und-dauer">
-  <span class="rg-card-fig"><img src="/static/img/ill/kalender.webp" width="1000" height="800" alt="" loading="lazy"></span>
+{{if ne .Path "/ratgeber/preisliste-und-dauer"}}<li class="rg-card rg-mint"><a class="card" href="/ratgeber/preisliste-und-dauer">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/kalender.webp" width="1000" height="800" alt="" loading="lazy"></span>
   <span class="rg-card-body">
     <span class="rg-kicker">Planung</span>
     <h3>Leistungen und Dauer sinnvoll planen</h3>
@@ -40,8 +42,8 @@
     <span class="rg-card-meta"><span class="rg-dur" data-slug="preisliste-und-dauer">5 Min.</span> Lesezeit</span>
   </span>
 </a></li>{{end}}
-{{if ne .Path "/ratgeber/dsgvo-kundenkartei"}}<li class="rg-card rg-himmel"><a href="/ratgeber/dsgvo-kundenkartei">
-  <span class="rg-card-fig"><img src="/static/img/ill/kartei.webp" width="1000" height="800" alt="" loading="lazy"></span>
+{{if ne .Path "/ratgeber/dsgvo-kundenkartei"}}<li class="rg-card rg-himmel"><a class="card" href="/ratgeber/dsgvo-kundenkartei">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/kartei.webp" width="1000" height="800" alt="" loading="lazy"></span>
   <span class="rg-card-body">
     <span class="rg-kicker">Datenschutz</span>
     <h3>Kundenkartei und DSGVO im Salon</h3>
@@ -51,43 +53,48 @@
 </a></li>{{end}}
 </ol>{{end}}
 
-{{/* Kleine Deko-Formen und die Welle am unteren Rand des Kopfbands. */}}
-{{define "ratgeber-deko"}}<span class="rg-deko" aria-hidden="true"><i class="rg-ring"></i><i class="rg-cross"></i><i class="rg-dot"></i><i class="rg-dot rg-dot-b"></i></span>
-<svg class="rg-wave" aria-hidden="true" focusable="false" viewBox="0 0 1440 64" preserveAspectRatio="none"><path d="M0 34C160 6 330 4 520 22s380 40 560 26 260-36 360-30v46H0z"/></svg>{{end}}
+{{/* Verspielte Deko aus site.css im Seitenkopf, nur im zweispaltigen Kopf (ab 64rem, site-ratgeber.css). */}}
+{{define "ratgeber-deko"}}<span class="deco deco-ring" style="top:14%;right:5%" aria-hidden="true"></span><span class="deco deco-cross" style="bottom:15%;right:33%" aria-hidden="true"></span><span class="deco deco-dot" style="top:9%;left:44%" aria-hidden="true"></span><span class="deco deco-dots" style="bottom:22%;right:36%" aria-hidden="true"></span>{{end}}
 
-{{define "ratgeber-cta"}}<aside class="rg-cta" aria-labelledby="rg-cta-h">
-  <div class="rg-cta-text">
-    <h2 id="rg-cta-h">Kammzeit in Ruhe ansehen</h2>
-    <p>Online-Terminbuchung für Salons: Buchungsseite ohne App, Erinnerung per E-Mail, Kundenkartei. Gratis für einen Mitarbeiter.</p>
-    <p class="rg-cta-links"><a class="btn" href="/registrieren">Kostenlos starten <span aria-hidden="true">→</span></a> <a class="btn-ghost" href="https://demo.kammzeit.de">Demo-Salon ansehen</a></p>
+{{define "ratgeber-cta"}}<section class="cta-band" aria-labelledby="rg-cta-h">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="rg-cta-h">Kammzeit in Ruhe ansehen</h2>
+      <p>Online-Terminbuchung für Salons: Buchungsseite ohne App, Erinnerung per E-Mail, Kundenkartei. Gratis für einen Mitarbeiter.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a> <a class="btn-ghost" href="https://demo.kammzeit.de">Demo-Salon ansehen</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
   </div>
-  <img class="rg-cta-fig" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy">
-</aside>{{end}}
+</section>{{end}}
 
-{{define "ratgeber-weiter"}}<section class="rg-more" aria-labelledby="rg-more-h">
-  <h2 id="rg-more-h">Weiterlesen</h2>
+{{define "ratgeber-weiter"}}<section class="section section-alt wave-top rg-more" aria-labelledby="rg-more-h">
+<div class="wrap">
+  <div class="section-head"><h2 id="rg-more-h">Weiterlesen</h2></div>
   {{template "ratgeber-liste" .}}
+</div>
 </section>{{end}}
 
 {{define "ratgeber-index"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-ratgeber.css">
 <div class="rg rg-blau rg-index">
-<header class="rg-hero">
-<div class="wrap rg-hero-in">
-<div class="rg-hero-text">
-  <p class="rg-kicker">Ratgeber</p>
-  <h1>Ratgeber für <span class="rg-mark">Salons</span></h1>
+<header class="page-head">
+{{template "ratgeber-deko"}}
+<div class="wrap page-head-in">
+<div>
+  <nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li aria-current="page">Ratgeber</li></ol></nav>
+  <h1>Ratgeber für <span class="hl">Salons</span></h1>
   <p class="lead">Praxiswissen für deinen Salonalltag: Termine, Ausfälle, Preise und Datenschutz. Konkret, ohne Fachchinesisch und ehrlich auch dort, wo ein Online-System nicht hilft.</p>
 </div>
-<div class="rg-hero-fig rg-hero-kammi"><img src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt=""></div>
+<div class="page-head-media rg-kammi"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" fetchpriority="high"></div>
 </div>
-{{template "ratgeber-deko"}}
 </header>
+<section class="section" aria-labelledby="rg-alle-h">
 <div class="wrap">
-  <h2 class="rg-index-h">Alle Artikel</h2>
+  <div class="section-head"><h2 id="rg-alle-h">Alle Artikel</h2></div>
   {{template "ratgeber-liste" .}}
-  {{template "ratgeber-cta"}}
 </div>
+</section>
+{{template "ratgeber-cta"}}
 </div>
 {{template "site-bottom" .}}{{end}}
 
@@ -95,19 +102,20 @@
 {{define "ratgeber-online-terminbuchung-friseur"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-ratgeber.css">
 <div class="rg rg-blau">
-<header class="rg-hero">
-<div class="wrap rg-hero-in">
+<header class="page-head rg-head">
+{{template "ratgeber-deko"}}
+<div class="wrap page-head-in">
+<div>
 <nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Online-Terminbuchung</li></ol></nav>
-<div class="rg-hero-text">
     <p class="rg-kicker">Terminbuchung</p>
     <h1>Online-Terminbuchung im Friseursalon: was sie bringt und worauf du achten solltest</h1>
     <p class="lead">Ein Buchungslink nimmt dir Anrufe ab, während du schneidest. Damit das klappt, kommt es auf ein paar Dinge an: Datenschutz, Kosten, klare Absageregeln und eine gute Einführung bei deinen Stammkunden.</p>
     <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">5 Min. Lesezeit</span></p>
 </div>
-<div class="rg-hero-fig"><img src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt=""></div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt=""></div>
 </div>
-{{template "ratgeber-deko"}}
 </header>
+<section class="section rg-article">
 <div class="wrap rg-layout">
 <nav class="rg-toc" aria-labelledby="rg-toc-h">
   <h2 id="rg-toc-h">Inhalt</h2>
@@ -182,16 +190,15 @@
 <p>Online-Buchung lohnt sich, wenn dein Telefon oft im falschen Moment klingelt und viele Termine Standardleistungen sind. Achte auf einen AVV und Server in der EU, eine Buchung ohne App und Konto, ein durchschaubares Preismodell und Absageregeln, die du selbst festlegst. Führ sie schrittweise ein, sprich deine Stammkunden persönlich an und halte alle Termine in einem Kalender.</p>
 <p>Kammzeit ist eine solche Buchungsseite für Salons, mit einem Gratis-Plan für einen Mitarbeiter. Ob sie zu deinem Salon passt, siehst du am schnellsten im <a href="https://demo.kammzeit.de">Demo-Salon</a>.</p>
 </article>
-<aside class="rg-help" aria-label="Passende Anleitung">
-  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+<aside class="card rg-help" aria-label="Passende Anleitung">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
   <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/erste-schritte">Erste Schritte mit Kammzeit</a></p>
 </aside>
 </div>
 </div>
-<div class="wrap">
+</section>
 {{template "ratgeber-weiter" .}}
 {{template "ratgeber-cta"}}
-</div>
 </div>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"Article","headline":"Online-Terminbuchung im Friseursalon: was sie bringt und worauf du achten solltest","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
@@ -202,19 +209,20 @@
 {{define "ratgeber-no-shows-reduzieren"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-ratgeber.css">
 <div class="rg rg-koralle">
-<header class="rg-hero">
-<div class="wrap rg-hero-in">
+<header class="page-head rg-head">
+{{template "ratgeber-deko"}}
+<div class="wrap page-head-in">
+<div>
 <nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">No-Shows reduzieren</li></ol></nav>
-<div class="rg-hero-text">
     <p class="rg-kicker">Ausfälle</p>
     <h1>No-Shows im Salon reduzieren: was wirklich hilft</h1>
     <p class="lead">Ein leerer Stuhl kostet dich Zeit, die du nicht zurückbekommst. Gegen Ausfälle helfen vor allem Erinnerungen, einfache Absagen und klare Regeln. Hier steht, wie du sie umsetzt und wo die Grenzen sind.</p>
     <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">6 Min. Lesezeit</span></p>
 </div>
-<div class="rg-hero-fig"><img src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt=""></div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt=""></div>
 </div>
-{{template "ratgeber-deko"}}
 </header>
+<section class="section rg-article">
 <div class="wrap rg-layout">
 <nav class="rg-toc" aria-labelledby="rg-toc-h">
   <h2 id="rg-toc-h">Inhalt</h2>
@@ -318,16 +326,15 @@
   <li>Anzahlung und Ausfallhonorar nur mit klaren, vorher vereinbarten Regeln.</li>
 </ul>
 </article>
-<aside class="rg-help" aria-label="Passende Anleitung">
-  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+<aside class="card rg-help" aria-label="Passende Anleitung">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
   <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/absagen-und-no-shows">Absagen und No-Shows in Kammzeit</a></p>
 </aside>
 </div>
 </div>
-<div class="wrap">
+</section>
 {{template "ratgeber-weiter" .}}
 {{template "ratgeber-cta"}}
-</div>
 </div>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"Article","headline":"No-Shows im Salon reduzieren: was wirklich hilft","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
@@ -338,19 +345,20 @@
 {{define "ratgeber-buchungslink-instagram-google"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-ratgeber.css">
 <div class="rg rg-gelb">
-<header class="rg-hero">
-<div class="wrap rg-hero-in">
+<header class="page-head rg-head">
+{{template "ratgeber-deko"}}
+<div class="wrap page-head-in">
+<div>
 <nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Buchungslink einrichten</li></ol></nav>
-<div class="rg-hero-text">
     <p class="rg-kicker">Sichtbarkeit</p>
     <h1>Buchungslink in Instagram-Bio, Google-Profil und WhatsApp einrichten</h1>
     <p class="lead">Ein Buchungslink bringt nur etwas, wenn deine Kundschaft ihn findet. Hier steht Schritt für Schritt, wo er hingehört. Weil sich die Menüs der Apps öfter ändern, beschreiben wir, wonach du suchst, statt jeden Klick vorzugeben.</p>
     <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">5 Min. Lesezeit</span></p>
 </div>
-<div class="rg-hero-fig"><img src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt=""></div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt=""></div>
 </div>
-{{template "ratgeber-deko"}}
 </header>
+<section class="section rg-article">
 <div class="wrap rg-layout">
 <nav class="rg-toc" aria-labelledby="rg-toc-h">
   <h2 id="rg-toc-h">Inhalt</h2>
@@ -445,16 +453,15 @@
 </ol>
 <p>Danach ist der Link dort, wo deine Kundschaft ohnehin schon sucht. Den Rest erledigt die Buchungsseite.</p>
 </article>
-<aside class="rg-help" aria-label="Passende Anleitung">
-  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+<aside class="card rg-help" aria-label="Passende Anleitung">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
   <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/link-teilen">Buchungslink teilen</a></p>
 </aside>
 </div>
 </div>
-<div class="wrap">
+</section>
 {{template "ratgeber-weiter" .}}
 {{template "ratgeber-cta"}}
-</div>
 </div>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"Article","headline":"Buchungslink in Instagram-Bio, Google-Profil und WhatsApp einrichten","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
@@ -465,19 +472,20 @@
 {{define "ratgeber-preisliste-und-dauer"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-ratgeber.css">
 <div class="rg rg-mint">
-<header class="rg-hero">
-<div class="wrap rg-hero-in">
+<header class="page-head rg-head">
+{{template "ratgeber-deko"}}
+<div class="wrap page-head-in">
+<div>
 <nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Leistungen und Dauer</li></ol></nav>
-<div class="rg-hero-text">
     <p class="rg-kicker">Planung</p>
     <h1>Leistungen und Dauer sinnvoll planen: Puffer, Einwirkzeit, Pausen</h1>
     <p class="lead">Zu knapp geplante Termine machen den ganzen Tag stressig: Du hängst hinterher, die nächste Kundin wartet, die Pause fällt aus. Mit realistischen Dauern, eingeplanten Puffern und einer klaren Leistungsliste wird es ruhiger.</p>
     <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">5 Min. Lesezeit</span></p>
 </div>
-<div class="rg-hero-fig"><img src="/static/img/ill/kalender.webp" width="1000" height="800" alt=""></div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kalender.webp" width="1000" height="800" alt=""></div>
 </div>
-{{template "ratgeber-deko"}}
 </header>
+<section class="section rg-article">
 <div class="wrap rg-layout">
 <nav class="rg-toc" aria-labelledby="rg-toc-h">
   <h2 id="rg-toc-h">Inhalt</h2>
@@ -582,16 +590,15 @@
 <h2 id="nachjustieren">Nach vier Wochen nachjustieren</h2>
 <p>Die ersten Werte sind ein Entwurf. Schau nach ein paar Wochen in deinen Kalender: Bei welchen Leistungen hängst du regelmäßig hinterher? Dort verlängerst du die Dauer. Wo bist du fast immer zu früh fertig? Dort kürzt du. Zwei oder drei solcher Runden, und dein Kalender passt zu deinem echten Arbeitstag.</p>
 </article>
-<aside class="rg-help" aria-label="Passende Anleitung">
-  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+<aside class="card rg-help" aria-label="Passende Anleitung">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
   <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/leistungen">Leistungen anlegen</a></p>
 </aside>
 </div>
 </div>
-<div class="wrap">
+</section>
 {{template "ratgeber-weiter" .}}
 {{template "ratgeber-cta"}}
-</div>
 </div>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"Article","headline":"Leistungen und Dauer sinnvoll planen: Puffer, Einwirkzeit, Pausen","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
@@ -602,19 +609,20 @@
 {{define "ratgeber-dsgvo-kundenkartei"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-ratgeber.css">
 <div class="rg rg-himmel">
-<header class="rg-hero">
-<div class="wrap rg-hero-in">
+<header class="page-head rg-head">
+{{template "ratgeber-deko"}}
+<div class="wrap page-head-in">
+<div>
 <nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Kundenkartei und DSGVO</li></ol></nav>
-<div class="rg-hero-text">
     <p class="rg-kicker">Datenschutz</p>
     <h1>Kundenkartei und DSGVO im Salon: was du notieren darfst</h1>
     <p class="lead">Farbrezeptur, Lieblingsschnitt, Telefonnummer: Eine gute Kundenkartei macht deine Arbeit leichter. Damit sie auch datenschutzrechtlich sauber ist, solltest du ein paar Grundregeln kennen. Dieser Artikel gibt einen Überblick, ersetzt aber keine Rechtsberatung.</p>
     <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">6 Min. Lesezeit</span></p>
 </div>
-<div class="rg-hero-fig"><img src="/static/img/ill/kartei.webp" width="1000" height="800" alt=""></div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kartei.webp" width="1000" height="800" alt=""></div>
 </div>
-{{template "ratgeber-deko"}}
 </header>
+<section class="section rg-article">
 <div class="wrap rg-layout">
 <nav class="rg-toc" aria-labelledby="rg-toc-h">
   <h2 id="rg-toc-h">Inhalt</h2>
@@ -708,16 +716,15 @@
 </ul>
 <p class="rg-note"><strong>Hinweis:</strong> Dieser Artikel ist eine allgemeine Information und keine Rechtsberatung. Bei konkreten Fragen wende dich an eine Anwältin oder einen Anwalt, an deine Innung oder an die Datenschutz-Aufsichtsbehörde deines Bundeslandes.</p>
 </article>
-<aside class="rg-help" aria-label="Passende Anleitung">
-  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+<aside class="card rg-help" aria-label="Passende Anleitung">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
   <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/kundenkartei">Kundenkartei in Kammzeit</a></p>
 </aside>
 </div>
 </div>
-<div class="wrap">
+</section>
 {{template "ratgeber-weiter" .}}
 {{template "ratgeber-cta"}}
-</div>
 </div>
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[
 {"@type":"Article","headline":"Kundenkartei und DSGVO im Salon: was du notieren darfst","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
