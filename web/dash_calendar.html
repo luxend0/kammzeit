@@ -206,15 +206,16 @@ fieldset.kal-group > legend + * { clear: both; }
 }
 </style>{{end}}
 
-{{define "kal-status"}}{{if eq . "cancelled"}}<span class="chip chip-grey">abgesagt</span>{{else if eq . "noshow"}}<span class="chip chip-coral">nicht erschienen</span>{{else}}<span class="chip chip-blue">gebucht</span>{{end}}{{end}}
+{{/* Status-Chip im Termin-Detail, erwartet die Seitendaten (.T.Status, .Lang). */}}
+{{define "kal-status"}}{{if eq .T.Status "cancelled"}}<span class="chip chip-grey">{{t .Lang "abgesagt"}}</span>{{else if eq .T.Status "noshow"}}<span class="chip chip-coral">{{t .Lang "nicht erschienen"}}</span>{{else}}<span class="chip chip-blue">{{t .Lang "gebucht"}}</span>{{end}}{{end}}
 
 {{define "kal-leer"}}<div class="empty kal-leer">
   <img src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="">
-  <h2>So geht es los</h2>
-  <p>Damit Termine eingetragen und online gebucht werden können, braucht dein Salon mindestens einen Mitarbeiter mit Arbeitszeiten und eine aktive Leistung.</p>
+  <h2>{{t .Lang "So geht es los"}}</h2>
+  <p>{{t .Lang "Damit Termine eingetragen und online gebucht werden können, braucht dein Salon mindestens einen Mitarbeiter mit Arbeitszeiten und eine aktive Leistung."}}</p>
   <p class="actions">
-    {{if not .HasStaff}}<a class="btn" href="/dashboard/team">Mitarbeiter anlegen</a>{{end}}
-    {{if not .HasServices}}<a class="btn{{if not .HasStaff}} btn-secondary{{end}}" href="/dashboard/leistungen">Leistung anlegen oder auf aktiv stellen</a>{{end}}
+    {{if not .HasStaff}}<a class="btn" href="/dashboard/team">{{t .Lang "Mitarbeiter anlegen"}}</a>{{end}}
+    {{if not .HasServices}}<a class="btn{{if not .HasStaff}} btn-secondary{{end}}" href="/dashboard/leistungen">{{t .Lang "Leistung anlegen oder auf aktiv stellen"}}</a>{{end}}
   </p>
 </div>{{end}}
 
@@ -223,44 +224,44 @@ fieldset.kal-group > legend + * { clear: both; }
   <img class="page-head-icon" src="/static/img/icons/kalender.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.DayTitle}}</h1>
-    <p>{{if .Week}}Alle Termine von Montag bis Sonntag. Ein Klick auf den Tag öffnet die Tagesansicht.
-    {{- else if .Off}}Laut Arbeitszeiten arbeitet an diesem Tag niemand.
-    {{- else if and .Cols .DayCount}}{{.DayCount}} {{if eq .DayCount 1}}Termin{{else}}Termine{{end}}. Tipp in eine freie Stelle, um dort einen Termin einzutragen.
-    {{- else}}Hier stehen alle Termine, online gebucht und selbst eingetragen.{{end}}</p>
+    <p>{{if .Week}}{{t .Lang "Alle Termine von Montag bis Sonntag. Ein Klick auf den Tag öffnet die Tagesansicht."}}
+    {{- else if .Off}}{{t .Lang "Laut Arbeitszeiten arbeitet an diesem Tag niemand."}}
+    {{- else if and .Cols .DayCount}}{{if eq .DayCount 1}}{{t .Lang "1 Termin."}}{{else}}{{tf .Lang "%d Termine." .DayCount}}{{end}} {{t .Lang "Tipp in eine freie Stelle, um dort einen Termin einzutragen."}}
+    {{- else}}{{t .Lang "Hier stehen alle Termine, online gebucht und selbst eingetragen."}}{{end}}</p>
   </div>
   <div class="page-head-actions stats kal-stats">
     <div class="stat-card"><img src="/static/img/icons/buchung.svg" width="48" height="48" alt="">
-      <div><p class="stat-label">Termine heute</p><p class="stat">{{.TodayCount}}</p></div></div>
+      <div><p class="stat-label">{{t .Lang "Termine heute"}}</p><p class="stat">{{.TodayCount}}</p></div></div>
     <div class="stat-card"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
-      <div><p class="stat-label">Nächster Termin</p>
+      <div><p class="stat-label">{{t .Lang "Nächster Termin"}}</p>
       {{with .Next}}<p class="stat"><a href="/dashboard/termine/{{.ID}}">{{.When}}</a></p><p class="stat-sub">{{.Customer}}</p>
-      {{else}}<p class="stat">-</p><p class="stat-sub muted">keiner geplant</p>{{end}}</div></div>
+      {{else}}<p class="stat">-</p><p class="stat-sub muted">{{t $.Lang "keiner geplant"}}</p>{{end}}</div></div>
   </div>
 </div>
 {{with .Steps}}<section class="card kal-steps" aria-labelledby="kal-steps-titel">
   <img class="kal-steps-ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt="">
   <div class="kal-steps-text">
-    <h2 id="kal-steps-titel">Erste Schritte</h2>
-    <p>Prüf Leistungen, Preise und Zeiten, bevor du den Link teilst. <strong>{{$.StepsDone}} von {{len .}} erledigt.</strong></p>
+    <h2 id="kal-steps-titel">{{t $.Lang "Erste Schritte"}}</h2>
+    <p>{{t $.Lang "Prüf Leistungen, Preise und Zeiten, bevor du den Link teilst."}} <strong>{{tf $.Lang "%d von %d erledigt." $.StepsDone (len .)}}</strong></p>
     <div class="kal-progress" style="--done: {{$.StepsDone}}; --all: {{len .}}" aria-hidden="true"><span></span></div>
-    <ol class="kal-checklist">{{range .}}<li{{if .Done}} class="kal-done"{{end}}><a href="{{.Href}}">{{.Text}}</a>{{if .Done}}<span class="vh"> (erledigt)</span>{{end}}</li>{{end}}</ol>
-    <p class="small muted">Die Liste verschwindet mit der ersten Online-Buchung.</p>
+    <ol class="kal-checklist">{{range .}}<li{{if .Done}} class="kal-done"{{end}}><a href="{{.Href}}">{{t $.Lang .Text}}</a>{{if .Done}}<span class="vh"> ({{t $.Lang "erledigt"}})</span>{{end}}</li>{{end}}</ol>
+    <p class="small muted">{{t $.Lang "Die Liste verschwindet mit der ersten Online-Buchung."}}</p>
   </div>
 </section>{{else}}{{if not (and .HasStaff .HasServices)}}{{template "kal-leer" .}}{{end}}{{end}}
 <div class="toolbar kal-toolbar">
-  <nav class="kal-nav" aria-label="{{if .Week}}Woche{{else}}Tag{{end}} wechseln">
-    <a class="btn btn-secondary btn-small kal-prev" href="{{.PrevHref}}">{{if .Week}}Vorwoche{{else}}Vortag{{end}}</a>
-    <a class="btn btn-secondary btn-small" href="{{.TodayHref}}">Heute</a>
-    <a class="btn btn-secondary btn-small kal-next" href="{{.NextHref}}">{{if .Week}}Folgewoche{{else}}Folgetag{{end}}</a>
+  <nav class="kal-nav" aria-label="{{if .Week}}{{t .Lang "Woche wechseln"}}{{else}}{{t .Lang "Tag wechseln"}}{{end}}">
+    <a class="btn btn-secondary btn-small kal-prev" href="{{.PrevHref}}">{{if .Week}}{{t .Lang "Vorwoche"}}{{else}}{{t .Lang "Vortag"}}{{end}}</a>
+    <a class="btn btn-secondary btn-small" href="{{.TodayHref}}">{{t .Lang "Heute"}}</a>
+    <a class="btn btn-secondary btn-small kal-next" href="{{.NextHref}}">{{if .Week}}{{t .Lang "Folgewoche"}}{{else}}{{t .Lang "Folgetag"}}{{end}}</a>
   </nav>
   <form class="kal-jump" method="get" action="/dashboard">
     {{if .Week}}<input type="hidden" name="ansicht" value="woche">{{end}}
-    <input type="date" name="tag" value="{{.Day}}" aria-label="Datum">
-    <button class="btn btn-secondary btn-small" type="submit">Zeigen</button>
+    <input type="date" name="tag" value="{{.Day}}" aria-label="{{t .Lang "Datum"}}">
+    <button class="btn btn-secondary btn-small" type="submit">{{t .Lang "Zeigen"}}</button>
   </form>
-  <span class="kal-toggle"><a href="{{.DayHref}}"{{if not .Week}} aria-current="page"{{end}}>Tag</a><a href="{{.WeekHref}}"{{if .Week}} aria-current="page"{{end}}>Woche</a></span>
+  <span class="kal-toggle"><a href="{{.DayHref}}"{{if not .Week}} aria-current="page"{{end}}>{{t .Lang "Tag"}}</a><a href="{{.WeekHref}}"{{if .Week}} aria-current="page"{{end}}>{{t .Lang "Woche"}}</a></span>
   <span class="spacer"></span>
-  {{if and .HasStaff .HasServices}}<a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">Neuer Termin</a>{{end}}
+  {{if and .HasStaff .HasServices}}<a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">{{t .Lang "Neuer Termin"}}</a>{{end}}
 </div>
 {{end}}
 
@@ -268,7 +269,7 @@ fieldset.kal-group > legend + * { clear: both; }
 <div class="kal-scroll">
 <div class="kal-grid" style="--cols: {{len .Cols}}">
   <div class="kal-corner"></div>
-  {{range .Cols}}<div class="kal-name kal-c{{.Color}}"><span class="kal-ava" aria-hidden="true">{{printf "%.1s" .Name}}</span><span>{{.Name}}{{if .Inactive}} <span class="muted small">(inaktiv)</span>{{end}}</span></div>{{end}}
+  {{range .Cols}}<div class="kal-name kal-c{{.Color}}"><span class="kal-ava" aria-hidden="true">{{printf "%.1s" .Name}}</span><span>{{.Name}}{{if .Inactive}} <span class="muted small">({{t $.Lang "inaktiv"}})</span>{{end}}</span></div>{{end}}
   <div class="kal-axis" style="height: {{.HeightPx}}px">{{range .Hours}}<span style="top: {{printf "%.3f" .Top}}%">{{.Time}}</span>{{end}}</div>
   {{range $col := .Cols}}<div class="kal-col kal-c{{.Color}}" style="height: {{$.HeightPx}}px">
     {{range .Work}}<div class="kal-work" style="top: {{printf "%.3f" .Top}}%; height: {{printf "%.3f" .Height}}%"></div>{{end}}
@@ -276,7 +277,7 @@ fieldset.kal-group > legend + * { clear: both; }
     {{range $.Slots}}<a class="kal-slot" href="/dashboard/termine/neu?tag={{$.Day}}&amp;mitarbeiter={{$col.ID}}&amp;zeit={{.Time}}" style="top: {{printf "%.3f" .Top}}%; height: {{printf "%.3f" .Height}}%" tabindex="-1" aria-hidden="true">+<span> {{.Time}}</span></a>{{end}}
     {{range .Appts}}<a class="kal-appt kal-{{.Status}}{{if .Short}} kal-short{{end}}{{if .Half}} kal-half{{end}}" href="/dashboard/termine/{{.ID}}" title="{{.Title}}"
       style="top: {{printf "%.3f" .Top}}%; height: calc({{printf "%.3f" .Height}}% - 2px); left: {{printf "%.3f" .Left}}%; width: calc({{printf "%.3f" .Width}}% - 6px)">
-      <span class="kal-time">{{.Time}}{{if eq .Status "cancelled"}} <span class="kal-flag-muted">abgesagt</span>{{else if eq .Status "noshow"}} <span class="kal-flag">nicht erschienen</span>{{end}}</span>
+      <span class="kal-time">{{.Time}}{{if eq .Status "cancelled"}} <span class="kal-flag-muted">{{t $.Lang "abgesagt"}}</span>{{else if eq .Status "noshow"}} <span class="kal-flag">{{t $.Lang "nicht erschienen"}}</span>{{end}}</span>
       <span class="kal-who">{{.Customer}}</span> <span class="muted">{{.Service}}</span></a>{{end}}
     {{with $.NowTop}}<div class="kal-now" style="top: {{printf "%.3f" .}}%"></div>{{end}}
   </div>{{end}}
@@ -289,18 +290,18 @@ fieldset.kal-group > legend + * { clear: both; }
 {{else if .Off}}
 <div class="empty kal-off">
   <img src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="">
-  <h2>{{if .IsToday}}Heute ist der Salon zu{{else}}An diesem Tag ist der Salon zu{{end}}</h2>
-  <p>Laut Arbeitszeiten arbeitet an diesem Tag niemand. Online kann dann auch niemand buchen.</p>
-  <p class="actions">{{if and .HasStaff .HasServices}}<a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">Trotzdem einen Termin eintragen</a> {{end}}<a class="btn btn-secondary" href="/dashboard/team">Arbeitszeiten ändern</a></p>
+  <h2>{{if .IsToday}}{{t .Lang "Heute ist der Salon zu"}}{{else}}{{t .Lang "An diesem Tag ist der Salon zu"}}{{end}}</h2>
+  <p>{{t .Lang "Laut Arbeitszeiten arbeitet an diesem Tag niemand. Online kann dann auch niemand buchen."}}</p>
+  <p class="actions">{{if and .HasStaff .HasServices}}<a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">{{t .Lang "Trotzdem einen Termin eintragen"}}</a> {{end}}<a class="btn btn-secondary" href="/dashboard/team">{{t .Lang "Arbeitszeiten ändern"}}</a></p>
 </div>
 {{else if eq .DayCount 0}}
 <div class="empty kal-frei">
   <img src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="">
-  <h2>{{if .IsToday}}Heute keine Termine{{else}}An diesem Tag noch keine Termine{{end}}</h2>
-  <p>Sobald jemand online bucht, steht der Termin hier. Anrufe und Laufkundschaft trägst du selbst ein.</p>
-  {{if and .HasStaff .HasServices}}<p class="actions"><a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">Termin eintragen</a></p>{{end}}
+  <h2>{{if .IsToday}}{{t .Lang "Heute keine Termine"}}{{else}}{{t .Lang "An diesem Tag noch keine Termine"}}{{end}}</h2>
+  <p>{{t .Lang "Sobald jemand online bucht, steht der Termin hier. Anrufe und Laufkundschaft trägst du selbst ein."}}</p>
+  {{if and .HasStaff .HasServices}}<p class="actions"><a class="btn" href="/dashboard/termine/neu?tag={{.Day}}">{{t .Lang "Termin eintragen"}}</a></p>{{end}}
 </div>
-<details class="kal-raster"><summary>Tagesraster mit freien Zeiten zeigen</summary>
+<details class="kal-raster"><summary>{{t .Lang "Tagesraster mit freien Zeiten zeigen"}}</summary>
 {{template "kal-raster" .}}
 </details>
 {{else}}
@@ -312,15 +313,15 @@ fieldset.kal-group > legend + * { clear: both; }
 <div class="kal-week">
 {{range .Days}}
 <section class="card kal-day{{if .Today}} kal-day-today{{end}}{{if not .Appts}} kal-day-leer{{end}}">
-<h2><a href="{{.Href}}">{{.Label}}</a>{{if .Today}} <span class="badge badge-accent">heute</span>{{end}}</h2>
+<h2><a href="{{.Href}}">{{.Label}}</a>{{if .Today}} <span class="badge badge-accent">{{t $.Lang "heute"}}</span>{{end}}</h2>
 {{if .Appts}}<div class="table-wrap"><table class="table table-fixed">
   <colgroup><col style="width: 7.5rem"><col><col><col style="width: 9rem"><col style="width: 10rem"></colgroup>
   <tbody>{{range .Appts}}<tr class="kal-c{{.Color}}{{if eq .Status "cancelled"}} kal-row-cancelled{{end}}">
     <td class="nowrap"><a href="/dashboard/termine/{{.ID}}">{{.Time}}</a></td>
     <td class="kal-who">{{.Customer}}</td><td>{{.Service}}</td><td class="nowrap"><span class="kal-dot" aria-hidden="true"></span>{{.Staff}}</td>
-    <td>{{if ne .Status "booked"}}{{template "kal-status" .Status}}{{end}}</td>
+    <td>{{if eq .Status "cancelled"}}<span class="chip chip-grey">{{t $.Lang "abgesagt"}}</span>{{else if eq .Status "noshow"}}<span class="chip chip-coral">{{t $.Lang "nicht erschienen"}}</span>{{end}}</td>
   </tr>{{end}}</tbody>
-</table></div>{{else}}<p class="muted">Keine Termine.</p>{{end}}
+</table></div>{{else}}<p class="muted">{{t $.Lang "Keine Termine."}}</p>{{end}}
 </section>
 {{end}}
 </div>
@@ -329,75 +330,75 @@ fieldset.kal-group > legend + * { clear: both; }
 {{define "kal-termin"}}{{template "dash-top" .}}{{template "kal-style"}}
 {{with .T}}
 <div class="page-head">
-  <a class="page-head-back" href="{{$.BackHref}}">Zurück zum Kalender</a>
+  <a class="page-head-back" href="{{$.BackHref}}">{{t $.Lang "Zurück zum Kalender"}}</a>
   <img class="page-head-icon" src="/static/img/icons/buchung.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.Customer}}</h1>
-    <p>{{.Service}} bei {{.Staff}}, {{.When}}</p>
+    <p>{{tf $.Lang "%s bei %s" .Service .Staff}}, {{.When}}</p>
   </div>
-  <div class="page-head-actions">{{template "kal-status" .Status}}</div>
+  <div class="page-head-actions">{{template "kal-status" $}}</div>
 </div>
 <div class="kal-detail">
 <div>
   <section class="card" aria-labelledby="kal-daten">
-    <h2 class="section-title" id="kal-daten"><img src="/static/img/icons/kalender.svg" width="32" height="32" alt="">Termin</h2>
+    <h2 class="section-title" id="kal-daten"><img src="/static/img/icons/kalender.svg" width="32" height="32" alt="">{{t $.Lang "Termin"}}</h2>
     <dl class="kv">
-      <dt>Zeit</dt><dd>{{.When}} ({{.Minutes}} Min.)</dd>
-      <dt>Status</dt><dd>{{template "kal-status" .Status}}</dd>
-      <dt>Leistung</dt><dd>{{.Service}}, {{euro .Price}}</dd>
-      <dt>Mitarbeiter</dt><dd>{{.Staff}}</dd>
-      <dt>Kunde</dt><dd><a href="/dashboard/kunden/{{.CustomerID}}">{{.Customer}}</a></dd>
-      <dt>Telefon</dt><dd>{{if .Tel}}<a href="{{.Tel}}">{{.Phone}}</a>{{else if .Phone}}{{.Phone}}{{else}}<span class="muted">keine</span>{{end}}</dd>
-      <dt>E-Mail</dt><dd>{{with .Email}}<a href="mailto:{{.}}">{{.}}</a>{{else}}<span class="muted">keine</span>{{end}}</dd>
-      <dt>Quelle</dt><dd>{{if eq .Source "manual"}}Im Dashboard eingetragen{{else}}Online gebucht{{end}}, {{.Created}}</dd>
+      <dt>{{t $.Lang "Zeit"}}</dt><dd>{{.When}} ({{tf $.Lang "%d Min." .Minutes}})</dd>
+      <dt>{{t $.Lang "Status"}}</dt><dd>{{template "kal-status" $}}</dd>
+      <dt>{{t $.Lang "Leistung"}}</dt><dd>{{.Service}}, {{money $.Lang .Price}}</dd>
+      <dt>{{t $.Lang "Mitarbeiter"}}</dt><dd>{{.Staff}}</dd>
+      <dt>{{t $.Lang "Kunde"}}</dt><dd><a href="/dashboard/kunden/{{.CustomerID}}">{{.Customer}}</a></dd>
+      <dt>{{t $.Lang "Telefon"}}</dt><dd>{{if .Tel}}<a href="{{.Tel}}">{{.Phone}}</a>{{else if .Phone}}{{.Phone}}{{else}}<span class="muted">{{t $.Lang "keine"}}</span>{{end}}</dd>
+      <dt>{{t $.Lang "E-Mail"}}</dt><dd>{{with .Email}}<a href="mailto:{{.}}">{{.}}</a>{{else}}<span class="muted">{{t $.Lang "keine"}}</span>{{end}}</dd>
+      <dt>{{t $.Lang "Quelle"}}</dt><dd>{{if eq .Source "manual"}}{{t $.Lang "Im Dashboard eingetragen"}}{{else}}{{t $.Lang "Online gebucht"}}{{end}}, {{.Created}}</dd>
     </dl>
   </section>
   <section class="card" aria-labelledby="kal-kundennotiz">
-    <h2 class="section-title" id="kal-kundennotiz"><img src="/static/img/icons/kartei.svg" width="32" height="32" alt="">Kundennotiz</h2>
-    <p class="small muted">Gilt für alle Termine von {{.Customer}}.</p>
-    {{with .CustomerNotes}}<p class="kal-notiz">{{.}}</p>{{else}}<p class="muted">Keine Kundennotiz, z. B. für die Farbrezeptur.</p>{{end}}
-    <p class="small"><a href="/dashboard/kunden/{{.CustomerID}}">In der Kundenkarte bearbeiten</a></p>
+    <h2 class="section-title" id="kal-kundennotiz"><img src="/static/img/icons/kartei.svg" width="32" height="32" alt="">{{t $.Lang "Kundennotiz"}}</h2>
+    <p class="small muted">{{tf $.Lang "Gilt für alle Termine von %s." .Customer}}</p>
+    {{with .CustomerNotes}}<p class="kal-notiz">{{.}}</p>{{else}}<p class="muted">{{t $.Lang "Keine Kundennotiz, z. B. für die Farbrezeptur."}}</p>{{end}}
+    <p class="small"><a href="/dashboard/kunden/{{.CustomerID}}">{{t $.Lang "In der Kundenkarte bearbeiten"}}</a></p>
   </section>
 </div>
 <div class="kal-side">
   {{if eq .Status "booked"}}
   <section class="card" aria-labelledby="kal-aendern">
-    <h2 id="kal-aendern">Termin ändern</h2>
-    <p class="small muted">Neue Zeit oder anderer Mitarbeiter: verschieben. Kommt der Termin nicht zustande: absagen.</p>
+    <h2 id="kal-aendern">{{t $.Lang "Termin ändern"}}</h2>
+    <p class="small muted">{{t $.Lang "Neue Zeit oder anderer Mitarbeiter: verschieben. Kommt der Termin nicht zustande: absagen."}}</p>
     <div class="actions">
-      <a class="btn btn-secondary btn-small" href="/dashboard/termine/{{.ID}}/verschieben">Verschieben</a>
+      <a class="btn btn-secondary btn-small" href="/dashboard/termine/{{.ID}}/verschieben">{{t $.Lang "Verschieben"}}</a>
     </div>
     <details class="kal-confirm">
-      <summary class="btn btn-danger btn-small">Termin absagen</summary>
+      <summary class="btn btn-danger btn-small">{{t $.Lang "Termin absagen"}}</summary>
       <form method="post" action="/dashboard/termine/{{.ID}}/absagen">
-        <p>Termin von {{.Customer}} wirklich absagen? Das lässt sich nicht rückgängig machen.</p>
-        {{if and .Email $.Future}}<label class="check"><input type="checkbox" name="informieren" value="1" checked> {{.Customer}} per Mail informieren</label>{{end}}
-        <button class="btn btn-danger" type="submit">Ja, absagen</button>
+        <p>{{tf $.Lang "Termin von %s wirklich absagen? Das lässt sich nicht rückgängig machen." .Customer}}</p>
+        {{if and .Email $.Future}}<label class="check"><input type="checkbox" name="informieren" value="1" checked> {{tf $.Lang "%s per Mail informieren" .Customer}}</label>{{end}}
+        <button class="btn btn-danger" type="submit">{{t $.Lang "Ja, absagen"}}</button>
       </form>
     </details>
   </section>
   {{if not $.Future}}
   <form class="card" method="post" action="/dashboard/termine/{{.ID}}/nicht-erschienen">
-    <h2>Nicht erschienen</h2>
-    <p class="small muted">Markiert den Termin als nicht wahrgenommen.</p>
-    <button class="btn btn-secondary btn-small" type="submit">Als nicht erschienen markieren</button>
+    <h2>{{t $.Lang "Nicht erschienen"}}</h2>
+    <p class="small muted">{{t $.Lang "Markiert den Termin als nicht wahrgenommen."}}</p>
+    <button class="btn btn-secondary btn-small" type="submit">{{t $.Lang "Als nicht erschienen markieren"}}</button>
   </form>
   {{end}}
   {{end}}
   <form class="card" method="post" action="/dashboard/termine/{{.ID}}/notiz">
-    <h2><label for="kal-notiz">Notiz zu diesem Termin</label></h2>
-    <p class="small muted" id="kal-notiz-hinweis">Nur für dich sichtbar, höchstens 1000 Zeichen.</p>
+    <h2><label for="kal-notiz">{{t $.Lang "Notiz zu diesem Termin"}}</label></h2>
+    <p class="small muted" id="kal-notiz-hinweis">{{t $.Lang "Nur für dich sichtbar, höchstens 1000 Zeichen."}}</p>
     <textarea id="kal-notiz" name="notiz" maxlength="1000" aria-describedby="kal-notiz-hinweis">{{.Note}}</textarea>
-    <button class="btn btn-small" type="submit">Notiz speichern</button>
+    <button class="btn btn-small" type="submit">{{t $.Lang "Notiz speichern"}}</button>
   </form>
 </div>
 </div>
 {{end}}
 {{template "dash-bottom" .}}{{end}}
 
-{{define "kal-treffer"}}{{if .Hits}}<p class="small kal-treffer-titel">In deiner Kundenliste:</p>{{end}}{{range .Hits}}<label class="check"><input type="radio" name="kunde" value="{{.ID}}"{{if .Checked}} checked{{end}}>
+{{define "kal-treffer"}}{{if .Hits}}<p class="small kal-treffer-titel">{{t .Lang "In deiner Kundenliste:"}}</p>{{end}}{{range .Hits}}<label class="check"><input type="radio" name="kunde" value="{{.ID}}"{{if .Checked}} checked{{end}}>
   <span><strong>{{.Name}}</strong>{{with .Contact}} <span class="muted">{{.}}</span>{{end}}</span></label>
-{{else}}{{if .Q}}<p class="muted small">Kein Kunde gefunden.</p>{{end}}{{end}}{{end}}
+{{else}}{{if .Q}}<p class="muted small">{{t .Lang "Kein Kunde gefunden."}}</p>{{end}}{{end}}{{end}}
 
 {{/* Feld Uhrzeit mit freien Zeiten als Vorschlägen. Wird per htmx neu geladen, wenn Leistung,
      Mitarbeiter oder Datum wechseln; ein Klick auf einen Vorschlag lädt es mit dieser Zeit neu.
@@ -405,11 +406,11 @@ fieldset.kal-group > legend + * { clear: both; }
 {{define "kal-zeit"}}{{with .Z}}<div id="kal-zeit" hx-get="/dashboard/termine/zeiten" hx-swap="outerHTML"
   hx-trigger="change from:[name=leistung], change from:[name=mitarbeiter], change from:[name=tag]"
   hx-include="[name=leistung], [name=termin], [name=mitarbeiter], [name=tag], [name=zeit]">
-  <label class="field" style="margin-bottom: .25rem">Uhrzeit<input id="kal-zeit-feld" type="time" name="zeit" value="{{.Zeit}}" step="300" required
+  <label class="field" style="margin-bottom: .25rem">{{t $.Lang "Uhrzeit"}}<input id="kal-zeit-feld" type="time" name="zeit" value="{{.Zeit}}" step="300" required
     aria-describedby="{{if .Invalid}}kal-fehler {{end}}kal-zeit-hinweis"{{if .Invalid}} aria-invalid="true"{{end}}></label>
-  <p class="small muted" id="kal-zeit-hinweis" style="margin: 0 0 .75rem">5-Minuten-Raster, auch außerhalb der Arbeitszeit.</p>
-  {{if .Slots}}<div class="kal-vorschlag" role="group" aria-label="Freie Zeiten bei {{.Staff}}">
-    <span class="small"><strong>Frei bei {{.Staff}}:</strong></span>
+  <p class="small muted" id="kal-zeit-hinweis" style="margin: 0 0 .75rem">{{t $.Lang "5-Minuten-Raster, auch außerhalb der Arbeitszeit."}}</p>
+  {{if .Slots}}<div class="kal-vorschlag" role="group" aria-label="{{tf $.Lang "Freie Zeiten bei %s" .Staff}}">
+    <span class="small"><strong>{{tf $.Lang "Frei bei %s:" .Staff}}</strong></span>
     {{range .Slots}}<button type="button" id="kal-z-{{.ID}}" class="btn btn-small{{if not .Selected}} btn-secondary{{end}}" name="zeit" value="{{.Time}}"
       aria-pressed="{{if .Selected}}true{{else}}false{{end}}" hx-get="/dashboard/termine/zeiten" hx-target="#kal-zeit" hx-swap="outerHTML"
       hx-include="[name=leistung], [name=termin], [name=mitarbeiter], [name=tag]">{{.Time}}</button>{{end}}
@@ -423,44 +424,44 @@ fieldset.kal-group > legend + * { clear: both; }
 <form id="kal-suche" method="get" action="/dashboard/termine/neu" hx-get="/dashboard/termine/kundensuche" hx-target="#kal-treffer"></form>
 <form id="kal-form" class="form kal-form kal-form-2" method="post" action="/dashboard/termine/neu">
   <section class="card kal-group" aria-labelledby="kal-was">
-    <h2 class="section-title" id="kal-was"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt="">Was und wann</h2>
+    <h2 class="section-title" id="kal-was"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt="">{{t .Lang "Was und wann"}}</h2>
     <div class="row kal-row-was">
-      <label class="field">Leistung
+      <label class="field">{{t .Lang "Leistung"}}
         <select name="leistung" required{{if .Invalid.leistung}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>
-          <option value="">Bitte wählen</option>
-          {{range .Services}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Service}} selected{{end}}>{{.Name}} ({{.Duration}} Min., {{euro .PriceCents}})</option>{{end}}
+          <option value="">{{t .Lang "Bitte wählen"}}</option>
+          {{range .Services}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Service}} selected{{end}}>{{.Name}} ({{tf $.Lang "%d Min." .Duration}}, {{money $.Lang .PriceCents}})</option>{{end}}
         </select></label>
-      <label class="field">Mitarbeiter
+      <label class="field">{{t .Lang "Mitarbeiter"}}
         <select name="mitarbeiter" required{{if .Invalid.mitarbeiter}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>
           {{range .Staff}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Staff}} selected{{end}}>{{.Name}}</option>{{end}}
         </select></label>
     </div>
-    <label class="field">Datum<input type="date" name="tag" value="{{.F.Date}}" required{{if .Invalid.tag}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
+    <label class="field">{{t .Lang "Datum"}}<input type="date" name="tag" value="{{.F.Date}}" required{{if .Invalid.tag}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
     {{template "kal-zeit" .}}
   </section>
   <fieldset class="card kal-group">
-    <legend class="section-title"><img src="/static/img/icons/kartei.svg" width="32" height="32" alt="">Kunde</legend>
-    <label class="field">Bestehenden Kunden suchen
-      <input type="search" name="q" value="{{.Q}}" form="kal-suche" autocomplete="off" placeholder="Name, E-Mail oder Telefon"
+    <legend class="section-title"><img src="/static/img/icons/kartei.svg" width="32" height="32" alt="">{{t .Lang "Kunde"}}</legend>
+    <label class="field">{{t .Lang "Bestehenden Kunden suchen"}}
+      <input type="search" name="q" value="{{.Q}}" form="kal-suche" autocomplete="off" placeholder="{{t .Lang "Name, E-Mail oder Telefon"}}"
         hx-get="/dashboard/termine/kundensuche" hx-trigger="input changed delay:250ms, search" hx-target="#kal-treffer"></label>
     <div id="kal-treffer" aria-live="polite">{{template "kal-treffer" .}}</div>
-    <label class="check"><input type="radio" name="kunde" value=""{{if not .F.Customer}} checked{{end}}> Neuer Kunde</label>
+    <label class="check"><input type="radio" name="kunde" value=""{{if not .F.Customer}} checked{{end}}> {{t .Lang "Neuer Kunde"}}</label>
     <div class="row">
-      <label class="field">Name<input type="text" name="name" value="{{.F.Name}}" maxlength="100" autocomplete="off"
+      <label class="field">{{t .Lang "Name"}}<input type="text" name="name" value="{{.F.Name}}" maxlength="100" autocomplete="off"
         hx-get="/dashboard/termine/kundensuche" hx-trigger="input changed delay:300ms" hx-target="#kal-treffer"{{if .Invalid.name}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
-      <label class="field">Telefon (optional)<input type="tel" name="telefon" value="{{.F.Phone}}" maxlength="40" autocomplete="off"
+      <label class="field">{{t .Lang "Telefon (optional)"}}<input type="tel" name="telefon" value="{{.F.Phone}}" maxlength="40" autocomplete="off"
         hx-get="/dashboard/termine/kundensuche" hx-trigger="input changed delay:300ms" hx-target="#kal-treffer"{{if .Invalid.telefon}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
-      <label class="field">E-Mail (optional)<input type="email" name="email" value="{{.F.Email}}" maxlength="200" autocomplete="off"{{if .Invalid.email}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
+      <label class="field">{{t .Lang "E-Mail (optional)"}}<input type="email" name="email" value="{{.F.Email}}" maxlength="200" autocomplete="off"{{if .Invalid.email}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
     </div>
-    <p class="hint">Gibt es die E-Mail-Adresse oder die Telefonnummer schon in deiner Kundenliste, wird dieser Kunde verwendet.</p>
+    <p class="hint">{{t .Lang "Gibt es die E-Mail-Adresse oder die Telefonnummer schon in deiner Kundenliste, wird dieser Kunde verwendet."}}</p>
   </fieldset>
-  <section class="card kal-group" aria-label="Notiz und Bestätigung">
-    <label class="field">Notiz zu diesem Termin (optional)<textarea name="notiz" maxlength="1000"{{if .Invalid.notiz}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>{{.F.Note}}</textarea></label>
-    <label class="check"><input type="checkbox" name="bestaetigung" value="1"{{if .F.Confirm}} checked{{end}}> Bestätigung mit Absage-Link per Mail senden (nur mit E-Mail-Adresse)</label>
+  <section class="card kal-group" aria-label="{{t .Lang "Notiz und Bestätigung"}}">
+    <label class="field">{{t .Lang "Notiz zu diesem Termin (optional)"}}<textarea name="notiz" maxlength="1000"{{if .Invalid.notiz}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>{{.F.Note}}</textarea></label>
+    <label class="check"><input type="checkbox" name="bestaetigung" value="1"{{if .F.Confirm}} checked{{end}}> {{t .Lang "Bestätigung mit Absage-Link per Mail senden (nur mit E-Mail-Adresse)"}}</label>
   </section>
   <div class="actions">
-    <button class="btn" type="submit">Speichern</button>
-    <a href="/dashboard?tag={{.F.Date}}">Abbrechen</a>
+    <button class="btn" type="submit">{{t .Lang "Speichern"}}</button>
+    <a href="/dashboard?tag={{.F.Date}}">{{t .Lang "Abbrechen"}}</a>
   </div>
 </form>
 {{else}}{{template "kal-leer" .}}{{end}}
@@ -469,26 +470,26 @@ fieldset.kal-group > legend + * { clear: both; }
 {{define "kal-verschieben"}}{{template "dash-top" .}}{{template "kal-style"}}
 {{with .Error}}<p class="error" role="alert" id="kal-fehler">{{.}}</p>{{end}}
 {{with .T}}<div class="card card-sky kal-bisher">
-  <p><strong>{{.Customer}}</strong>, {{.Service}} ({{.Minutes}} Min.)</p>
-  <p class="muted">Bisher: {{.When}} bei {{.Staff}}</p>
+  <p><strong>{{.Customer}}</strong>, {{.Service}} ({{tf $.Lang "%d Min." .Minutes}})</p>
+  <p class="muted">{{tf $.Lang "Bisher: %s bei %s" .When .Staff}}</p>
 </div>{{end}}
 <form id="kal-form" class="form kal-form" method="post" action="/dashboard/termine/{{.T.ID}}/verschieben">
   <input type="hidden" name="termin" value="{{.T.ID}}">
   <section class="card kal-group" aria-labelledby="kal-neu-zeit">
-    <h2 class="section-title" id="kal-neu-zeit"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt="">Neue Zeit</h2>
+    <h2 class="section-title" id="kal-neu-zeit"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt="">{{t .Lang "Neue Zeit"}}</h2>
     <div class="row">
-      <label class="field">Mitarbeiter
+      <label class="field">{{t .Lang "Mitarbeiter"}}
         <select name="mitarbeiter" required{{if .Invalid.mitarbeiter}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>
           {{range .Staff}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Staff}} selected{{end}}>{{.Name}}</option>{{end}}
         </select></label>
-      <label class="field">Datum<input type="date" name="tag" value="{{.F.Date}}" required{{if .Invalid.tag}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
+      <label class="field">{{t .Lang "Datum"}}<input type="date" name="tag" value="{{.F.Date}}" required{{if .Invalid.tag}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}></label>
     </div>
     {{template "kal-zeit" .}}
-    {{if .T.Email}}<label class="check"><input type="checkbox" name="informieren" value="1"{{if .Inform}} checked{{end}}> {{.T.Customer}} per Mail über die neue Zeit informieren</label>{{end}}
+    {{if .T.Email}}<label class="check"><input type="checkbox" name="informieren" value="1"{{if .Inform}} checked{{end}}> {{tf .Lang "%s per Mail über die neue Zeit informieren" .T.Customer}}</label>{{end}}
   </section>
   <div class="actions">
-    <button class="btn" type="submit">Verschieben</button>
-    <a href="/dashboard/termine/{{.T.ID}}">Abbrechen</a>
+    <button class="btn" type="submit">{{t .Lang "Verschieben"}}</button>
+    <a href="/dashboard/termine/{{.T.ID}}">{{t .Lang "Abbrechen"}}</a>
   </div>
 </form>
 {{template "dash-bottom" .}}{{end}}

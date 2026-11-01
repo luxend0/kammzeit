@@ -23,6 +23,7 @@ func (a *app) routesSettings(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dashboard/einstellungen/export", a.dash(a.settingsExport))
 	mux.HandleFunc("GET /dashboard/einstellungen/loeschen", a.dash(a.deletePage))
 	mux.HandleFunc("POST /dashboard/einstellungen/loeschen", a.dash(a.deleteSalon))
+	mux.HandleFunc("POST /dashboard/einstellungen/news", a.dash(a.settingsNews))
 }
 
 // choice ist ein Eintrag einer Auswahlliste. Nur diese Werte werden gespeichert.
@@ -50,6 +51,8 @@ var (
 	horizonChoices = []choice[int]{
 		{14, "14 Tage"}, {30, "30 Tage"}, {60, "60 Tage"}, {90, "90 Tage"}, {180, "180 Tage"},
 	}
+	// Sprache der Buchungsseite; Sprachnamen bleiben in ihrer eigenen Sprache.
+	langChoices = []choice[string]{{"de", "Deutsch"}, {"en", "English"}}
 )
 
 // webURL prüft eine Adresse: leer ist erlaubt, sonst absolute URL mit einem der
@@ -72,7 +75,9 @@ func einstSchema(s string) string {
 
 // einstGespeichert: Erfolgsmeldung je ?gespeichert=<code>. Nur feste Texte, nie Text aus der URL.
 var einstGespeichert = map[string]string{
-	"einstellungen": "Einstellungen gespeichert. Deine Buchungsseite zeigt die Änderungen sofort.",
+	"einstellungen":  "Einstellungen gespeichert. Deine Buchungsseite zeigt die Änderungen sofort.",
+	"news-unterwegs": "Bestätigungsmail ist unterwegs. Bitte klick auf den Link darin, dann bist du angemeldet.",
+	"news-aus":       "Abbestellt. Du bekommst keine Kammzeit-News mehr.",
 }
 
 // parseSettings liest das Einstellungsformular. Fehler je Feldname; die
@@ -89,7 +94,7 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 	s := salon{
 		Name: text("name"), Email: text("email"), Phone: text("phone"), Address: text("address"),
 		Website: einstSchema(text("website")), ImprintURL: einstSchema(text("imprint_url")), About: text("about"),
-		Accent: strings.ToLower(text("accent")), TZ: f.Get("timezone"),
+		Accent: strings.ToLower(text("accent")), TZ: f.Get("timezone"), Lang: f.Get("lang"),
 		MinNoticeMin: num("min_notice"), CancelNoticeMin: num("cancel_notice"), HorizonDays: num("horizon"),
 	}
 	errs := map[string]string{}
@@ -121,6 +126,9 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 	if !hexColor.MatchString(s.Accent) {
 		errs["accent"] = "Bitte eine Farbe wählen."
 	}
+	if !allowed(langChoices, s.Lang) {
+		errs["lang"] = "Bitte eine Sprache aus der Liste wählen."
+	}
 	if !allowed(timezoneChoices, s.TZ) {
 		errs["timezone"] = "Bitte eine Zeitzone aus der Liste wählen."
 	}
@@ -142,6 +150,7 @@ func (a *app) renderSettings(w http.ResponseWriter, r *http.Request, c *dctx, st
 	d["Form"], d["Errors"], d["PreviewOn"] = form, errs, onAccent(form.Accent)
 	d["SavedMsg"] = einstGespeichert[r.URL.Query().Get("gespeichert")]
 	d["Timezones"], d["MinNotice"], d["CancelNotice"], d["Horizon"] = timezoneChoices, minNoticeChoices, cancelNoticeChoices, horizonChoices
+	d["Langs"], d["News"] = langChoices, a.marketingState(c.User.ID)
 	a.render(w, status, "einst-seite", d)
 }
 
@@ -161,9 +170,9 @@ func (a *app) settingsSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 		return
 	}
 	_, err := a.db.Exec(`UPDATE salons SET name = ?, email = ?, phone = ?, address = ?, website = ?, imprint_url = ?, about = ?,
-		accent = ?, timezone = ?, min_notice_min = ?, cancel_notice_min = ?, booking_horizon_days = ? WHERE id = ?`,
+		accent = ?, timezone = ?, min_notice_min = ?, cancel_notice_min = ?, booking_horizon_days = ?, lang = ? WHERE id = ?`,
 		s.Name, s.Email, s.Phone, s.Address, s.Website, s.ImprintURL, s.About,
-		s.Accent, s.TZ, s.MinNoticeMin, s.CancelNoticeMin, s.HorizonDays, c.Salon.ID)
+		s.Accent, s.TZ, s.MinNoticeMin, s.CancelNoticeMin, s.HorizonDays, s.Lang, c.Salon.ID)
 	if err != nil {
 		a.dashServerError(w, r, c, err)
 		return
@@ -171,10 +180,48 @@ func (a *app) settingsSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 	http.Redirect(w, r, "/dashboard/einstellungen?gespeichert=einstellungen", http.StatusSeeOther)
 }
 
+// einstNewsLimit begrenzt Bestätigungsmails für die Kammzeit-News je Konto.
+var einstNewsLimit = newLimiter(5, time.Hour)
+
+// settingsNews: Kammzeit-News per E-Mail an (Double-Opt-in, Mail mit Bestätigungslink)
+// oder aus (Widerruf). Nur das eigene Konto (c.User).
+func (a *app) settingsNews(w http.ResponseWriter, r *http.Request, c *dctx) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4<<10)
+	if err := r.ParseForm(); err != nil {
+		a.dashError(w, r, c, http.StatusBadRequest, "Das Formular war unvollständig.")
+		return
+	}
+	var err error
+	code := "news-unterwegs"
+	switch r.PostFormValue("news") {
+	case "an":
+		if a.marketingState(c.User.ID) == "an" {
+			http.Redirect(w, r, "/dashboard/einstellungen", http.StatusSeeOther)
+			return
+		}
+		if !einstNewsLimit.allow(strconv.FormatInt(c.User.ID, 10)) {
+			a.dashError(w, r, c, http.StatusTooManyRequests, "Zu viele Bestätigungsmails. Bitte versuch es in einer Stunde noch einmal.")
+			return
+		}
+		err = a.startMarketingDOI(c.User.ID, "einstellungen")
+	case "aus":
+		code = "news-aus"
+		err = a.withdrawMarketing(c.User.ID, "einstellungen")
+	default:
+		a.dashError(w, r, c, http.StatusBadRequest, "Das Formular war unvollständig.")
+		return
+	}
+	if err != nil {
+		a.dashServerError(w, r, c, err)
+		return
+	}
+	http.Redirect(w, r, "/dashboard/einstellungen?gespeichert="+code, http.StatusSeeOther)
+}
+
 // exportQueries: alles, was zu einem Salon gehört (?1 = Salon-ID). Ohne
 // Stripe-IDs und ohne Storno-Token (damit könnte man Termine absagen).
 var exportQueries = []struct{ key, query string }{
-	{"salon", `SELECT id, slug, name, email, phone, address, website, imprint_url, about, accent, timezone, plan,
+	{"salon", `SELECT id, slug, name, email, phone, address, website, imprint_url, about, accent, timezone, lang, plan,
 		min_notice_min, cancel_notice_min, booking_horizon_days, created_at FROM salons WHERE id = ?1`},
 	{"staff", `SELECT id, name, sort, active FROM staff WHERE salon_id = ?1 ORDER BY id`},
 	{"services", `SELECT id, name, description, duration_min, price_cents, sort, active FROM services WHERE salon_id = ?1 ORDER BY id`},
