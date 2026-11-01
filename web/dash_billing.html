@@ -1,13 +1,14 @@
 {{/* Abo-Seite (billing.go). Daten: dashPage + Online (Stripe eingerichtet), Portal (Kundenportal möglich), Erfolg (zurück vom Checkout).
      Aufbau wie /preise auf der Website: zwei Plan-Karten, Pro in Blau mit weißer Schrift. Preise mit normalem
-     Leerzeichen (billing_test.go sucht "14,90 €"), Umbruch verhindert white-space: nowrap. */}}
+     Leerzeichen (billing_test.go sucht "14,90 €"), Umbruch verhindert white-space: nowrap.
+     Englisch: Planpreise wie auf kammzeit.com/pricing ("14.90 €"), Steuerhinweis aus dem i18n-Vertrag. */}}
 {{define "abo-seite"}}{{template "dash-top" .}}
-{{if .Erfolg}}<p class="flash" role="status">Danke! Dein Pro-Abo ist aktiv, sobald die Zahlung bestätigt ist.</p>{{end}}
+{{if .Erfolg}}<p class="flash" role="status">{{t .Lang "Danke! Dein Pro-Abo ist aktiv, sobald die Zahlung bestätigt ist."}}</p>{{end}}
 <div class="page-head">
   <img class="page-head-icon" src="/static/img/icons/pro.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>{{if .Salon.Pro}}Dein Plan: <strong>Pro</strong>. Unbegrenzt Mitarbeiter, ohne Kammzeit-Hinweis.{{else}}Dein Plan: <strong>Gratis</strong>. Pro brauchst du ab dem zweiten aktiven Mitarbeiter.{{end}}</p>
+    <p>{{t .Lang "Dein Plan:"}} {{if .Salon.Pro}}<strong>Pro</strong>. {{t .Lang "Unbegrenzt Mitarbeiter, ohne Kammzeit-Hinweis."}}{{else}}<strong>{{t .Lang "Gratis"}}</strong>. {{t .Lang "Pro brauchst du ab dem zweiten aktiven Mitarbeiter."}}{{end}}</p>
   </div>
 </div>
 <style>
@@ -52,15 +53,15 @@
   <section class="card abo-plan" aria-labelledby="abo-h-gratis">
     <div class="abo-plan-head">
       <img src="/static/img/icons/gratis.svg" width="48" height="48" alt="">
-      <h2 id="abo-h-gratis">Gratis</h2>
-      {{if not .Salon.Pro}}<span class="chip chip-mint">Dein Plan</span>{{end}}
+      <h2 id="abo-h-gratis">{{t .Lang "Gratis"}}</h2>
+      {{if not .Salon.Pro}}<span class="chip chip-mint">{{t .Lang "Dein Plan"}}</span>{{end}}
     </div>
     <p class="abo-price">0 €</p>
-    <p class="abo-per">dauerhaft, ohne Zeitlimit</p>
+    <p class="abo-per">{{t .Lang "dauerhaft, ohne Zeitlimit"}}</p>
     <ul class="abo-list">
-      <li>1 aktiver Mitarbeiter</li>
-      <li>Buchungsseite, Kalender, Kundenkartei, Erinnerungen und Export</li>
-      <li>Hinweis „Online-Termine mit Kammzeit“ auf deiner Buchungsseite</li>
+      <li>{{t .Lang "1 aktiver Mitarbeiter"}}</li>
+      <li>{{t .Lang "Buchungsseite, Kalender, Kundenkartei, Erinnerungen und Export"}}</li>
+      <li>{{t .Lang "Hinweis „Online-Termine mit Kammzeit“ auf deiner Buchungsseite"}}</li>
     </ul>
   </section>
 
@@ -68,34 +69,34 @@
     <div class="abo-plan-head">
       <img src="/static/img/icons/pro.svg" width="48" height="48" alt="">
       <h2 id="abo-h-pro">Pro</h2>
-      {{if .Salon.Pro}}<span class="chip chip-sun">Dein Plan</span>{{end}}
+      {{if .Salon.Pro}}<span class="chip chip-sun">{{t .Lang "Dein Plan"}}</span>{{end}}
     </div>
-    <p class="abo-price">14,90 €</p>
-    <p class="abo-per">im Monat</p>
-    <p class="abo-year"><b class="abo-price-small">oder 149 € im Jahr</b>, das sind 2 Monate geschenkt.</p>
+    <p class="abo-price">{{t .Lang "14,90 €"}}</p>
+    <p class="abo-per">{{t .Lang "im Monat"}}</p>
+    <p class="abo-year"><b class="abo-price-small">{{t .Lang "oder 149 € im Jahr"}}</b>{{t .Lang ", das sind 2 Monate geschenkt."}}</p>
     <ul class="abo-list">
-      <li>Unbegrenzt Mitarbeiter</li>
-      <li>Alles aus Gratis</li>
-      <li>Ohne Kammzeit-Hinweis auf deiner Buchungsseite</li>
+      <li>{{t .Lang "Unbegrenzt Mitarbeiter"}}</li>
+      <li>{{t .Lang "Alles aus Gratis"}}</li>
+      <li>{{t .Lang "Ohne Kammzeit-Hinweis auf deiner Buchungsseite"}}</li>
     </ul>
     <div class="abo-kauf">
     {{if .Salon.Pro}}
       {{if .Portal}}
-      <p>Zahlungsart, Rechnungen und Kündigung verwaltest du im Kundenportal unseres Zahlungsanbieters Stripe.</p>
-      <form method="post" action="/dashboard/abo/portal"><button class="btn" type="submit">Abo verwalten / kündigen</button></form>
+      <p>{{t .Lang "Zahlungsart, Rechnungen und Kündigung verwaltest du im Kundenportal unseres Zahlungsanbieters Stripe."}}</p>
+      <form method="post" action="/dashboard/abo/portal"><button class="btn" type="submit">{{t .Lang "Abo verwalten / kündigen"}}</button></form>
       {{else}}
-      <p>Dein Pro-Zugang wurde von uns eingerichtet. Fragen dazu an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
+      <p>{{t .Lang "Dein Pro-Zugang wurde von uns eingerichtet. Fragen dazu an"}} <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
       {{end}}
     {{else if .Erfolg}}
-      <p>Die Bestätigung dauert meist nur ein paar Sekunden. <a href="/dashboard/abo">Seite neu laden</a></p>
+      <p>{{t .Lang "Die Bestätigung dauert meist nur ein paar Sekunden."}} <a href="/dashboard/abo">{{t .Lang "Seite neu laden"}}</a></p>
     {{else if .Online}}
       <div class="actions">
-        <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="monat"><button class="btn" type="submit">Pro monatlich</button></form>
-        <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="jahr"><button class="btn btn-secondary" type="submit">Pro jährlich</button></form>
+        <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="monat"><button class="btn" type="submit">{{t .Lang "Pro monatlich"}}</button></form>
+        <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="jahr"><button class="btn btn-secondary" type="submit">{{t .Lang "Pro jährlich"}}</button></form>
       </div>
-      <p class="small">Du bezahlst über Stripe. Kündigen kannst du jederzeit zum Ende des bezahlten Zeitraums.</p>
+      <p class="small">{{t .Lang "Du bezahlst über Stripe. Kündigen kannst du jederzeit zum Ende des bezahlten Zeitraums."}}</p>
     {{else}}
-      <p>Online-Zahlung wird gerade eingerichtet. Für Pro schreib uns an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></p>
+      <p>{{t .Lang "Online-Zahlung wird gerade eingerichtet. Für Pro schreib uns an"}} <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></p>
     {{end}}
     </div>
   </section>
@@ -104,9 +105,9 @@
 <section class="card card-sky abo-info" aria-labelledby="abo-h-info">
   <img src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="">
   <div>
-    <h2 id="abo-h-info">Gut zu wissen</h2>
-    <p>Gekündigt wird zum Ende des bezahlten Monats oder Jahres. Bis dahin bleibt Pro aktiv, danach läuft dein Salon im Gratis-Plan weiter. Deine Daten bleiben erhalten.</p>
-    <p class="muted small">Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p>
+    <h2 id="abo-h-info">{{t .Lang "Gut zu wissen"}}</h2>
+    <p>{{t .Lang "Gekündigt wird zum Ende des bezahlten Monats oder Jahres. Bis dahin bleibt Pro aktiv, danach läuft dein Salon im Gratis-Plan weiter. Deine Daten bleiben erhalten."}}</p>
+    <p class="muted small">{{t .Lang "Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer."}}</p>
   </div>
 </section>
 {{template "dash-bottom" .}}{{end}}

@@ -52,7 +52,7 @@ type kundenZeile struct {
 // oder Telefon. Gibt bis zu kundenProSeite+1 Zeilen zurück (die letzte zeigt
 // nur an, dass es eine weitere Seite gibt). Besuche = vergangene gebuchte Termine.
 // ponytail: LIKE ist nur für ASCII unabhängig von Groß-/Kleinschreibung ("müller" findet "Müller" nicht).
-func (a *app) kundenSuche(s *salon, q string, page int) ([]kundenZeile, error) {
+func (a *app) kundenSuche(s *salon, lang, q string, page int) ([]kundenZeile, error) {
 	like := "%" + strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`).Replace(q) + "%"
 	rows, err := a.db.Query(`
 		SELECT c.id, c.name, COALESCE(c.email, ''), c.phone,
@@ -76,24 +76,34 @@ func (a *app) kundenSuche(s *salon, q string, page int) ([]kundenZeile, error) {
 			return nil, err
 		}
 		if last.Valid {
-			k.LastVisit = time.Unix(last.Int64, 0).In(s.Loc).Format("02.01.2006")
+			k.LastVisit = kundenDatum(lang, time.Unix(last.Int64, 0).In(s.Loc))
 		}
 		if next.Valid {
-			k.NextAppt = time.Unix(next.Int64, 0).In(s.Loc).Format("02.01.2006, 15:04")
+			t := time.Unix(next.Int64, 0).In(s.Loc)
+			k.NextAppt = kundenDatum(lang, t) + ", " + t.Format("15:04")
 		}
 		out = append(out, k)
 	}
 	return out, rows.Err()
 }
 
+// kundenDatum: Datum ohne Uhrzeit, "03.11.2026" bzw. "3 Nov 2026".
+func kundenDatum(lang string, t time.Time) string {
+	if lang == "en" {
+		return fmt.Sprintf("%d %s %d", t.Day(), monthsEN[t.Month()], t.Year())
+	}
+	return t.Format("02.01.2006")
+}
+
 func (a *app) kundenListe(w http.ResponseWriter, r *http.Request, c *dctx) {
+	lang := a.langFor(r)
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
 	if utf8.RuneCountInString(q) > 100 {
 		q = string([]rune(q)[:100])
 	}
 	page, _ := strconv.Atoi(r.URL.Query().Get("seite"))
 	page = max(1, min(page, 100000))
-	list, err := a.kundenSuche(c.Salon, q, page)
+	list, err := a.kundenSuche(c.Salon, lang, q, page)
 	if err != nil {
 		a.dashServerError(w, r, c, err)
 		return
@@ -115,7 +125,7 @@ func (a *app) kundenListe(w http.ResponseWriter, r *http.Request, c *dctx) {
 		}
 		return "/dashboard/kunden?" + v.Encode()
 	}
-	d := a.dashPage(c, r, "kunden", "Kunden")
+	d := a.dashPage(c, r, "kunden", tr(lang, "Kunden"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Q"], d["Customers"], d["Deleted"] = q, list, r.URL.Query().Has("geloescht")
 	if page > 1 {
@@ -145,6 +155,7 @@ func kundenCSVZelle(s string) string {
 }
 
 func (a *app) kundenCSV(w http.ResponseWriter, r *http.Request, c *dctx) {
+	lang := a.langFor(r)
 	rows, err := a.db.Query(`
 		SELECT c.name, COALESCE(c.email, ''), c.phone, c.notes, c.created_at,
 			(SELECT COUNT(*) FROM appointments a WHERE a.customer_id = c.id AND a.salon_id = c.salon_id AND a.status = 'booked' AND a.starts_at < ?)
@@ -155,31 +166,39 @@ func (a *app) kundenCSV(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	// ponytail: erst alles lesen, dann schreiben. Ein langsamer Download hielte
 	// sonst die einzige DB-Verbindung fest. Kundenzahlen eines Salons passen in den Speicher.
-	records := [][]string{{"Name", "E-Mail", "Telefon", "Notizen", "Angelegt", "Besuche"}}
+	head := []string{"Name", "E-Mail", "Telefon", "Notizen", "Angelegt", "Besuche"}
+	for i := range head {
+		head[i] = tr(lang, head[i])
+	}
+	created := func(t time.Time) string { return t.Format("02.01.2006") }
+	if lang == "en" {
+		created = func(t time.Time) string { return t.Format(time.DateOnly) } // ISO: in jedem Gebietsschema eindeutig
+	}
+	records := [][]string{head}
 	for rows.Next() {
 		var name, email, phone, notes string
-		var created int64
+		var createdAt int64
 		var visits int
-		if err := rows.Scan(&name, &email, &phone, &notes, &created, &visits); err != nil {
+		if err := rows.Scan(&name, &email, &phone, &notes, &createdAt, &visits); err != nil {
 			rows.Close()
 			a.dashServerError(w, r, c, err)
 			return
 		}
 		records = append(records, []string{kundenCSVZelle(name), kundenCSVZelle(email), kundenCSVZelle(phone),
-			kundenCSVZelle(notes), time.Unix(created, 0).In(c.Salon.Loc).Format("02.01.2006"), strconv.Itoa(visits)})
+			kundenCSVZelle(notes), created(time.Unix(createdAt, 0).In(c.Salon.Loc)), strconv.Itoa(visits)})
 	}
 	rows.Close()
 	if err := rows.Err(); err != nil {
 		a.dashServerError(w, r, c, err)
 		return
 	}
-	file := "kunden-" + c.Salon.Slug + "-" + time.Now().In(c.Salon.Loc).Format(time.DateOnly) + ".csv"
+	file := tr(lang, "kunden") + "-" + c.Salon.Slug + "-" + time.Now().In(c.Salon.Loc).Format(time.DateOnly) + ".csv"
 	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="`+file+`"`)
 	w.Header().Set("Cache-Control", "no-store")
 	w.Write([]byte("\xEF\xBB\xBF")) // BOM, damit Excel UTF-8 erkennt
 	cw := csv.NewWriter(w)
-	cw.Comma = ';' // Excel mit deutschem Gebietsschema erwartet Semikolon
+	cw.Comma = ';' // Excel mit deutschem (und den meisten EU-)Gebietsschemas erwartet Semikolon
 	cw.UseCRLF = true
 	cw.WriteAll(records)
 }
@@ -196,10 +215,10 @@ var kundenGespeichert = map[string]string{
 
 // kundeAusFormular liest und prüft das Kundenformular. Fehler je Feldname
 // (name, email, phone, notes); "form" = Formular nicht lesbar. Leer = gültig.
-func kundeAusFormular(w http.ResponseWriter, r *http.Request) (kunde, map[string]string) {
+func kundeAusFormular(w http.ResponseWriter, r *http.Request, lang string) (kunde, map[string]string) {
 	r.Body = http.MaxBytesReader(w, r.Body, 32<<10)
 	if err := r.ParseForm(); err != nil {
-		return kunde{}, map[string]string{"form": "Das Formular war zu groß oder unvollständig."}
+		return kunde{}, map[string]string{"form": tr(lang, "Das Formular war zu groß oder unvollständig.")}
 	}
 	k := kunde{
 		Name:  strings.TrimSpace(r.PostFormValue("name")),
@@ -229,6 +248,9 @@ func kundeAusFormular(w http.ResponseWriter, r *http.Request) (kunde, map[string
 			k.Email = strings.ToLower(addr.Address) // wie bei der Online-Buchung
 		}
 	}
+	for f, msg := range errs {
+		errs[f] = tr(lang, msg)
+	}
 	return k, errs
 }
 
@@ -247,14 +269,15 @@ func kundeEmailVergeben(err error) bool {
 }
 
 func (a *app) kundeNeu(w http.ResponseWriter, r *http.Request, c *dctx) {
-	d := a.dashPage(c, r, "kunden", "Neuer Kunde")
+	d := a.dashPage(c, r, "kunden", tr(a.langFor(r), "Neuer Kunde"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Form"], d["Errors"] = kunde{}, map[string]string{}
 	a.render(w, http.StatusOK, "kunden-neu", d)
 }
 
 func (a *app) kundeAnlegen(w http.ResponseWriter, r *http.Request, c *dctx) {
-	k, errs := kundeAusFormular(w, r)
+	lang := a.langFor(r)
+	k, errs := kundeAusFormular(w, r, lang)
 	if len(errs) == 0 {
 		var id int64
 		err := a.db.QueryRow(`INSERT INTO customers (salon_id, name, email, phone, notes) VALUES (?, ?, ?, ?, ?) RETURNING id`,
@@ -267,9 +290,9 @@ func (a *app) kundeAnlegen(w http.ResponseWriter, r *http.Request, c *dctx) {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		errs["email"] = kundeEmailVergebenText
+		errs["email"] = tr(lang, kundeEmailVergebenText)
 	}
-	d := a.dashPage(c, r, "kunden", "Neuer Kunde")
+	d := a.dashPage(c, r, "kunden", tr(lang, "Neuer Kunde"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Form"], d["Errors"] = k, errs
 	a.render(w, http.StatusBadRequest, "kunden-neu", d)
@@ -288,13 +311,13 @@ func (a *app) eigenerKunde(w http.ResponseWriter, r *http.Request, c *dctx) *kun
 	var numErr *strconv.NumError
 	switch {
 	case errors.As(err, &numErr) || errors.Is(err, sql.ErrNoRows):
-		a.dashError(w, r, c, http.StatusNotFound, "Diesen Kunden gibt es nicht.")
+		a.dashError(w, r, c, http.StatusNotFound, tr(a.langFor(r), "Diesen Kunden gibt es nicht."))
 		return nil
 	case err != nil:
 		a.dashServerError(w, r, c, err)
 		return nil
 	}
-	k.Created = time.Unix(created, 0).In(c.Salon.Loc).Format("02.01.2006")
+	k.Created = kundenDatum(a.langFor(r), time.Unix(created, 0).In(c.Salon.Loc))
 	return &k
 }
 
@@ -309,7 +332,8 @@ func (a *app) kundeSpeichern(w http.ResponseWriter, r *http.Request, c *dctx) {
 	if k == nil {
 		return
 	}
-	f, errs := kundeAusFormular(w, r)
+	lang := a.langFor(r)
+	f, errs := kundeAusFormular(w, r, lang)
 	if len(errs) == 0 {
 		_, err := a.db.Exec(`UPDATE customers SET name = ?, email = ?, phone = ?, notes = ? WHERE id = ? AND salon_id = ?`,
 			f.Name, kundeNullEmail(f.Email), f.Phone, f.Notes, k.ID, c.Salon.ID)
@@ -321,7 +345,7 @@ func (a *app) kundeSpeichern(w http.ResponseWriter, r *http.Request, c *dctx) {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		errs["email"] = kundeEmailVergebenText
+		errs["email"] = tr(lang, kundeEmailVergebenText)
 	}
 	a.kundeKarteZeigen(w, r, c, k, f, errs)
 }
@@ -331,7 +355,14 @@ func (a *app) kundeSpeichern(w http.ResponseWriter, r *http.Request, c *dctx) {
 type kundenTermin struct {
 	ID, PriceCents       int64
 	When, Service, Staff string
-	Status, Badge        string
+	Status, Badge        string // Status = deutscher Schlüssel (für die Chip-Farbe)
+	Label, Price         string // Status und Preis in der Sprache der Seite
+}
+
+// kundenTermine: Terminliste mit Sprache für das Template "kunden-termine".
+type kundenTermine struct {
+	Lang string
+	List []kundenTermin
 }
 
 // kundeKarteZeigen rendert die Karteikarte mit Terminhistorie. form = Werte im
@@ -345,6 +376,7 @@ func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, 
 		a.dashServerError(w, r, c, err)
 		return
 	}
+	lang := a.langFor(r)
 	now := time.Now().Unix()
 	var upcoming, past []kundenTermin
 	var visits int
@@ -358,7 +390,8 @@ func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, 
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		t.When = deDate(time.Unix(start, 0).In(c.Salon.Loc))
+		t.When = dateFor(lang, time.Unix(start, 0).In(c.Salon.Loc))
+		t.Price = money(lang, t.PriceCents)
 		switch {
 		case status == "cancelled":
 			t.Status, t.Badge = "abgesagt", "badge-muted"
@@ -371,6 +404,7 @@ func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, 
 			visits++
 			revenue += t.PriceCents // ponytail: aktueller Preis der Leistung, keine Preis-Historie
 		}
+		t.Label = tr(lang, t.Status)
 		if start >= now {
 			upcoming = append(upcoming, t)
 		} else {
@@ -393,8 +427,11 @@ func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, 
 	d := a.dashPage(c, r, "kunden", k.Name)
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Customer"], d["Form"], d["Errors"] = k, form, errs
-	d["Upcoming"], d["Past"], d["Visits"], d["Revenue"], d["Next"] = upcoming, past, visits, revenue, next
-	d["SavedMsg"] = kundenGespeichert[r.URL.Query().Get("gespeichert")]
+	d["Upcoming"], d["Past"] = kundenTermine{lang, upcoming}, kundenTermine{lang, past}
+	d["Visits"], d["Revenue"], d["Next"] = visits, money(lang, revenue), next
+	if msg := kundenGespeichert[r.URL.Query().Get("gespeichert")]; msg != "" {
+		d["SavedMsg"] = tr(lang, msg)
+	}
 	status := http.StatusOK
 	if len(errs) > 0 {
 		status = http.StatusBadRequest
@@ -416,14 +453,15 @@ func (a *app) kundeLoeschenSeite(w http.ResponseWriter, r *http.Request, c *dctx
 		a.dashServerError(w, r, c, err)
 		return
 	}
-	appts := "keine Termine"
+	lang := a.langFor(r)
+	appts := tr(lang, "keine Termine")
 	switch {
 	case total == 1:
-		appts = "1 Termin"
+		appts = tr(lang, "1 Termin")
 	case total > 1:
-		appts = strconv.Itoa(total) + " Termine"
+		appts = strconv.Itoa(total) + tr(lang, " Termine")
 	}
-	d := a.dashPage(c, r, "kunden", "Kunde löschen")
+	d := a.dashPage(c, r, "kunden", tr(lang, "Kunde löschen"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Customer"], d["Appts"], d["Upcoming"] = k, appts, upcoming
 	a.render(w, http.StatusOK, "kunden-loeschen", d)
