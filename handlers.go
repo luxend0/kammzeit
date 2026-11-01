@@ -617,16 +617,11 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, s, err)
 		return
 	}
-	go func() {
-		if err := a.mail.send(email, "Termin bestätigt: "+s.Name, a.customerMail(s, b, "danke für deine Buchung! Dein Termin bei "+s.Name+" steht:")); err != nil {
-			log.Printf("Bestätigung an %s: %v", email, err)
-		}
+	go func() { // Mails: web/mail.html, Daten: mail.go
+		a.mailTo(email, s.Lang, "booking-confirm", a.customerMailData(s, b, time.Now()))
 		if s.Email != "" {
-			body := fmt.Sprintf("Neue Online-Buchung:\n\n%s\nKunde:    %s\nE-Mail:   %s\nTelefon:  %s\n\nAlle Termine: %s/dashboard\n",
-				bookingLines(b), b.Customer, b.Email, orDash(b.Phone), a.siteURLLang(s.Lang))
-			if err := a.mail.send(s.Email, "Neue Buchung: "+deDate(b.Start), body); err != nil {
-				log.Printf("Salon-Info an %s: %v", s.Email, err)
-			}
+			lang, d := a.salonMailData(s, b)
+			a.mailTo(s.Email, lang, "booking-salon", d)
 		}
 	}()
 
@@ -721,19 +716,13 @@ func (a *app) cancel(w http.ResponseWriter, r *http.Request) {
 		a.render(w, http.StatusConflict, "cancel", a.cancelData(s, b, now)) // erklärt, warum nicht (mehr)
 		return
 	}
-	go func() {
+	go func() { // Mails: web/mail.html, Daten: mail.go
 		if s.Email != "" {
-			body := fmt.Sprintf("%s hat online abgesagt:\n\n%s\nDer Termin ist im Kalender wieder frei.\n", b.Customer, bookingLines(b))
-			if err := a.mail.send(s.Email, "Termin abgesagt: "+deDate(b.Start), body); err != nil {
-				log.Printf("Absage-Info an %s: %v", s.Email, err)
-			}
+			lang, d := a.salonMailData(s, b)
+			a.mailTo(s.Email, lang, "cancel-salon", d)
 		}
 		if b.Email != "" {
-			body := fmt.Sprintf("Hallo %s,\n\ndeine Absage ist angekommen. Dieser Termin ist storniert:\n\n%s\nNeuen Termin buchen: %s\n\nViele Grüße\n%s\n",
-				b.Customer, bookingLines(b), a.link(s.Slug, "/"), salonContact(s))
-			if err := a.mail.send(b.Email, "Termin abgesagt: "+s.Name, body); err != nil {
-				log.Printf("Absage-Bestätigung an %s: %v", b.Email, err)
-			}
+			a.mailTo(b.Email, s.Lang, "cancel-customer", a.customerMailData(s, b, now))
 		}
 	}()
 	a.render(w, http.StatusOK, "cancelled", a.page(s, tr(s.Lang, "Termin abgesagt")))
@@ -822,39 +811,6 @@ func icsFold(line string) string {
 		n += size
 	}
 	return b.String()
-}
-
-// --- Mails ---
-
-// bookingLines: Termindaten für Mails.
-func bookingLines(b *booking) string {
-	return fmt.Sprintf("Wann:     %s\nLeistung: %s (%d Min.)\nBei:      %s\n", deDate(b.Start), b.Service, int(b.End.Sub(b.Start).Minutes()), b.Staff)
-}
-
-// salonContact: Name, Adresse und Telefon des Salons für Mails an Kunden.
-func salonContact(s *salon) string {
-	out := s.Name + "\n"
-	if addr := strings.TrimSpace(strings.ReplaceAll(s.Address, "\r", "")); addr != "" {
-		out += addr + "\n"
-	}
-	if s.Phone != "" {
-		out += "Telefon: " + s.Phone + "\n"
-	}
-	return out
-}
-
-// customerMail: Bestätigung und Erinnerung an den Kunden.
-func (a *app) customerMail(s *salon, b *booking, intro string) string {
-	var m strings.Builder
-	fmt.Fprintf(&m, "Hallo %s,\n\n%s\n\n%s\n", b.Customer, intro, bookingLines(b))
-	fmt.Fprintf(&m, "So findest du uns:\n%s\n", salonContact(s))
-	fmt.Fprintf(&m, "In deinen Kalender eintragen:\n%s\n\n", a.link(s.Slug, "/termin/"+b.Token+".ics"))
-	fmt.Fprintf(&m, "Du kannst doch nicht? Bitte sag ab, dann wird der Termin für andere frei:\n%s\n", a.link(s.Slug, "/storno/"+b.Token))
-	if s.CancelNoticeMin > 0 {
-		fmt.Fprintf(&m, "Online-Absage bis %s möglich, danach bitte im Salon anrufen.\n", deDate(cancelDeadline(s, b.Start)))
-	}
-	fmt.Fprintf(&m, "\nBis bald!\n%s\n", s.Name)
-	return m.String()
 }
 
 // --- Formatierung ---
@@ -948,13 +904,6 @@ func oneLine(s string) string {
 
 // hasControl: enthält Steuerzeichen (auch CR, LF, Tab).
 func hasControl(s string) bool { return strings.IndexFunc(s, unicode.IsControl) >= 0 }
-
-func orDash(s string) string {
-	if s == "" {
-		return "-"
-	}
-	return s
-}
 
 var templateFuncs = map[string]any{
 	"euro": func(cents int64) string { return fmt.Sprintf("%d,%02d €", cents/100, cents%100) },

@@ -10,6 +10,7 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -216,23 +217,38 @@ func (a *app) ownReferer(r *http.Request) bool {
 // "mail-<name>-html" (Daten bekommen zusätzlich .Lang) und schickt eine Mail mit
 // Text- und HTML-Teil. Fehlt das HTML-Template, geht nur Text raus.
 func (a *app) mailT(to, lang, name string, data map[string]any) error {
+	subj, text, page, err := a.renderMail(lang, name, data)
+	if err != nil {
+		return err
+	}
+	return a.mail.sendHTML(to, subj, text, page)
+}
+
+// renderMail rendert Betreff, Text- und HTML-Teil (ohne Versand, auch für Tests).
+// Gemeinsame Werte (Bilder, Links, Farben) ergänzt mailDefaults (mail.go).
+func (a *app) renderMail(lang, name string, data map[string]any) (subject, text, page string, err error) {
 	if data == nil {
 		data = map[string]any{}
 	}
 	data["Lang"] = lang
-	var subj, text, html strings.Builder
+	a.mailDefaults(lang, data)
+	var subj, txt, htm strings.Builder
 	if err := a.tpl.ExecuteTemplate(&subj, "mail-"+name+"-subject", data); err != nil {
-		return err
+		return "", "", "", err
 	}
-	if err := a.tpl.ExecuteTemplate(&text, "mail-"+name+"-text", data); err != nil {
-		return err
+	// html/template maskiert auch Betreff und Textteil ("&amp;", "&#39;"): zurück
+	// in Klartext. Die Mail-Templates selbst enthalten dort keine Entities.
+	subject = html.UnescapeString(strings.TrimSpace(subj.String()))
+	data["Subject"] = subject
+	if err := a.tpl.ExecuteTemplate(&txt, "mail-"+name+"-text", data); err != nil {
+		return "", "", "", err
 	}
 	if a.tpl.Lookup("mail-"+name+"-html") != nil {
-		if err := a.tpl.ExecuteTemplate(&html, "mail-"+name+"-html", data); err != nil {
-			return err
+		if err := a.tpl.ExecuteTemplate(&htm, "mail-"+name+"-html", data); err != nil {
+			return "", "", "", err
 		}
 	}
-	return a.mail.sendHTML(to, strings.TrimSpace(subj.String()), text.String(), html.String())
+	return subject, html.UnescapeString(txt.String()), htm.String(), nil
 }
 
 // multipartAlternative baut den Rumpf einer Text+HTML-Mail und gibt den

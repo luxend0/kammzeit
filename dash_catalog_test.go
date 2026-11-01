@@ -516,7 +516,7 @@ func TestCatalogEnglish(t *testing.T) {
 	_, body = e.do("POST", "/dashboard/team/"+anna, url.Values{"name": {"Anna"}, "aktiv": {"1"}, "uebertragen": {"2"}, "von-2-0": {"09:00"}, "bis-2-0": {"18:00"}})
 	has("copy", body, "Hours copied: Tuesday to Wednesday-Friday. Not saved yet.")
 	code, body = e.do("GET", "/dashboard/team/neu", nil)
-	has("limit", body, "See Pro", "With Pro you can have as many active staff as you like, for 14.90 € per month or 149 € per year.")
+	has("limit", body, "See Pro", "With Pro you can have as many active staff as you like, for €14.90 per month or €149 per year.")
 	if code != http.StatusOK {
 		t.Errorf("limit: %d", code)
 	}

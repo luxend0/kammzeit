@@ -415,7 +415,7 @@ func TestAboEnglish(t *testing.T) {
 	rec := httptest.NewRecorder()
 	a.aboPage(rec, dashRequest(http.MethodGet, "http://kammzeit-en.test/dashboard/abo", nil), dctxFor(t, a, 1))
 	body := rec.Body.String()
-	for _, s := range []string{"<h1>Plan</h1>", "Your plan: <strong>Free</strong>.", "0 €", "14.90 €", "per month", "or 149 € per year",
+	for _, s := range []string{"<h1>Plan</h1>", "Your plan: <strong>Free</strong>.", "€0", "€14.90", "per month", "or €149 per year",
 		"Pro monthly", "Pro yearly", "Good to know",
 		"No VAT is charged (German small business scheme, § 19 UStG). For business customers in other EU countries the reverse charge procedure may apply."} {
 		if !strings.Contains(body, s) {
