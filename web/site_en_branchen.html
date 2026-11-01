@@ -3,7 +3,7 @@
      "branchen-css" and "branchen-deco" come from there because they contain no text.
      Content rule: only claim what Kammzeit really does; name what is missing. Prices are examples in EUR. */}}
 
-{{define "enbr-actions"}}<p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="https://demo.kammzeit.de">See the demo salon</a></p>{{end}}
+{{define "enbr-actions"}}<p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="https://demo-en.kammzeit.com">See the demo salon</a></p>{{end}}
 
 {{/* Links to the other industry pages. Data: current path. */}}
 {{define "enbr-also"}}<nav class="br-also" aria-label="Kammzeit for other salons"><span>Kammzeit also works for</span>
@@ -134,17 +134,48 @@
   </div>
 </section>
 
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-more">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / Team and booking page</p>
+      <h2 id="h-more">What else is included</h2>
+      <p class="lead">Anything that needs Pro is marked. Everything else is part of the Free plan too.</p>
+    </div>
+    <div class="br-scenes br-why">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Separate logins for your team <span class="br-tag">Pro</span></h3>
+        <p>Everyone on your team logs in with a link sent by email, no password needed. Staff members see the calendar and the customer records with all colour formulas, add appointments and keep their own working hours up to date. Services, prices, team, settings and your plan stay with you, and so do deleting and exporting customers.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+        <h3>Kammzeit as an app</h3>
+        <p>You can install your dashboard on your phone, tablet or the computer at reception. It then opens in its own window like an app, with shortcuts for a new appointment and your customer records. The app doesn't store customer data on the device. Your customers still don't need an app.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
+        <h3>Your booking page, your salon</h3>
+        <p>Every booking page shows your logo, links to Instagram, TikTok, Facebook, Google and WhatsApp, and your opening hours based on your working hours. Pro adds a cover image, a choice of font, rounded or square corners, light or dark, a welcome text and a gallery of up to 12 photos, for example of cuts and colours from your salon.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt="">
+        <h3>In English or German</h3>
+        <p>You choose one language for your booking page, English or German, and confirmations and reminders go out in that language too. English works well for a mixed, international clientele. Other languages aren't available yet.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="h-not">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>04</span> / To be honest</p>
+      <p class="section-num"><span>05</span> / To be honest</p>
       <h2 id="h-not">What Kammzeit can't do for hairdressers yet</h2>
     </div>
     <div class="br-not">
       <div><h3>Using processing time</h3><p>An appointment blocks the person for its whole duration. You can't fit a men's cut into the processing time of a colour, neither online nor in the calendar.</p></div>
       <div><h3>Several services in one booking</h3><p>Customers choose one service per booking. Set up combinations like “colour and cut” as a service of their own.</p></div>
       <div><h3>Deposit when booking <span class="br-tag">planned</span></h3><p>Coming later. Until then, reminders, the cancellation deadline and the no-show mark on the customer card help.</p></div>
-      <div><h3>Separate logins for the team</h3><p>There is one login per salon. Staff members can't log in individually.</p></div>
       <div><h3>Text messages</h3><p>Confirmations and reminders are sent by email. Kammzeit doesn't send text messages (SMS).</p></div>
     </div>
     {{template "enbr-also" .Path}}
@@ -169,10 +200,10 @@
   <div class="wrap page-head-in">
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">For barbershops</li></ol></nav>
-      <h1 id="h-top">Appointments and walk-ins in one calendar.</h1>
-      <p class="lead">With Kammzeit, your regulars book their cut online, even at one in the morning. When someone just walks in, you add them to the calendar in a few taps, and that time is gone online. So nobody gets double-booked.</p>
+      <h1 id="h-top">Appointments online, walk-ins in the queue.</h1>
+      <p class="lead">With Kammzeit, your regulars book their cut online, even at one in the morning. Anyone who walks in without an appointment scans the QR code in your shop, joins the queue with their first name and sees on their phone when it's their turn. Or you add them to the calendar in a few taps, and that time is gone online.</p>
       {{template "enbr-actions"}}
-      <p class="note">Free for one barber. €14.90 a month for the whole team.</p>
+      <p class="note">Free for one barber. €14.90 a month for the whole team and the queue.</p>
     </div>
     <figure class="page-head-media br-head-media">
       {{template "branchen-deco"}}
@@ -242,10 +273,39 @@
   </div>
 </section>
 
+<section class="section" aria-labelledby="h-queue">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / The queue</p>
+      <h2 id="h-queue">Walk-ins join the queue themselves</h2>
+      <p class="lead">Customers without an appointment don't have to ask at the counter how long it will take. They scan the QR code, enter their first name and see on their phone how many people are ahead of them. The queue is part of the Pro plan. Adding walk-ins straight to the calendar works on every plan.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-book">
+        <p class="br-book-head"><b>Queue</b><span>2 barbers today</span></p>
+        <ol>
+          <li><b class="br-num">12</b><span>Jonas<small>Haircut + beard, being served</small></span></li>
+          <li class="is-walkin"><b class="br-num">13</b><span>Deniz<small>Haircut, called, has been sent an email</small></span></li>
+          <li><b class="br-num">14</b><span>Leon<small>Beard trim and line-up, waiting about 15 min</small></span></li>
+          <li><b class="br-num">15</b><span>Ali<small>No service chosen yet, waiting about 25 min</small></span></li>
+          <li class="is-free"><b class="br-num">16</b><span>next number<small>join with the QR code, wait about 35 min</small></span></li>
+        </ol>
+        <figcaption>Example of a queue, simplified. Kammzeit estimates the waiting time from the services of the people waiting and the number of barbers working today.</figcaption>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+        <p><b>Put up the QR code, done.</b> You print the QR code from your dashboard. Customers don't need an app or an account, just their first name; the email address is optional. While the queue is open, your booking page also shows “Join the queue”.</p>
+        <p><b>One click calls the next customer.</b> You call the next number, and anyone who left an email address gets an email saying it's nearly their turn. A screen or tablet in the shop shows the numbers and the QR code for joining. If someone asks at the counter, you add them yourself.</p>
+        <p><b>On when you want it.</b> You switch the queue on and off. Outside your working hours it closes automatically, and with their own login, every barber can call customers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="h-daily">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>03</span> / Shop life</p>
+      <p class="section-num"><span>04</span> / Shop life</p>
       <h2 id="h-daily">Situations you know</h2>
     </div>
     <div class="br-scenes">
@@ -283,18 +343,49 @@
   </div>
 </section>
 
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-more">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>05</span> / Team and booking page</p>
+      <h2 id="h-more">What else is included</h2>
+      <p class="lead">Anything that needs Pro is marked. Everything else is part of the Free plan too.</p>
+    </div>
+    <div class="br-scenes br-why">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>A login for every barber <span class="br-tag">Pro</span></h3>
+        <p>Everyone on the team logs in with a link sent by email, no password needed. Barbers see the calendar and the customer records, add walk-ins, call customers from the queue and keep their own working hours up to date. Services, prices, team, settings and your plan stay with you, and so do deleting and exporting customers.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+        <h3>Kammzeit as an app</h3>
+        <p>You can install your dashboard on your phone, tablet or the computer at the counter. It then opens in its own window like an app, with shortcuts for a new appointment, customers and the queue. The app doesn't store customer data on the device.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
+        <h3>Your booking page, your shop</h3>
+        <p>Every booking page shows your logo, links to Instagram, TikTok, Facebook, Google and WhatsApp, and your opening hours based on your working hours. Pro adds a cover image, a choice of font, rounded or square corners, light or dark, a welcome text and a gallery of up to 12 photos, for example of fades and beards.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt="">
+        <h3>In English or German</h3>
+        <p>You choose one language for your booking page, English or German, and confirmations, reminders and the queue email go out in that language too. English works well for a mixed, international clientele. Other languages aren't available yet.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="h-not">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>04</span> / To be honest</p>
+      <p class="section-num"><span>06</span> / To be honest</p>
       <h2 id="h-not">What Kammzeit can't do for barbershops yet</h2>
     </div>
     <div class="br-not">
-      <div><h3>A queue for walk-ins</h3><p>There's no digital queue that calls walk-ins up in turn. When someone comes in, you add them straight to the calendar as an appointment.</p></div>
-      <div><h3>Text messages or WhatsApp</h3><p>Confirmations and reminders are sent by email. Kammzeit doesn't send messages to phones.</p></div>
+      <div><h3>Combining the queue with appointments</h3><p>The queue runs alongside the calendar. People waiting don't block any time there, and the estimated waiting time doesn't include booked appointments. On busy appointment days, the wait is longer than shown.</p></div>
+      <div><h3>Text messages or WhatsApp</h3><p>Confirmations, reminders and queue calls are sent by email. Kammzeit doesn't send messages to phones.</p></div>
       <div><h3>Till</h3><p>Kammzeit isn't a till or point-of-sale system. Customers pay in your shop, as before.</p></div>
       <div><h3>Deposit when booking <span class="br-tag">planned</span></h3><p>Coming later. Until then, reminders, the cancellation deadline and the no-show mark help.</p></div>
-      <div><h3>Separate logins for each barber</h3><p>There is one login per shop. Barbers can't log in individually.</p></div>
     </div>
     {{template "enbr-also" .Path}}
   </div>
@@ -423,10 +514,42 @@
   </div>
 </section>
 
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-more">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / Team and booking page</p>
+      <h2 id="h-more">What else is included</h2>
+      <p class="lead">Anything that needs Pro is marked. Everything else is part of the Free plan too.</p>
+    </div>
+    <div class="br-scenes br-why">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Separate logins for your team <span class="br-tag">Pro</span></h3>
+        <p>Every colleague logs in with a link sent by email, no password needed. Staff members see the calendar and the customer records, add appointments and keep their own working hours up to date. Services, prices, team, settings and your plan stay with you, and so do deleting and exporting customers. Keep in mind that anyone with a login sees all notes in the customer records.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+        <h3>Kammzeit as an app</h3>
+        <p>You can install your dashboard on your phone, tablet or computer. It then opens in its own window like an app, with shortcuts for a new appointment and your customer records. The app doesn't store customer data on the device. Your customers still don't need an app.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
+        <h3>Your booking page, your salon</h3>
+        <p>Every booking page shows your logo, links to Instagram, TikTok, Facebook, Google and WhatsApp, and your opening hours based on your working hours. Pro adds a cover image, a choice of font, rounded or square corners, light or dark, a welcome text and a gallery of up to 12 photos, for example of your treatment rooms, brows and lashes.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt="">
+        <h3>In English or German</h3>
+        <p>You choose one language for your booking page, English or German, and confirmations and reminders go out in that language too. English works well for a mixed, international clientele. Other languages aren't available yet.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="h-not">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>04</span> / To be honest</p>
+      <p class="section-num"><span>05</span> / To be honest</p>
       <h2 id="h-not">What Kammzeit can't do for beauty salons yet</h2>
     </div>
     <div class="br-not">
@@ -576,10 +699,42 @@
   </div>
 </section>
 
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-more">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / Team and booking page</p>
+      <h2 id="h-more">What else is included</h2>
+      <p class="lead">Anything that needs Pro is marked. Everything else is part of the Free plan too.</p>
+    </div>
+    <div class="br-scenes br-why">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
+        <h3>Your nail art on your booking page</h3>
+        <p>Every booking page shows your logo, links to Instagram, TikTok, Facebook, Google and WhatsApp, and your opening hours based on your working hours. Pro adds a gallery of up to 12 photos of your work, plus a cover image, a choice of font, rounded or square corners, light or dark and a welcome text.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Separate logins for your team <span class="br-tag">Pro</span></h3>
+        <p>Every colleague logs in with a link sent by email, no password needed. Staff members see the calendar and the customer records, add appointments and keep their own working hours up to date. Services, prices, team, settings and your plan stay with you, and so do deleting and exporting customers.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+        <h3>Kammzeit as an app</h3>
+        <p>You can install your dashboard on your phone, tablet or computer. It then opens in its own window like an app, with shortcuts for a new appointment and your customer records. The app doesn't store customer data on the device. Your customers still don't need an app.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt="">
+        <h3>In English or German</h3>
+        <p>You choose one language for your booking page, English or German, and confirmations and reminders go out in that language too. English works well for a mixed, international clientele. Other languages aren't available yet.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
 <section class="section" aria-labelledby="h-not">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>04</span> / To be honest</p>
+      <p class="section-num"><span>05</span> / To be honest</p>
       <h2 id="h-not">What Kammzeit can't do for nail salons yet</h2>
     </div>
     <div class="br-not">
@@ -652,7 +807,7 @@
       <article class="card br-scene">
         <img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt="">
         <h3>Data in the EU</h3>
-        <p>Appointments and customer data are stored on our own servers in the Netherlands and don't leave the EU. No tracking, no ads. There is a <a href="/dpa">data processing agreement</a> for your customers' data.</p>
+        <p>Appointments and customer data are stored on our own servers in the Netherlands and don't leave the EU. No tracking, and no data passed on for advertising. There is a <a href="/dpa">data processing agreement</a> for your customers' data.</p>
       </article>
       <article class="card br-scene">
         <img class="icon-lg" src="/static/img/icons/offen.svg" width="48" height="48" alt="">

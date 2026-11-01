@@ -10,7 +10,7 @@ func (a *app) routesSiteENBranchen(mux *http.ServeMux) {
 	a.addPageEN(mux, "/for/hairdressers", "/fuer/friseure", "enbr-hairdressers", "Online booking for hairdressers - Kammzeit",
 		"Online booking for hair salons: colour with its real duration, breaks for each staff member, colour formulas on the customer card. Free for one person.")
 	a.addPageEN(mux, "/for/barbershops", "/fuer/barbershops", "enbr-barbershops", "Online booking for barbershops - Kammzeit",
-		"Online booking for barbershops: start times every 15 minutes, walk-ins added to the calendar in seconds, email reminders against no-shows. Free for one barber.")
+		"Online booking for barbershops: start times every 15 minutes, a QR code queue for walk-ins, email reminders against no-shows. Free for one barber.")
 	a.addPageEN(mux, "/for/beauty-salons", "/fuer/kosmetik", "enbr-beauty-salons", "Online booking for beauty salons - Kammzeit",
 		"Online booking for beauty salons: 60- or 90-minute treatments, minimum notice and cancellation deadline on your terms, skin type notes on the customer card.")
 	a.addPageEN(mux, "/for/nail-salons", "/fuer/nagelstudios", "enbr-nail-salons", "Online booking for nail salons - Kammzeit",
