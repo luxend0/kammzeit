@@ -1,0 +1,75 @@
+{{/* Kammzeit als App (pwa.go). Einbinden in web/dash.html:
+     im <head> von "dash-top":      {{template "pwa-head" .}}
+     in "dash-bottom" vor </main>:  {{template "pwa-install-hint" .}}  (braucht .Lang, liegt fest am unteren Rand) */}}
+{{define "pwa-head"}}<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1E6BFF">
+<link rel="apple-touch-icon" href="/static/app/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kammzeit">
+<script src="/static/app/register.js" defer></script>{{end}}
+
+{{/* Einmaliger Hinweis "Als App installieren". Unsichtbar, bis register.js ihn zeigt:
+     iOS Safari (nicht als App gestartet) mit Anleitung, Android/Desktop mit Knopf, sobald der
+     Browser "beforeinstallprompt" meldet. Schließen merkt sich localStorage "kz-pwa-hint". */}}
+{{define "pwa-install-hint"}}<style>
+.pwa-hint:not([hidden]) {
+  position: fixed; z-index: 10; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); left: max(1rem, env(safe-area-inset-left));
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: .75rem 1rem;
+  max-width: 28rem; margin-left: auto; padding: 1rem 1.15rem; border-color: var(--line);
+}
+.pwa-hint [hidden] { display: none !important; }
+.pwa-hint > img { width: 48px; height: 48px; }
+.pwa-hint h2 { margin: .1rem 0 0; font-size: 1.0625rem; }
+.pwa-hint p { margin: .2rem 0 0; font-size: .9375rem; color: var(--muted); }
+.pwa-hint-actions { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem; }
+.pwa-hint-actions button.link { min-height: 2.25rem; font-weight: 700; color: var(--night); }
+</style>
+<aside class="card pwa-hint" id="pwa-hint" aria-labelledby="pwa-hint-title" hidden>
+  <img src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+  <div>
+    <h2 id="pwa-hint-title">{{t .Lang "Kammzeit als App"}}</h2>
+    <p data-pwa="prompt" hidden>{{t .Lang "Installiere Kammzeit auf diesem Gerät. Dein Dashboard öffnet sich dann in einem eigenen Fenster wie eine App."}}</p>
+    <p data-pwa="ios" hidden>{{t .Lang "Öffne in Safari das Teilen-Menü und wähle „Zum Home-Bildschirm“. Dann startest du Kammzeit wie eine App."}}</p>
+  </div>
+  <div class="pwa-hint-actions">
+    <button class="btn btn-small" type="button" data-pwa="install" hidden>{{t .Lang "App installieren"}}</button>
+    <button class="link" type="button" data-pwa="close">{{t .Lang "Schließen"}}</button>
+  </div>
+</aside>{{end}}
+
+{{/* Offline-Seite (GET /offline): der Service Worker legt sie bei der Installation ab und zeigt
+     sie, wenn eine Seite ohne Netz nicht lädt. href="" lädt die ursprünglich angefragte Adresse neu. */}}
+{{define "pwa-offline"}}<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{t .Lang "Du bist offline"}} - Kammzeit</title>
+<link rel="icon" href="/static/img/kammzeit.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/dash.css">
+<meta name="theme-color" content="#1E6BFF">
+<script src="/static/app/register.js" defer></script>
+<style>
+.pwa-offline { max-width: 40rem; margin: 1rem auto 0; padding-bottom: 2.5rem; }
+.pwa-offline > h1 { margin: 0; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.25rem); color: var(--blue-deep); } /* 5,5:1 auf Himmel hell */
+.pwa-offline > p { color: var(--night); }
+</style>
+</head>
+<body class="dash" data-offline>
+<header class="topbar">
+  <div class="topbar-in">
+    <span class="brand"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34"><span class="brand-text"><span class="brand-word">Kammzeit</span></span></span>
+  </div>
+</header>
+<main class="dash-main" id="inhalt">
+  <div class="empty pwa-offline">
+    <img src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="">
+    <h1>{{t .Lang "Du bist offline"}}</h1>
+    <p>{{t .Lang "Gerade gibt es keine Verbindung zum Internet. Sobald du wieder online bist, lädt die Seite von selbst neu."}}</p>
+    <p class="actions"><a class="btn" href="">{{t .Lang "Erneut versuchen"}}</a></p>
+  </div>
+</main>
+</body>
+</html>{{end}}
