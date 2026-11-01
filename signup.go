@@ -19,6 +19,7 @@ func (a *app) routesSignup(mux *http.ServeMux) {
 	mux.HandleFunc("GET /registrieren", a.signupPage)
 	mux.HandleFunc("GET /registrieren/adresse", a.signupSlug)
 	mux.HandleFunc("POST /registrieren", a.signup)
+	a.routesMarketing(mux) // marketing.go: /newsletter/...
 }
 
 // Adressen, die kein Salon bekommen darf (Technik, eigene Seiten, Verwechslung).
@@ -35,6 +36,7 @@ var (
 )
 
 // slugProblem prüft nur die Form einer Wunsch-Adresse. "" = in Ordnung.
+// Die Texte sind zugleich Statuswerte (deutsch) und Übersetzungsschlüssel.
 func slugProblem(slug string) string {
 	switch {
 	case len(slug) < 3 || len(slug) > 40:
@@ -97,15 +99,24 @@ func (a *app) signupOpen(w http.ResponseWriter, r *http.Request) bool {
 	if a.cfg.SingleTenant {
 		exists, err := signupHasSalon(a.db)
 		if err != nil {
-			a.serverError(w, nil, err)
+			a.authServerError(w, r, err)
 			return false
 		}
 		if exists {
-			a.fail(w, nil, http.StatusNotFound, "Diese Seite gibt es nicht.")
+			a.authFail(w, r, http.StatusNotFound, "Diese Seite gibt es nicht.")
 			return false
 		}
 	}
 	return true
+}
+
+// signupDomain = Hauptdomain der Anfrage. Der Salon bekommt deren Sprache, und
+// seine Buchungsseite läuft unter <slug>.<Domain seiner Sprache>.
+func (a *app) signupDomain(r *http.Request) string {
+	if _, _, d := a.tenant(r.Host); d.Host != "" {
+		return d.Host
+	}
+	return a.cfg.BaseDomain
 }
 
 func signupHasSalon(q querier) (bool, error) {
@@ -121,20 +132,29 @@ func (a *app) signupPage(w http.ResponseWriter, r *http.Request) {
 }
 
 // signupForm zeigt das Formular, nach einem Fehler mit den Eingaben von eben.
-// errs = Fehler am Feld (name, slug, vorname, email, agb), msg = Hinweis ohne Feldbezug.
+// errs = Fehler am Feld (name, slug, vorname, email, agb), msg = Hinweis ohne
+// Feldbezug (beides schon übersetzt). Das Häkchen für Kammzeit-News ist nie
+// vorausgewählt; nur nach einem Fehler steht es so, wie es abgeschickt wurde.
 func (a *app) signupForm(w http.ResponseWriter, r *http.Request, status int, errs map[string]string, msg string) {
 	title := "Salon registrieren"
 	if a.cfg.SingleTenant {
 		title = "Ersteinrichtung"
 	}
-	d := a.authPage(title, "/registrieren")
+	d := a.authPage(r, title, "/registrieren")
+	lang := d["Lang"].(string)
 	if !a.cfg.SingleTenant { // steht in der Sitemap, darf in die Suche
 		d["Index"], d["Canonical"] = true, a.siteURLFor(r)+"/registrieren"
-		d["Description"] = "Salon bei Kammzeit registrieren: eigene Buchungsseite, gratis für einen Mitarbeiter, ohne Zahlungsdaten."
+		d["Description"] = tr(lang, "Salon bei Kammzeit registrieren: eigene Buchungsseite, gratis für einen Mitarbeiter, ohne Zahlungsdaten.")
+		alt := []alternate{{lang, a.siteURLLang(lang) + "/registrieren"}}
+		if other, otherLang := a.otherSite(lang); other != "" {
+			alt = append(alt, alternate{otherLang, other + "/registrieren"})
+		}
+		d["Alternates"] = alt
 	}
-	d["Heading"], d["Error"], d["Errors"], d["Domain"] = title, msg, errs, a.cfg.BaseDomain
+	d["Heading"], d["Error"], d["Errors"], d["Domain"] = tr(lang, title), msg, errs, a.signupDomain(r)
 	d["Name"], d["Slug"], d["SlugAuto"] = r.PostFormValue("name"), r.PostFormValue("slug"), r.PostFormValue("slug_auto")
 	d["Vorname"], d["Email"], d["AGB"] = r.PostFormValue("vorname"), r.PostFormValue("email"), r.PostFormValue("agb") == "1"
+	d["Marketing"], d["MarketingText"] = r.PostFormValue("marketing") == "1", tr(lang, marketingConsentDE)
 	a.render(w, status, "signup", d)
 }
 
@@ -147,7 +167,7 @@ func (a *app) signupSlug(w http.ResponseWriter, r *http.Request) {
 	}
 	q := r.URL.Query()
 	slug := strings.ToLower(strings.TrimSpace(q.Get("slug")))
-	d := map[string]any{"Domain": a.cfg.BaseDomain}
+	d := map[string]any{"Domain": a.signupDomain(r), "Lang": a.langFor(r)}
 	tpl := "signup-status"
 	if q.Has("name") {
 		auto := q.Get("slug_auto")
@@ -161,7 +181,7 @@ func (a *app) signupSlug(w http.ResponseWriter, r *http.Request) {
 	if slug != "" {
 		st, err := slugStatus(a.db, slug)
 		if err != nil {
-			a.serverError(w, nil, err)
+			a.authServerError(w, r, err)
 			return
 		}
 		d["Status"] = st
@@ -174,14 +194,15 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !sameOrigin(r) {
-		http.Error(w, "Ungültige Herkunft der Anfrage.", http.StatusForbidden)
+		a.badOrigin(w, r)
 		return
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
 	if err := r.ParseForm(); err != nil {
-		a.fail(w, nil, http.StatusBadRequest, "Das Formular war unvollständig.")
+		a.authFail(w, r, http.StatusBadRequest, "Das Formular war unvollständig.")
 		return
 	}
+	lang := a.langFor(r)
 	name := strings.TrimSpace(r.PostFormValue("name"))
 	first := strings.TrimSpace(r.PostFormValue("vorname"))
 	slug := strings.ToLower(strings.TrimSpace(r.PostFormValue("slug")))
@@ -192,51 +213,53 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 	}
 	addr, mailErr := mail.ParseAddress(strings.TrimSpace(r.PostFormValue("email")))
 	n, fn, sp := utf8.RuneCountInString(name), utf8.RuneCountInString(first), slugProblem(slug)
-	taken := "Die Adresse " + slug + "." + a.cfg.BaseDomain + " ist leider vergeben. Bitte wähle eine andere."
+	taken := trf(lang, "Die Adresse %s ist leider vergeben. Bitte wähle eine andere.", slug+"."+a.signupDomain(r))
 	errs := map[string]string{}
 	if n < 2 || n > 80 || strings.ContainsFunc(name, unicode.IsControl) {
-		errs["name"] = "Bitte den Namen des Salons angeben (2 bis 80 Zeichen)."
+		errs["name"] = tr(lang, "Bitte den Namen des Salons angeben (2 bis 80 Zeichen).")
 	}
 	switch {
 	case sp == "vergeben":
 		errs["slug"] = taken
 	case sp != "":
-		errs["slug"] = "Die Wunsch-Adresse ist " + sp + "."
+		errs["slug"] = tr(lang, "Die Wunsch-Adresse ist "+sp+".")
 	}
 	if fn < 1 || fn > 40 || strings.ContainsFunc(first, unicode.IsControl) {
-		errs["vorname"] = "Bitte deinen Vornamen angeben (höchstens 40 Zeichen)."
+		errs["vorname"] = tr(lang, "Bitte deinen Vornamen angeben (höchstens 40 Zeichen).")
 	}
 	if mailErr != nil || len(addr.Address) > 200 {
-		errs["email"] = "Bitte eine gültige E-Mail-Adresse angeben."
+		errs["email"] = tr(lang, "Bitte eine gültige E-Mail-Adresse angeben.")
 	}
 	if !a.cfg.SingleTenant && r.PostFormValue("agb") != "1" {
-		errs["agb"] = "Bitte bestätigen, dass du als Unternehmer handelst, und die AGB und den Vertrag zur Auftragsverarbeitung akzeptieren."
+		errs["agb"] = tr(lang, "Bitte bestätigen, dass du als Unternehmer handelst, und die AGB und den Vertrag zur Auftragsverarbeitung akzeptieren.")
 	}
 	if len(errs) > 0 {
 		a.signupForm(w, r, http.StatusBadRequest, errs, "")
 		return
 	}
 	email := strings.ToLower(addr.Address)
+	// Kammzeit-News: freiwillig, aktiv erst nach Bestätigung per Mail (Double-Opt-in).
+	marketing := !a.cfg.SingleTenant && r.PostFormValue("marketing") == "1"
 	if r.PostFormValue("homepage") != "" { // Honeypot: Bots bekommen dieselbe Antwort, angelegt wird nichts
-		a.signupDone(w, email, false)
+		a.signupDone(w, r, email, false, marketing)
 		return
 	}
 	if !signupLimit.allow(clientIP(r)) {
-		a.signupForm(w, r, http.StatusTooManyRequests, nil, "Zu viele Anmeldungen von deinem Anschluss. Bitte versuche es in einer Stunde noch einmal.")
+		a.signupForm(w, r, http.StatusTooManyRequests, nil, tr(lang, "Zu viele Anmeldungen von deinem Anschluss. Bitte versuche es in einer Stunde noch einmal."))
 		return
 	}
 	if !signupMailLimit.allow(email) { // vor jeder Abfrage: verrät nicht, ob es das Konto gibt
-		a.signupForm(w, r, http.StatusTooManyRequests, nil, "Zu viele Anmeldungen mit dieser E-Mail-Adresse. Bitte versuche es in 15 Minuten noch einmal.")
+		a.signupForm(w, r, http.StatusTooManyRequests, nil, tr(lang, "Zu viele Anmeldungen mit dieser E-Mail-Adresse. Bitte versuche es in 15 Minuten noch einmal."))
 		return
 	}
 
-	userID, isTaken, err := a.signupCreate(name, first, slug, email)
+	userID, created, isTaken, err := a.signupCreate(name, first, slug, email, lang)
 	if errors.Is(err, errSignupClosed) {
-		a.fail(w, nil, http.StatusNotFound, "Diese Seite gibt es nicht.")
+		a.authFail(w, r, http.StatusNotFound, "Diese Seite gibt es nicht.")
 		return
 	}
 	if err != nil {
-		a.serverError(w, nil, err)
+		a.authServerError(w, r, err)
 		return
 	}
 	if isTaken {
@@ -245,11 +268,26 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 	}
 	// Neues und schon bestehendes Konto bekommen dieselbe Seite und denselben
 	// Link, damit das Formular nicht verrät, welche Adressen registriert sind.
+	// Bestehendes Konto: wie beim Login geht der Link auf die Domain dieser Anfrage.
+	if !created {
+		if _, err := a.db.Exec(`UPDATE users SET lang = ? WHERE id = ?`, lang, userID); err != nil {
+			log.Printf("Registrierung: Sprache für Konto %d: %v", userID, err)
+		}
+	}
 	sendErr := a.sendLoginLink(userID, email)
 	if sendErr != nil {
 		log.Printf("Registrierung: Login-Link an %s: %v", email, sendErr)
 	}
-	a.signupDone(w, email, sendErr != nil)
+	// Nur für neue Konten: ein bestehendes ändert niemand ohne Anmeldung. Im
+	// Hintergrund, damit die Antwortzeit nicht verrät, ob das Konto neu ist.
+	if created && marketing {
+		go func() {
+			if err := a.startMarketingDOI(userID, "registrierung"); err != nil {
+				log.Printf("Registrierung: Kammzeit-News für Konto %d: %v", userID, err)
+			}
+		}()
+	}
+	a.signupDone(w, r, email, sendErr != nil, marketing)
 }
 
 var errSignupClosed = errors.New("Registrierung geschlossen")
@@ -258,35 +296,36 @@ var errSignupClosed = errors.New("Registrierung geschlossen")
 // Vorname der Inhaberin) mit Arbeitszeiten und zwei Beispiel-Leistungen an und
 // liefert die Konto-ID. Die Beispiel-Leistungen sind inaktiv: online buchbar
 // wird erst, was der Salon selbst geprüft und eingeschaltet hat.
-// Gibt es das Konto schon, wird nichts angelegt und dessen ID geliefert.
-// taken = die Adresse ist vergeben, immer, auch für das eigene Konto: sonst
-// verriete die Antwort, welche E-Mail zu welchem Salon gehört. Wer schon
-// registriert ist, meldet sich über /login an.
-func (a *app) signupCreate(name, first, slug, email string) (userID int64, taken bool, err error) {
+// lang = Sprache der Domain: gilt für Buchungsseite, Konto und Beispiel-Leistungen.
+// Gibt es das Konto schon, wird nichts angelegt und dessen ID geliefert
+// (created = false). taken = die Adresse ist vergeben, immer, auch für das
+// eigene Konto: sonst verriete die Antwort, welche E-Mail zu welchem Salon
+// gehört. Wer schon registriert ist, meldet sich über /login an.
+func (a *app) signupCreate(name, first, slug, email, lang string) (userID int64, created, taken bool, err error) {
 	tx, err := a.db.Begin()
 	if err != nil {
-		return 0, false, err
+		return 0, false, false, err
 	}
 	defer tx.Rollback()
 	if a.cfg.SingleTenant { // erneut in der Transaktion: genau ein Salon
 		exists, err := signupHasSalon(tx)
 		if err != nil {
-			return 0, false, err
+			return 0, false, false, err
 		}
 		if exists {
-			return 0, false, errSignupClosed
+			return 0, false, false, errSignupClosed
 		}
 	}
 	st, err := slugStatus(tx, slug)
 	if err != nil {
-		return 0, false, err
+		return 0, false, false, err
 	}
 	if st != "frei" {
-		return 0, true, nil
+		return 0, false, true, nil
 	}
 	err = tx.QueryRow(`SELECT id FROM users WHERE email = ?`, email).Scan(&userID)
 	if !errors.Is(err, sql.ErrNoRows) {
-		return userID, false, err // Konto gibt es schon: nichts anlegen
+		return userID, false, false, err // Konto gibt es schon: nichts anlegen
 	}
 
 	err = nil
@@ -302,8 +341,9 @@ func (a *app) signupCreate(name, first, slug, email string) (userID int64, taken
 		id, _ := res.LastInsertId()
 		return id
 	}
-	salonID := exec(`INSERT INTO salons (name, slug, email, plan) VALUES (?, ?, ?, 'free')`, name, slug, email)
-	userID = exec(`INSERT INTO users (salon_id, email, terms_accepted_at, terms_version) VALUES (?, ?, unixepoch(), ?)`, salonID, email, termsVersion)
+	salonID := exec(`INSERT INTO salons (name, slug, email, plan, lang) VALUES (?, ?, ?, 'free', ?)`, name, slug, email, lang)
+	userID = exec(`INSERT INTO users (salon_id, email, terms_accepted_at, terms_version, lang) VALUES (?, ?, unixepoch(), ?, ?)`,
+		salonID, email, termsVersion, lang)
 	staffID := exec(`INSERT INTO staff (salon_id, name) VALUES (?, ?)`, salonID, first)
 	for wd := time.Tuesday; wd <= time.Saturday; wd++ {
 		end := 18 * 60
@@ -312,17 +352,19 @@ func (a *app) signupCreate(name, first, slug, email string) (userID int64, taken
 		}
 		exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, ?, ?, ?)`, staffID, int(wd), 9*60, end)
 	}
-	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort, active) VALUES (?, 'Haarschnitt', 30, 2500, 1, 0)`, salonID)
-	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort, active) VALUES (?, 'Waschen, Schneiden, Föhnen', 60, 4500, 2, 0)`, salonID)
+	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort, active) VALUES (?, ?, 30, 2500, 1, 0)`, salonID, tr(lang, "Haarschnitt"))
+	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort, active) VALUES (?, ?, 60, 4500, 2, 0)`, salonID, tr(lang, "Waschen, Schneiden, Föhnen"))
 	exec(`INSERT INTO staff_services (staff_id, service_id) SELECT ?, id FROM services WHERE salon_id = ?`, staffID, salonID)
 	if err != nil {
-		return 0, false, err
+		return 0, false, false, err
 	}
-	return userID, false, tx.Commit()
+	return userID, true, false, tx.Commit()
 }
 
-func (a *app) signupDone(w http.ResponseWriter, email string, mailFailed bool) {
-	d := a.authPage("Fast geschafft", "/registrieren")
-	d["Email"], d["MailFailed"] = email, mailFailed
+// signupDone: dieselbe Seite für neue und bestehende Konten. Der Hinweis auf die
+// zweite Mail (Kammzeit-News) hängt nur am Häkchen, nicht am Konto.
+func (a *app) signupDone(w http.ResponseWriter, r *http.Request, email string, mailFailed, marketing bool) {
+	d := a.authPage(r, "Fast geschafft", "/registrieren")
+	d["Email"], d["MailFailed"], d["Marketing"] = email, mailFailed, marketing
 	a.render(w, http.StatusOK, "signup-done", d)
 }

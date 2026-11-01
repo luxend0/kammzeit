@@ -1,18 +1,19 @@
 {{/* Registrierung neuer Salons (signup.go). Layout "auth-top"/"auth-bottom" aus auth.html, Stil in
-     static/site-konto.css. Im Einzelbetrieb (.Single) ohne Adresse, ohne AGB-Häkchen und ohne Vorteile-Liste. */}}
+     static/site-konto.css. Im Einzelbetrieb (.Single) ohne Adresse, ohne AGB-Häkchen, ohne Kammzeit-News
+     und ohne Vorteile-Liste. Texte über t/tf; pubHTML nur für feste Katalogtexte mit Links. */}}
 {{define "signup"}}{{template "auth-top" .}}
 <script src="/static/htmx.min.js" defer></script>
 <div class="wrap konto-in{{if not .Single}} konto-in-extra{{end}}">
   <div class="konto-media konto-media-wide"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-termin.webp" width="1200" height="900" alt=""></div>
   <div class="konto-card">
     <h1>{{.Heading}}</h1>
-    <p class="konto-lead">{{if .Single}}Lege deinen Salon an. Danach kommst du per Link aus einer E-Mail in dein Dashboard.{{else}}Gratis starten, ohne Zahlungsdaten.{{end}}</p>
-    {{with .Error}}<p class="signup-error" role="alert">{{.}}</p>{{else}}{{if .Errors}}<p class="signup-error" role="alert">Bitte die markierten Felder prüfen.</p>{{end}}{{end}}
+    <p class="konto-lead">{{if .Single}}{{t .Lang "Lege deinen Salon an. Danach kommst du per Link aus einer E-Mail in dein Dashboard."}}{{else}}{{t .Lang "Gratis starten, ohne Zahlungsdaten."}}{{end}}</p>
+    {{with .Error}}<p class="signup-error" role="alert">{{.}}</p>{{else}}{{if .Errors}}<p class="signup-error" role="alert">{{t .Lang "Bitte die markierten Felder prüfen."}}</p>{{end}}{{end}}
     <form class="konto-form signup-form" method="post" action="/registrieren">
       <fieldset>
-        <legend>Dein Salon</legend>
+        <legend>{{t .Lang "Dein Salon"}}</legend>
         <div class="field">
-          <label>Salonname
+          <label>{{t .Lang "Salonname"}}
             <input type="text" name="name" value="{{.Name}}" minlength="2" maxlength="80" required autocomplete="organization"{{if .Errors.name}} aria-invalid="true" aria-describedby="signup-err-name"{{end}}{{if not .Single}}
               hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-include="#signup-slug-box" hx-target="#signup-slug-box" hx-swap="outerHTML"{{end}}>
           </label>
@@ -21,41 +22,43 @@
         {{if not .Single}}{{template "signup-slug" .}}{{end}}
       </fieldset>
       <fieldset>
-        <legend>Über dich</legend>
+        <legend>{{t .Lang "Über dich"}}</legend>
         <div class="field">
-          <label>Dein Vorname
+          <label>{{t .Lang "Dein Vorname"}}
             <input type="text" name="vorname" value="{{.Vorname}}" maxlength="40" required autocomplete="given-name"
               aria-describedby="signup-vorname-hint{{if .Errors.vorname}} signup-err-vorname{{end}}"{{if .Errors.vorname}} aria-invalid="true"{{end}}>
           </label>
-          <span class="hint" id="signup-vorname-hint">Unter diesem Namen buchen Kunden bei dir. Weitere Mitarbeiter legst du später an.</span>
+          <span class="hint" id="signup-vorname-hint">{{t .Lang "Unter diesem Namen buchen Kunden bei dir. Weitere Mitarbeiter legst du später an."}}</span>
           {{with .Errors.vorname}}<span class="field-error" id="signup-err-vorname">{{.}}</span>{{end}}
         </div>
         <div class="field">
-          <label>E-Mail
+          <label>{{t .Lang "E-Mail"}}
             <input type="email" name="email" value="{{.Email}}" maxlength="200" required autocomplete="email"
               aria-describedby="signup-email-hint{{if .Errors.email}} signup-err-email{{end}}"{{if .Errors.email}} aria-invalid="true"{{end}}>
           </label>
-          <span class="hint" id="signup-email-hint">Kein Passwort: Du meldest dich immer über einen Link per E-Mail an.</span>
+          <span class="hint" id="signup-email-hint">{{t .Lang "Kein Passwort: Du meldest dich immer über einen Link per E-Mail an."}}</span>
           {{with .Errors.email}}<span class="field-error" id="signup-err-email">{{.}}</span>{{end}}
         </div>
         {{if not .Single}}<label class="signup-check"><input type="checkbox" name="agb" value="1" required{{if .AGB}} checked{{end}}{{if .Errors.agb}} aria-invalid="true" aria-describedby="signup-err-agb"{{end}}>
-          <span>Ich melde den Salon als Unternehmer an (§ 14 BGB) und akzeptiere die <a href="/agb" target="_blank" rel="noopener">AGB</a> und den <a href="/avv" target="_blank" rel="noopener">Vertrag zur Auftragsverarbeitung</a>.</span></label>
-        {{with .Errors.agb}}<span class="field-error" id="signup-err-agb">{{.}}</span>{{end}}{{end}}
+          <span>{{pubHTML .Lang `Ich melde den Salon als Unternehmer an (§ 14 BGB) und akzeptiere die <a href="/agb" target="_blank" rel="noopener">AGB</a> und den <a href="/avv" target="_blank" rel="noopener">Vertrag zur Auftragsverarbeitung</a>.`}}</span></label>
+        {{with .Errors.agb}}<span class="field-error" id="signup-err-agb">{{.}}</span>{{end}}
+        <label class="signup-check signup-news"><input type="checkbox" name="marketing" value="1"{{if .Marketing}} checked{{end}}>
+          <span>{{.MarketingText}} <span class="signup-optional">{{t .Lang "(freiwillig)"}}</span></span></label>{{end}}
       </fieldset>
       <div class="signup-hp" aria-hidden="true">
-        <label>Homepage (bitte leer lassen)<input type="text" name="homepage" tabindex="-1" autocomplete="off"></label>
+        <label>{{t .Lang "Homepage (bitte leer lassen)"}}<input type="text" name="homepage" tabindex="-1" autocomplete="off"></label>
       </div>
-      <button class="btn" type="submit">Salon anlegen</button>
+      <button class="btn" type="submit">{{t .Lang "Salon anlegen"}}</button>
     </form>
-    {{if not .Single}}<p class="konto-alt">Schon registriert? <a href="/login">Anmelden</a></p>{{end}}
+    {{if not .Single}}<p class="konto-alt">{{t .Lang "Schon registriert?"}} <a href="/login">{{t .Lang "Anmelden"}}</a></p>{{end}}
   </div>
   {{if not .Single}}<section class="konto-extra signup-perks" aria-labelledby="signup-perks-h">
-    <h2 id="signup-perks-h">Was du bekommst</h2>
+    <h2 id="signup-perks-h">{{t .Lang "Was du bekommst"}}</h2>
     <ul>
-      <li><span><strong>Deine Buchungsseite</strong> unter deinsalon.{{.Domain}}, Kunden buchen rund um die Uhr selbst</span></li>
-      <li><span><strong>Erinnerung per Mail</strong> an deine Kunden, 24 Stunden vor dem Termin</span></li>
-      <li><span><strong>Kundenkartei</strong> mit Notizen und Terminhistorie</span></li>
-      <li><span><strong>Gratis für 1 Mitarbeiter</strong>, ohne Zeitlimit und ohne Zahlungsdaten</span></li>
+      <li><span><strong>{{t .Lang "Deine Buchungsseite"}}</strong> {{tf .Lang "unter deinsalon.%s, Kunden buchen rund um die Uhr selbst" .Domain}}</span></li>
+      <li><span><strong>{{t .Lang "Erinnerung per Mail"}}</strong> {{t .Lang "an deine Kunden, 24 Stunden vor dem Termin"}}</span></li>
+      <li><span><strong>{{t .Lang "Kundenkartei"}}</strong> {{t .Lang "mit Notizen und Terminhistorie"}}</span></li>
+      <li><span><strong>{{t .Lang "Gratis für 1 Mitarbeiter"}}</strong>{{t .Lang ", ohne Zeitlimit und ohne Zahlungsdaten"}}</span></li>
     </ul>
   </section>{{end}}
 </div>
@@ -64,7 +67,7 @@
 {{/* Wunsch-Adresse. Wird bei Eingabe im Namensfeld komplett ersetzt (neuer Vorschlag, ohne alten Fehler),
      bei Eingabe in der Adresse nur der Status. */}}
 {{define "signup-slug"}}<div id="signup-slug-box" class="field">
-  <label>Wunsch-Adresse deiner Buchungsseite
+  <label>{{t .Lang "Wunsch-Adresse deiner Buchungsseite"}}
     <span class="signup-slug"><input id="signup-slug" type="text" name="slug" value="{{.Slug}}" minlength="3" maxlength="40" required
       autocapitalize="off" autocomplete="off" spellcheck="false" aria-describedby="signup-status{{if .Errors.slug}} signup-err-slug{{end}}"{{if .Errors.slug}} aria-invalid="true"{{end}}
       hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-target="#signup-status"><span>.{{.Domain}}</span></span>
@@ -74,17 +77,19 @@
   <span id="signup-status" class="signup-status" aria-live="polite">{{template "signup-status" .}}</span>
 </div>{{end}}
 
-{{define "signup-status"}}{{with .Status}}{{if eq . "frei"}}<span class="signup-free">Adresse ist frei</span>{{else}}<span class="signup-taken">Adresse {{if eq . "vergeben"}}ist vergeben{{else}}{{.}}{{end}}</span>{{end}}{{end}}{{end}}
+{{/* .Status ist ein deutscher Statuswert aus slugStatus ("frei", "vergeben", "ungültig: ..."). */}}
+{{define "signup-status"}}{{with .Status}}{{if eq . "frei"}}<span class="signup-free">{{t $.Lang "Adresse ist frei"}}</span>{{else if eq . "vergeben"}}<span class="signup-taken">{{t $.Lang "Adresse ist vergeben"}}</span>{{else}}<span class="signup-taken">{{t $.Lang (printf "Adresse %s" .)}}</span>{{end}}{{end}}{{end}}
 
 {{define "signup-done"}}{{template "auth-top" .}}
 <div class="wrap konto-in">
   <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt=""></div>
   <div class="konto-card">
-    <h1>Fast geschafft</h1>
-    <p class="konto-lead">Wir haben dir einen Link an <strong>{{.Email}}</strong> geschickt. Damit kommst du in dein Dashboard.</p>
-    <p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
-    <p class="note">Der Link ist 15 Minuten gültig. Schau auch im Spam-Ordner nach.</p>
-    {{if .MailFailed}}<p class="konto-alt">Kein Link angekommen? <a href="/login">Hier neu anfordern</a></p>{{end}}
+    <h1>{{t .Lang "Fast geschafft"}}</h1>
+    <p class="konto-lead">{{pubHTML .Lang "Wir haben dir einen Link an <strong>%s</strong> geschickt. Damit kommst du in dein Dashboard." .Email}}</p>
+    <p>{{t .Lang "Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst."}}</p>
+    <p class="note">{{t .Lang "Der Link ist 15 Minuten gültig. Schau auch im Spam-Ordner nach."}}</p>
+    {{if .Marketing}}<p class="note">{{t .Lang "Du hast Kammzeit-News angehakt: Dazu kommt eine zweite Mail. Erst wenn du darin bestätigst, schicken wir dir Neuigkeiten."}}</p>{{end}}
+    {{if .MailFailed}}<p class="konto-alt">{{t .Lang "Kein Link angekommen?"}} <a href="/login">{{t .Lang "Hier neu anfordern"}}</a></p>{{end}}
   </div>
 </div>
 {{template "auth-bottom" .}}{{end}}

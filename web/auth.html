@@ -1,10 +1,11 @@
 {{/* Login per Magic-Link und gemeinsames Layout für Login und Registrierung (signup.html).
      Website-Look: Kopf und Fuß aus site.html, Stil in static/site.css + static/site-konto.css.
-     Daten aus a.authPage(): Title, Path, Single; bei indexierbaren Seiten Index, Description, Canonical.
+     Daten aus a.authPage(): Title, Lang, Path, Single; bei indexierbaren Seiten Index, Description,
+     Canonical, Alternates. Texte über t/tf (deutscher Text = Schlüssel, englisch in i18n_public.go).
      Eigenes Gerüst statt "site-top", weil Login noindex bleibt und der Einzelbetrieb (.Single)
      keine Website hat: dort nur Logo und Impressum/Datenschutz statt Menü und großem Fuß. */}}
 {{define "auth-top"}}<!doctype html>
-<html lang="de">
+<html lang="{{or .Lang "de"}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,13 +14,14 @@
 <meta property="og:description" content="{{.}}">{{end}}
 {{with .Canonical}}<link rel="canonical" href="{{.}}">
 <meta property="og:url" content="{{.}}">{{end}}
-<meta property="og:title" content="{{.Title}}">
+{{range .Alternates}}<link rel="alternate" hreflang="{{.Lang}}" href="{{.URL}}">
+{{end}}<meta property="og:title" content="{{.Title}}">
 {{else}}<meta name="robots" content="noindex">
-{{end}}{{template "site-assets"}}
+{{end}}{{template "site-assets" .}}
 <link rel="stylesheet" href="/static/site-konto.css">
 </head>
 <body class="site">
-{{if .Single}}<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+{{if .Single}}<a class="skip" href="#inhalt">{{t .Lang "Zum Inhalt springen"}}</a>
 <header class="site-head">
   <div class="wrap site-head-in"><a class="site-logo" href="/"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34">Kammzeit</a></div>
 </header>
@@ -31,7 +33,7 @@
 {{end}}
 
 {{define "auth-bottom"}}</main>
-{{if .Single}}<footer class="konto-foot"><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></footer>
+{{if .Single}}<footer class="konto-foot"><a href="/impressum">{{t .Lang "Impressum"}}</a> · <a href="/datenschutz">{{t .Lang "Datenschutz"}}</a></footer>
 {{else}}{{template "site-footer" .}}{{end}}
 </body>
 </html>{{end}}
@@ -41,24 +43,24 @@
   <div class="konto-media"><div class="blob" aria-hidden="true"></div>{{if .Sent}}<img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="">{{else}}<img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="">{{end}}</div>
   <div class="konto-card">
 {{if .Sent}}
-    <h1>Link ist unterwegs</h1>
-    <p class="konto-lead" role="status">Wenn es ein Konto mit dieser Adresse gibt, ist ein Login-Link unterwegs. Er ist 15 Minuten gültig.</p>
-    <p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
-    <p class="note">Nichts angekommen? Schau im Spam-Ordner nach oder <a href="/login">fordere einen neuen Link an</a>.</p>
+    <h1>{{t .Lang "Link ist unterwegs"}}</h1>
+    <p class="konto-lead" role="status">{{t .Lang "Wenn es ein Konto mit dieser Adresse gibt, ist ein Login-Link unterwegs. Er ist 15 Minuten gültig."}}</p>
+    <p>{{t .Lang "Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst."}}</p>
+    <p class="note">{{t .Lang "Nichts angekommen? Schau im Spam-Ordner nach."}} <a href="/login">{{t .Lang "Neuen Link anfordern"}}</a></p>
 {{else}}
-    <h1>Anmelden</h1>
-    <p class="konto-lead">Wir schicken dir einen Login-Link per E-Mail. Ein Passwort brauchst du nicht.</p>
-    {{if .LoggedOut}}<p class="konto-note" role="status">Du bist abgemeldet.</p>{{end}}
+    <h1>{{t .Lang "Anmelden"}}</h1>
+    <p class="konto-lead">{{t .Lang "Wir schicken dir einen Login-Link per E-Mail. Ein Passwort brauchst du nicht."}}</p>
+    {{if .LoggedOut}}<p class="konto-note" role="status">{{t .Lang "Du bist abgemeldet."}}</p>{{end}}
     <form class="konto-form" method="post" action="/login">
       <input type="hidden" name="weiter" value="{{.Next}}">
       <div class="field">
-        <label>E-Mail<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus{{if .Error}} aria-invalid="true" aria-describedby="auth-err-email"{{end}}></label>
+        <label>{{t .Lang "E-Mail"}}<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus{{if .Error}} aria-invalid="true" aria-describedby="auth-err-email"{{end}}></label>
         {{with .Error}}<span class="field-error" id="auth-err-email">{{.}}</span>{{end}}
       </div>
-      <button class="btn" type="submit">Login-Link schicken</button>
+      <button class="btn" type="submit">{{t .Lang "Login-Link schicken"}}</button>
     </form>
 {{end}}
-    {{if not .Single}}<p class="konto-alt">Noch kein Konto? <a href="/registrieren">Kostenlos registrieren</a></p>{{end}}
+    {{if not .Single}}<p class="konto-alt">{{t .Lang "Noch kein Konto?"}} <a href="/registrieren">{{t .Lang "Kostenlos registrieren"}}</a></p>{{end}}
   </div>
 </div>
 {{template "auth-bottom" .}}{{end}}
@@ -67,23 +69,39 @@
 <div class="wrap konto-in">
   <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt=""></div>
   <div class="konto-card">
-    <h1>Anmelden</h1>
-    <p class="konto-lead">Ein Klick noch, dann bist du im Dashboard.</p>
+    <h1>{{t .Lang "Anmelden"}}</h1>
+    <p class="konto-lead">{{t .Lang "Ein Klick noch, dann bist du im Dashboard."}}</p>
     <form class="konto-form" method="post" action="/login/{{.Token}}">
       <input type="hidden" name="weiter" value="{{.Next}}">
-      <button class="btn" type="submit">Jetzt anmelden</button>
+      <button class="btn" type="submit">{{t .Lang "Jetzt anmelden"}}</button>
     </form>
   </div>
 </div>
 {{template "auth-bottom" .}}{{end}}
 
+{{/* Meldung mit einem Link-Knopf (a.authMessage): Heading, Message, LinkText, Link, Ill (schon übersetzt). */}}
 {{define "auth-message"}}{{template "auth-top" .}}
 <div class="wrap konto-in">
-  <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt=""></div>
+  <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/{{or .Ill "kammi-schlaeft.webp"}}" width="800" height="800" alt=""></div>
   <div class="konto-card">
     <h1>{{.Heading}}</h1>
     <p class="konto-lead">{{.Message}}</p>
-    <p class="konto-actions"><a class="btn" href="/login">{{.LinkText}}</a></p>
+    <p class="konto-actions"><a class="btn" href="{{or .Link "/login"}}">{{.LinkText}}</a></p>
+  </div>
+</div>
+{{template "auth-bottom" .}}{{end}}
+
+{{/* Seite mit einem Knopf, der per POST an .Action auslöst (Kammzeit-News bestätigen/abbestellen,
+     marketing.go). Heading, Message, Button, Ill schon übersetzt. */}}
+{{define "auth-action"}}{{template "auth-top" .}}
+<div class="wrap konto-in">
+  <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/{{.Ill}}" width="800" height="800" alt=""></div>
+  <div class="konto-card">
+    <h1>{{.Heading}}</h1>
+    <p class="konto-lead">{{.Message}}</p>
+    <form class="konto-form" method="post" action="{{.Action}}">
+      <button class="btn" type="submit">{{.Button}}</button>
+    </form>
   </div>
 </div>
 {{template "auth-bottom" .}}{{end}}

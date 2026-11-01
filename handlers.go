@@ -158,9 +158,20 @@ func (a *app) page(s *salon, title string) map[string]any {
 	return d
 }
 
+// fail zeigt eine Meldung (deutscher Text, wird in die Sprache des Salons übersetzt).
 func (a *app) fail(w http.ResponseWriter, s *salon, status int, msg string) {
+	a.failLang(w, s, "", status, msg)
+}
+
+// failLang = fail in der Sprache lang (für Seiten ohne Salon, z. B. Login auf
+// kammzeit.com); "" = Sprache des Salons bzw. Deutsch.
+func (a *app) failLang(w http.ResponseWriter, s *salon, lang string, status int, msg string) {
 	d := a.page(s, "Hinweis")
-	d["Message"] = msg
+	if lang != "" {
+		d["Lang"] = lang
+	}
+	l, _ := d["Lang"].(string)
+	d["Title"], d["Message"] = tr(l, "Hinweis"), tr(l, msg)
 	a.render(w, status, "error", d)
 }
 
@@ -179,14 +190,14 @@ func (a *app) salonFor(w http.ResponseWriter, r *http.Request) *salon {
 	} else {
 		slug, _, _ := a.tenant(r.Host)
 		if slug == "" {
-			a.fail(w, nil, http.StatusNotFound, "Diesen Salon gibt es nicht.")
+			a.failLang(w, nil, a.langFor(r), http.StatusNotFound, "Diesen Salon gibt es nicht.")
 			return nil
 		}
 		row = a.db.QueryRow(salonCols+`WHERE slug = ?`, slug)
 	}
 	s, err := scanSalon(row)
 	if errors.Is(err, sql.ErrNoRows) {
-		a.fail(w, nil, http.StatusNotFound, "Diesen Salon gibt es nicht.")
+		a.failLang(w, nil, a.langFor(r), http.StatusNotFound, "Diesen Salon gibt es nicht.")
 		return nil
 	}
 	if err != nil {
@@ -218,7 +229,7 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, s, err)
 		return
 	}
-	d := a.page(s, s.Name+" - Termin buchen")
+	d := a.page(s, s.Name+" - "+tr(s.Lang, "Termin buchen"))
 	if len(services) > 0 {
 		staff, err := bookableStaff(a.db, s.ID, services[0].ID, a.staffLimit(s))
 		if err != nil {
@@ -237,7 +248,7 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 		d["WebsiteLabel"] = strings.TrimSuffix(web[strings.Index(web, "://")+3:], "/")
 	}
 	if s.CancelNoticeMin > 0 {
-		d["CancelNotice"] = noticeText(s.CancelNoticeMin)
+		d["CancelNotice"] = noticeFor(s.Lang, s.CancelNoticeMin)
 	}
 	a.render(w, http.StatusOK, "book", d)
 }
@@ -409,7 +420,7 @@ func (a *app) bookStaff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := r.URL.Query()
-	d := map[string]any{"Sel": int64(0)}
+	d := map[string]any{"Sel": int64(0), "Lang": s.Lang}
 	sv, err := loadService(a.db, s.ID, q.Get("service"))
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		a.serverError(w, s, err)
@@ -438,9 +449,9 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 	if s == nil {
 		return
 	}
-	d := map[string]any{}
+	d := map[string]any{"Lang": s.Lang}
 	if !slotLimit.allow(clientKey(r)) {
-		d["Empty"] = "Zu viele Anfragen. Bitte warte kurz und versuch es dann noch einmal."
+		d["Empty"] = tr(s.Lang, "Zu viele Anfragen. Bitte warte kurz und versuch es dann noch einmal.")
 		status := http.StatusTooManyRequests
 		if r.Header.Get("HX-Request") != "" {
 			status = http.StatusOK // htmx zeigt nur 2xx-Antworten an
@@ -455,14 +466,14 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 	day, dayErr := time.ParseInLocation(time.DateOnly, q.Get("date"), s.Loc)
 	switch {
 	case errors.Is(err, sql.ErrNoRows) || dayErr != nil:
-		d["Empty"] = "Bitte Leistung und Tag wählen."
+		d["Empty"] = tr(s.Lang, "Bitte Leistung und Tag wählen.")
 	case err != nil:
 		a.serverError(w, s, err)
 		return
 	case day.Before(first):
-		d["Empty"] = "Bitte einen Tag ab heute wählen."
+		d["Empty"] = tr(s.Lang, "Bitte einen Tag ab heute wählen.")
 	case day.After(last):
-		d["Empty"] = "Online buchbar bis " + last.Format("2.1.2006") + ". Für spätere Termine ruf bitte im Salon an."
+		d["Empty"] = trf(s.Lang, "Online buchbar bis %s. Für spätere Termine ruf bitte im Salon an.", dayFor(s.Lang, last))
 	default:
 		staff, err := bookableStaff(a.db, s.ID, sv.ID, a.staffLimit(s))
 		if err != nil {
@@ -483,7 +494,7 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 			list = append(list, slot{t.Unix(), t.Format("15:04")})
 		}
 		d["Slots"] = list
-		d["Empty"] = "An diesem Tag ist nichts mehr frei. Bitte wähl einen anderen Tag."
+		d["Empty"] = tr(s.Lang, "An diesem Tag ist nichts mehr frei. Bitte wähl einen anderen Tag.")
 	}
 	a.render(w, http.StatusOK, "slots", d)
 }
@@ -504,7 +515,7 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.PostFormValue("firma") != "" {
 		// Honeypot: Bots sehen eine Bestätigung, gespeichert und gemailt wird nichts.
-		d := a.page(s, "Termin gebucht")
+		d := a.page(s, tr(s.Lang, "Termin gebucht"))
 		d["Name"], d["Email"] = r.PostFormValue("name"), r.PostFormValue("email")
 		a.render(w, http.StatusOK, "booked", d)
 		return
@@ -618,11 +629,11 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	d := a.page(s, "Termin gebucht")
-	d["When"], d["Service"], d["Staff"], d["Name"], d["Email"] = deDate(b.Start), b.Service, b.Staff, name, email
+	d := a.page(s, tr(s.Lang, "Termin gebucht"))
+	d["When"], d["Service"], d["Staff"], d["Name"], d["Email"] = dateFor(s.Lang, b.Start), b.Service, b.Staff, name, email
 	d["CancelURL"], d["ICSURL"] = "/storno/"+token, "/termin/"+token+".ics"
 	if s.CancelNoticeMin > 0 {
-		d["Deadline"] = deDate(cancelDeadline(s, b.Start))
+		d["Deadline"] = dateFor(s.Lang, cancelDeadline(s, b.Start))
 	}
 	a.render(w, http.StatusOK, "booked", d)
 }
@@ -656,10 +667,10 @@ func cancelDeadline(s *salon, start time.Time) time.Time {
 }
 
 func (a *app) cancelData(s *salon, b *booking, now time.Time) map[string]any {
-	d := a.page(s, "Termin absagen")
-	d["When"], d["Service"], d["Staff"] = deDate(b.Start), b.Service, b.Staff
+	d := a.page(s, tr(s.Lang, "Termin absagen"))
+	d["When"], d["Service"], d["Staff"] = dateFor(s.Lang, b.Start), b.Service, b.Staff
 	deadline := cancelDeadline(s, b.Start)
-	d["Deadline"] = deDate(deadline)
+	d["Deadline"] = dateFor(s.Lang, deadline)
 	d["Cancelled"] = b.Status == "cancelled"
 	d["Past"] = b.Status != "booked" || !b.Start.After(now)
 	d["TooLate"] = !now.Before(deadline)
@@ -724,7 +735,7 @@ func (a *app) cancel(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}()
-	a.render(w, http.StatusOK, "cancelled", a.page(s, "Termin abgesagt"))
+	a.render(w, http.StatusOK, "cancelled", a.page(s, tr(s.Lang, "Termin abgesagt")))
 }
 
 // bookingICS liefert den Kalendereintrag zu einem gebuchten Termin des Salons.
@@ -750,14 +761,14 @@ func (a *app) bookingICS(w http.ResponseWriter, r *http.Request) {
 	if addr := oneLine(s.Address); addr != "" {
 		where += ", " + addr
 	}
-	desc := "Bei " + b.Staff + "\n"
+	desc := trf(s.Lang, "Bei %s", b.Staff) + "\n"
 	if s.Phone != "" {
-		desc += "Telefon: " + s.Phone + "\n"
+		desc += tr(s.Lang, "Telefon") + ": " + s.Phone + "\n"
 	}
-	desc += "Absagen: " + a.link(s.Slug, "/storno/"+token)
+	desc += tr(s.Lang, "Absagen") + ": " + a.bookingURL(s, "/storno/"+token)
 	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="termin.ics"`)
-	io.WriteString(w, buildICS(hashToken(token)[:32]+"@kammzeit", b.Service+" bei "+s.Name, where, desc, b.Start, b.End, time.Now()))
+	io.WriteString(w, buildICS(hashToken(token)[:32]+"@kammzeit", trf(s.Lang, "%s bei %s", b.Service, s.Name), where, desc, b.Start, b.End, time.Now()))
 }
 
 // buildICS baut ein iCalendar-Dokument (RFC 5545) mit einem Termin, Zeiten in UTC.
