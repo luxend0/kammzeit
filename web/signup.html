@@ -1,62 +1,65 @@
-{{/* Registrierung neuer Salons (signup.go). Im Einzelbetrieb (.Single) ohne Adresse und ohne AGB-Häkchen. */}}
-{{define "signup"}}{{template "top" .}}
-<style>
-.signup-error { margin: 20px 0 0; padding: 10px 14px; border-left: 4px solid var(--danger); background: #fdf0f2; }
-.signup-slug { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
-.signup-slug input { margin-top: 0; }
-.signup-slug span { font-weight: 400; white-space: nowrap; }
-.signup-status { display: block; min-height: 1.5em; margin-top: 4px; font-size: .875rem; font-weight: 700; }
-.signup-free { color: var(--fg); }
-.signup-taken { color: var(--danger); }
-.signup-check { display: flex; gap: 10px; align-items: baseline; margin: 16px 0 0; font-size: .875rem; cursor: pointer; }
-.signup-check input { accent-color: var(--accent); }
-.signup-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
-@media (pointer: coarse) { .signup-check { min-height: 44px; align-items: center; } }
-</style>
-<h1>{{.Heading}}</h1>
-<p class="lead">{{if .Single}}Lege deinen Salon an. Danach kommst du per Link aus einer E-Mail in dein Dashboard.{{else}}Gratis starten, ohne Zahlungsdaten.{{end}}</p>
-{{with .Error}}<p class="signup-error" role="alert">{{.}}</p>{{else}}{{if .Errors}}<p class="signup-error" role="alert">Bitte die markierten Felder prüfen.</p>{{end}}{{end}}
-<form method="post" action="/registrieren">
-  <fieldset>
-    <legend>Dein Salon</legend>
-    <div class="field">
-      <label>Salonname
-        <input type="text" name="name" value="{{.Name}}" minlength="2" maxlength="80" required autocomplete="organization"{{if .Errors.name}} aria-invalid="true" aria-describedby="signup-err-name"{{end}}{{if not .Single}}
-          hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-include="#signup-slug-box" hx-target="#signup-slug-box" hx-swap="outerHTML"{{end}}>
-      </label>
-      {{with .Errors.name}}<span class="field-error" id="signup-err-name">{{.}}</span>{{end}}
-    </div>
-    {{if not .Single}}{{template "signup-slug" .}}{{end}}
-  </fieldset>
-  <fieldset>
-    <legend>Über dich</legend>
-    <div class="field">
-      <label>Dein Vorname
-        <input type="text" name="vorname" value="{{.Vorname}}" maxlength="40" required autocomplete="given-name"
-          aria-describedby="signup-vorname-hint{{if .Errors.vorname}} signup-err-vorname{{end}}"{{if .Errors.vorname}} aria-invalid="true"{{end}}>
-      </label>
-      <span class="hint" id="signup-vorname-hint">Unter diesem Namen buchen Kunden bei dir. Weitere Mitarbeiter legst du später an.</span>
-      {{with .Errors.vorname}}<span class="field-error" id="signup-err-vorname">{{.}}</span>{{end}}
-    </div>
-    <div class="field">
-      <label>E-Mail
-        <input type="email" name="email" value="{{.Email}}" maxlength="200" required autocomplete="email"
-          aria-describedby="signup-email-hint{{if .Errors.email}} signup-err-email{{end}}"{{if .Errors.email}} aria-invalid="true"{{end}}>
-      </label>
-      <span class="hint" id="signup-email-hint">Kein Passwort: Du meldest dich immer über einen Link per E-Mail an.</span>
-      {{with .Errors.email}}<span class="field-error" id="signup-err-email">{{.}}</span>{{end}}
-    </div>
-    {{if not .Single}}<label class="signup-check"><input type="checkbox" name="agb" value="1" required{{if .AGB}} checked{{end}}{{if .Errors.agb}} aria-invalid="true" aria-describedby="signup-err-agb"{{end}}>
-      <span>Ich melde den Salon als Unternehmer an (§ 14 BGB) und akzeptiere die <a href="/agb" target="_blank" rel="noopener">AGB</a> und den <a href="/avv" target="_blank" rel="noopener">Vertrag zur Auftragsverarbeitung</a>.</span></label>
-    {{with .Errors.agb}}<span class="field-error small" id="signup-err-agb">{{.}}</span>{{end}}{{end}}
-  </fieldset>
-  <div class="signup-hp" aria-hidden="true">
-    <label>Homepage (bitte leer lassen)<input type="text" name="homepage" tabindex="-1" autocomplete="off"></label>
+{{/* Registrierung neuer Salons (signup.go). Layout "auth-top"/"auth-bottom" aus auth.html, Stil in
+     static/site-konto.css. Im Einzelbetrieb (.Single) ohne Adresse, ohne AGB-Häkchen und ohne Vorteile-Liste. */}}
+{{define "signup"}}{{template "auth-top" .}}
+<script src="/static/htmx.min.js" defer></script>
+<div class="wrap konto-in{{if not .Single}} konto-in-extra{{end}}">
+  <div class="konto-media konto-media-wide"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-termin.webp" width="1200" height="900" alt=""></div>
+  <div class="konto-card">
+    <h1>{{.Heading}}</h1>
+    <p class="konto-lead">{{if .Single}}Lege deinen Salon an. Danach kommst du per Link aus einer E-Mail in dein Dashboard.{{else}}Gratis starten, ohne Zahlungsdaten.{{end}}</p>
+    {{with .Error}}<p class="signup-error" role="alert">{{.}}</p>{{else}}{{if .Errors}}<p class="signup-error" role="alert">Bitte die markierten Felder prüfen.</p>{{end}}{{end}}
+    <form class="konto-form signup-form" method="post" action="/registrieren">
+      <fieldset>
+        <legend>Dein Salon</legend>
+        <div class="field">
+          <label>Salonname
+            <input type="text" name="name" value="{{.Name}}" minlength="2" maxlength="80" required autocomplete="organization"{{if .Errors.name}} aria-invalid="true" aria-describedby="signup-err-name"{{end}}{{if not .Single}}
+              hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-include="#signup-slug-box" hx-target="#signup-slug-box" hx-swap="outerHTML"{{end}}>
+          </label>
+          {{with .Errors.name}}<span class="field-error" id="signup-err-name">{{.}}</span>{{end}}
+        </div>
+        {{if not .Single}}{{template "signup-slug" .}}{{end}}
+      </fieldset>
+      <fieldset>
+        <legend>Über dich</legend>
+        <div class="field">
+          <label>Dein Vorname
+            <input type="text" name="vorname" value="{{.Vorname}}" maxlength="40" required autocomplete="given-name"
+              aria-describedby="signup-vorname-hint{{if .Errors.vorname}} signup-err-vorname{{end}}"{{if .Errors.vorname}} aria-invalid="true"{{end}}>
+          </label>
+          <span class="hint" id="signup-vorname-hint">Unter diesem Namen buchen Kunden bei dir. Weitere Mitarbeiter legst du später an.</span>
+          {{with .Errors.vorname}}<span class="field-error" id="signup-err-vorname">{{.}}</span>{{end}}
+        </div>
+        <div class="field">
+          <label>E-Mail
+            <input type="email" name="email" value="{{.Email}}" maxlength="200" required autocomplete="email"
+              aria-describedby="signup-email-hint{{if .Errors.email}} signup-err-email{{end}}"{{if .Errors.email}} aria-invalid="true"{{end}}>
+          </label>
+          <span class="hint" id="signup-email-hint">Kein Passwort: Du meldest dich immer über einen Link per E-Mail an.</span>
+          {{with .Errors.email}}<span class="field-error" id="signup-err-email">{{.}}</span>{{end}}
+        </div>
+        {{if not .Single}}<label class="signup-check"><input type="checkbox" name="agb" value="1" required{{if .AGB}} checked{{end}}{{if .Errors.agb}} aria-invalid="true" aria-describedby="signup-err-agb"{{end}}>
+          <span>Ich melde den Salon als Unternehmer an (§ 14 BGB) und akzeptiere die <a href="/agb" target="_blank" rel="noopener">AGB</a> und den <a href="/avv" target="_blank" rel="noopener">Vertrag zur Auftragsverarbeitung</a>.</span></label>
+        {{with .Errors.agb}}<span class="field-error" id="signup-err-agb">{{.}}</span>{{end}}{{end}}
+      </fieldset>
+      <div class="signup-hp" aria-hidden="true">
+        <label>Homepage (bitte leer lassen)<input type="text" name="homepage" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <button class="btn" type="submit">Salon anlegen</button>
+    </form>
+    {{if not .Single}}<p class="konto-alt">Schon registriert? <a href="/login">Anmelden</a></p>{{end}}
   </div>
-  <button type="submit">Salon anlegen</button>
-  {{if not .Single}}<p class="muted small">Schon registriert? <a href="/login">Anmelden</a></p>{{end}}
-</form>
-{{template "bottom" .}}{{end}}
+  {{if not .Single}}<section class="konto-extra signup-perks" aria-labelledby="signup-perks-h">
+    <h2 id="signup-perks-h">Was du bekommst</h2>
+    <ul>
+      <li><span><strong>Deine Buchungsseite</strong> unter deinsalon.{{.Domain}}, Kunden buchen rund um die Uhr selbst</span></li>
+      <li><span><strong>Erinnerung per Mail</strong> an deine Kunden, 24 Stunden vor dem Termin</span></li>
+      <li><span><strong>Kundenkartei</strong> mit Notizen und Terminhistorie</span></li>
+      <li><span><strong>Gratis für 1 Mitarbeiter</strong>, ohne Zeitlimit und ohne Zahlungsdaten</span></li>
+    </ul>
+  </section>{{end}}
+</div>
+{{template "auth-bottom" .}}{{end}}
 
 {{/* Wunsch-Adresse. Wird bei Eingabe im Namensfeld komplett ersetzt (neuer Vorschlag, ohne alten Fehler),
      bei Eingabe in der Adresse nur der Status. */}}
@@ -73,10 +76,15 @@
 
 {{define "signup-status"}}{{with .Status}}{{if eq . "frei"}}<span class="signup-free">Adresse ist frei</span>{{else}}<span class="signup-taken">Adresse {{if eq . "vergeben"}}ist vergeben{{else}}{{.}}{{end}}</span>{{end}}{{end}}{{end}}
 
-{{define "signup-done"}}{{template "top" .}}
-<h1>Fast geschafft</h1>
-<p>Wir haben dir einen Link an <strong>{{.Email}}</strong> geschickt. Damit kommst du in dein Dashboard.</p>
-<p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
-<p class="muted small">Der Link ist 15 Minuten gültig. Schau auch im Spam-Ordner nach.</p>
-{{if .MailFailed}}<p>Kein Link angekommen? <a href="/login">Hier neu anfordern</a></p>{{end}}
-{{template "bottom" .}}{{end}}
+{{define "signup-done"}}{{template "auth-top" .}}
+<div class="wrap konto-in">
+  <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt=""></div>
+  <div class="konto-card">
+    <h1>Fast geschafft</h1>
+    <p class="konto-lead">Wir haben dir einen Link an <strong>{{.Email}}</strong> geschickt. Damit kommst du in dein Dashboard.</p>
+    <p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
+    <p class="note">Der Link ist 15 Minuten gültig. Schau auch im Spam-Ordner nach.</p>
+    {{if .MailFailed}}<p class="konto-alt">Kein Link angekommen? <a href="/login">Hier neu anfordern</a></p>{{end}}
+  </div>
+</div>
+{{template "auth-bottom" .}}{{end}}

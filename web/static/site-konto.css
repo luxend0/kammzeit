@@ -1,0 +1,136 @@
+/* Login und Registrierung (web/auth.html, web/signup.html). Wird nach site.css geladen und nutzt
+   dessen Farben und Bausteine (.btn, .blob, .deco, .note). Aufbau: Himmel-hell-Fläche, links das
+   Formular in einer weißen Karte, rechts Kammi oder eine Szene auf einem Blob (mobil klein oben).
+   Kontraste: Feldrand 3,7:1 und Fehlertext 5,5:1 auf Weiß. */
+
+:root {
+  --konto-field: #6f87aa;    /* Rand der Eingabefelder (Nicht-Text-Kontrast ab 3:1) */
+  --konto-error: #b8401f;    /* Koralle dunkel: Fehlertext und Rand */
+  --konto-error-bg: #fff1ec;
+  --konto-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.6 8.4l2.9 2.9 5.9-6.4' fill='none' stroke='%2313294b' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* Fläche ------------------------------------------------------------------- */
+
+.konto {
+  position: relative; overflow: hidden; background: var(--sky-50);
+  padding-block: clamp(1.5rem, .75rem + 3vw, 4.5rem) calc(var(--wave) + clamp(3rem, 2rem + 4vw, 6.5rem));
+}
+.konto::before { content: ""; position: absolute; left: -16rem; bottom: -12rem; width: 44rem; height: 36rem; border-radius: 46% 54% 40% 60% / 52% 44% 56% 48%; background: var(--sky-100); }
+.konto::after { content: ""; position: absolute; top: -3.5rem; right: -3.5rem; width: 7rem; height: 7rem; border-radius: 50%; background: var(--sun); }
+@media (min-width: 60rem) { .konto::after { top: -5rem; right: -5rem; width: 12rem; height: 12rem; } }
+
+.konto-in { position: relative; z-index: 1; display: grid; gap: 1.25rem; grid-template-areas: "media" "card"; }
+.konto-in-extra { grid-template-areas: "media" "card" "extra"; }
+.konto-media { grid-area: media; position: relative; justify-self: center; width: min(10rem, 44vw); }
+.konto-media-wide { width: min(16rem, 74vw); }
+.konto-media .blob { inset: 6% 4% 0 6%; }
+.konto-card { grid-area: card; }
+.konto-extra { grid-area: extra; margin-top: 1.25rem; }
+@media (min-width: 60rem) {
+  .konto-in { grid-template-columns: minmax(0, 34rem) minmax(0, 1fr); grid-template-areas: "card media"; gap: 2.5rem clamp(3rem, 7vw, 7rem); align-items: center; }
+  .konto-in-extra { grid-template-columns: minmax(0, 37rem) minmax(0, 1fr); grid-template-rows: auto 1fr; grid-template-areas: "card media" "card extra"; align-items: start; }
+  .konto-media { width: min(100%, 27rem); }
+  .konto-media-wide { width: min(100%, 34rem); margin-top: 1rem; }
+  .konto-extra { margin-top: 0; justify-self: center; width: min(100%, 30rem); }
+}
+
+/* Einzelbetrieb: schlichter Fuß statt Website-Fuß */
+.konto-foot { padding: 0 var(--pad) 2rem; background: var(--sky-50); font-size: .9375rem; text-align: center; }
+.konto-foot a { display: inline-block; padding-block: .6rem; }
+body.site:has(> .konto-foot) { background: var(--sky-50); }
+.konto:has(+ .konto-foot) { padding-bottom: 3rem; }
+
+/* Karte -------------------------------------------------------------------- */
+
+.konto-card {
+  padding: clamp(1.5rem, 1rem + 2.4vw, 3rem); border-radius: 24px; background: #fff;
+  box-shadow: 0 1px 2px rgb(19 41 75 / .06), 0 28px 64px -30px rgb(19 41 75 / .3);
+}
+.konto-card h1 { max-width: 14ch; font-size: clamp(2.25rem, 1.7rem + 1.8vw, 3.25rem); }
+.konto-card > p { margin-top: .9rem; }
+.konto-card > h1 + p { margin-top: 1rem; }
+.konto-lead { font-size: 1.125rem; line-height: 1.55; }
+.konto-actions { padding-top: .9rem; }
+
+/* Hinweis (abgemeldet): Himmel hell mit Mint-Haken */
+.konto-note { display: flex; gap: .7rem; align-items: center; padding: .8rem 1.1rem; border-radius: 14px; background: var(--sky-50); font-weight: 700; }
+.konto-note::before { content: ""; flex: none; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--konto-check) center / 64% no-repeat, var(--mint); }
+
+/* Fehler ohne Feldbezug bzw. Sammelhinweis */
+.signup-error { display: flex; gap: .7rem; align-items: flex-start; padding: .85rem 1.1rem; border-radius: 14px; background: var(--konto-error-bg); font-weight: 700; }
+.signup-error::before, .field-error::before {
+  content: "!"; content: "!" / ""; flex: none; display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  background: var(--konto-error); color: #fff; font-weight: 800; font-size: .875rem; line-height: 1;
+}
+.signup-error::before { margin-top: .05rem; }
+
+/* Weiterführender Link unter dem Formular */
+.konto-card > .konto-alt { margin-top: 1.75rem; padding-top: 1.25rem; border-top: 2px solid var(--sky-50); font-size: 1rem; }
+.konto-alt a { font-weight: 800; color: var(--blue); }
+@media (pointer: coarse) { .konto-alt a { display: inline-flex; align-items: center; min-height: 44px; } }
+
+/* Formular ----------------------------------------------------------------- */
+
+.konto-form { margin-top: 1.75rem; }
+.konto-form .field + .field, .konto-form .field + .signup-check { margin-top: 1.25rem; }
+.konto-form .field > label { display: block; font-weight: 700; font-size: 1rem; }
+.konto-form input:is([type="email"], [type="text"]) {
+  display: block; width: 100%; min-height: 3.25rem; margin-top: .45rem; padding: .7rem 1rem;
+  border: 2px solid var(--konto-field); border-radius: 12px; background: #fff;
+  font: 500 1.0625rem/1.4 var(--font-text); color: var(--night);
+}
+.konto-form input:is([type="email"], [type="text"]):hover { border-color: var(--night); }
+.konto-form input:is([type="email"], [type="text"]):focus { border-color: var(--blue); }
+.konto-form input[aria-invalid="true"] { border-color: var(--konto-error); background: var(--konto-error-bg); }
+.konto-form .btn { width: 100%; margin-top: 1.75rem; }
+@media (min-width: 40rem) { .konto-form .btn { width: auto; min-width: 15rem; } }
+
+.konto-form .hint { display: block; margin-top: .45rem; font-size: .9375rem; line-height: 1.5; color: var(--muted); }
+.field-error { display: flex; gap: .55rem; align-items: flex-start; margin-top: .5rem; font-weight: 700; font-size: .9375rem; line-height: 1.5; color: var(--konto-error); }
+.field-error::before { width: 1.3rem; height: 1.3rem; font-size: .8125rem; }
+
+/* Registrierung: nummerierte Abschnitte */
+.signup-form { counter-reset: signup-step; }
+.signup-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.signup-form fieldset + fieldset { margin-top: 1.75rem; padding-top: 1.5rem; border-top: 2px solid var(--sky-50); }
+.signup-form legend { float: left; width: 100%; display: flex; align-items: center; gap: .65rem; margin-bottom: 1rem; padding: 0; font-weight: 800; font-size: 1.1875rem; color: var(--night); }
+.signup-form legend::before {
+  counter-increment: signup-step; content: counter(signup-step);
+  display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--sun); font-size: 1rem;
+}
+.signup-form legend + * { clear: both; } /* float: Legende als normaler Block, damit der Trennstrich darüber liegt */
+
+/* Wunsch-Adresse: Eingabe und Domain (als Anhang rechts) in einem runden Feld */
+.signup-slug { display: flex; align-items: stretch; margin-top: .45rem; border: 2px solid var(--konto-field); border-radius: 12px; background: #fff; overflow: hidden; }
+.signup-slug:hover { border-color: var(--night); }
+.signup-slug:focus-within { border-color: var(--blue); outline: 3px solid var(--blue); outline-offset: 3px; }
+.konto-form .signup-slug input { flex: 1; min-width: 0; margin: 0; border: 0; border-radius: 0; background: transparent; }
+.konto-form .signup-slug input:focus-visible { outline: 0; }
+.signup-slug > span { display: flex; align-items: center; padding-inline: .9rem 1rem; border-left: 2px solid var(--line); background: var(--sky-50); font-weight: 600; color: var(--muted); white-space: nowrap; }
+.signup-slug:has([aria-invalid="true"]) { border-color: var(--konto-error); background: var(--konto-error-bg); }
+.konto-form .signup-slug input[aria-invalid="true"] { background: transparent; }
+.signup-status { display: block; min-height: 1.6em; margin-top: .45rem; font-size: .9375rem; font-weight: 700; }
+.field-error + .signup-status:empty { min-height: 0; margin: 0; } /* kein Leerraum unter einem Fehler */
+.signup-free { display: inline-flex; gap: .5rem; align-items: center; }
+.signup-free::before { content: ""; flex: none; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--konto-check) center / 66% no-repeat, var(--mint); }
+.signup-taken { color: var(--konto-error); }
+
+/* AGB-Häkchen */
+.signup-check { display: flex; gap: .75rem; align-items: flex-start; font-size: .9375rem; line-height: 1.55; cursor: pointer; }
+.signup-check input { flex: none; width: 1.375rem; height: 1.375rem; margin: .1rem 0 0; accent-color: var(--blue); cursor: pointer; }
+.signup-check input[aria-invalid="true"] { outline: 2px solid var(--konto-error); outline-offset: 2px; }
+.signup-check a { font-weight: 700; color: var(--blue); }
+@media (pointer: coarse) { .signup-check { min-height: 44px; } }
+
+/* Honeypot: für Menschen unsichtbar, für Screenreader ausgeblendet */
+.signup-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* Was du bekommst: Häkchen-Liste neben bzw. unter dem Formular */
+.signup-perks h2 { font-size: clamp(1.5rem, 1.25rem + .9vw, 2rem); color: var(--night); }
+.signup-perks ul { display: grid; gap: .9rem; margin: 1.1rem 0 0; padding: 0; list-style: none; }
+.signup-perks li { display: grid; grid-template-columns: 1.75rem minmax(0, 1fr); gap: .85rem; align-items: start; line-height: 1.5; }
+.signup-perks li::before { content: ""; width: 1.75rem; height: 1.75rem; margin-top: -.05rem; border-radius: 50%; background: var(--konto-check) center / 62% no-repeat, var(--mint); }
+
+/* Seite mit schlafendem Kammi (Link abgelaufen, zu viele Versuche): im Fuß nicht noch einmal zeigen */
+body:has(.konto-media img[src$="kammi-schlaeft.webp"]) .site-foot-kammi { display: none; }

@@ -520,3 +520,48 @@ func TestKalErsteSchritte(t *testing.T) {
 		t.Errorf("Karte nach Online-Buchung noch sichtbar")
 	}
 }
+
+// Leerzustände im Tagesraster: ohne Termine (abgesagte zählen nicht) Kammi statt Raster, das
+// Raster bleibt aufklappbar; ohne Arbeitszeiten "Salon zu". Pro Seite genau ein <h1> im Seitenkopf.
+func TestKalLeererTag(t *testing.T) {
+	a := kalTestApp(t)
+	f := kalSeed(t, a, "leer", "Europe/Berlin")
+	a.db.Exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, 1, 540, 720)`, f.staff) // Mo 9-12
+	get := func(path string) string {
+		t.Helper()
+		rec := kalDo(t, a, f.cookie, "GET", path, nil)
+		if rec.Code != 200 {
+			t.Fatalf("%s: %d", path, rec.Code)
+		}
+		body := rec.Body.String()
+		if strings.Count(body, "<h1") != 1 || !strings.Contains(body, `class="page-head`) {
+			t.Errorf("%s: Seitenkopf fehlt oder mehrere <h1>", path)
+		}
+		return body
+	}
+	block := func(id int64) string { return fmt.Sprintf(`href="/dashboard/termine/%d" title=`, id) }
+	const mo = "/dashboard?tag=2030-03-04"
+
+	body := get(mo)
+	if !strings.Contains(body, "An diesem Tag noch keine Termine") || !strings.Contains(body, `<details class="kal-raster">`) {
+		t.Errorf("leerer Tag: Leerzustand oder aufklappbares Raster fehlt")
+	}
+	if !strings.Contains(body, `<a href="/dashboard" aria-current="page">`) {
+		t.Errorf("Menüpunkt Kalender nicht als aktuell markiert")
+	}
+	cancelled := f.appt(t, a, time.Date(2030, 3, 4, 10, 0, 0, 0, f.loc), "cancelled")
+	if body = get(mo); !strings.Contains(body, "An diesem Tag noch keine Termine") || !strings.Contains(body, block(cancelled)) {
+		t.Errorf("nur abgesagter Termin: Leerzustand fehlt oder Block nicht im Raster")
+	}
+	booked := f.appt(t, a, time.Date(2030, 3, 4, 11, 0, 0, 0, f.loc), "booked")
+	if body = get(mo); strings.Contains(body, "noch keine Termine") || strings.Contains(body, `<details class="kal-raster">`) || !strings.Contains(body, block(booked)) {
+		t.Errorf("Tag mit Termin: Leerzustand sichtbar oder Block fehlt")
+	}
+	if body = get("/dashboard?tag=2030-03-05"); !strings.Contains(body, "An diesem Tag ist der Salon zu") {
+		t.Errorf("Tag ohne Arbeitszeiten: Hinweis fehlt")
+	}
+	// Termin-Detail hat einen eigenen Seitenkopf (Heading leer), trotzdem genau ein <h1>.
+	if body = get(fmt.Sprintf("/dashboard/termine/%d", booked)); !strings.Contains(body, `<h1>Stamm-leer</h1>`) {
+		t.Errorf("Termin-Detail: Überschrift fehlt")
+	}
+}

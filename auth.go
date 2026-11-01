@@ -54,8 +54,16 @@ func (a *app) authRootOnly(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
+// authPage liefert die Daten für das Layout von Login und Registrierung
+// ("auth-top" in web/auth.html, Website-Look; im Einzelbetrieb ohne Website-Menü).
+func (a *app) authPage(title, path string) map[string]any {
+	d := a.page(nil, title+" - Kammzeit")
+	d["Path"], d["Single"] = path, a.cfg.SingleTenant
+	return d
+}
+
 func (a *app) authMessage(w http.ResponseWriter, status int, heading, msg, linkText string) {
-	d := a.page(nil, heading)
+	d := a.authPage(heading, "/login")
 	d["Heading"], d["Message"], d["LinkText"] = heading, msg, linkText
 	a.render(w, status, "auth-message", d)
 }
@@ -74,7 +82,7 @@ func (a *app) loginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, cmp.Or(next, "/dashboard"), http.StatusFound)
 		return
 	}
-	d := a.page(nil, "Anmelden")
+	d := a.authPage("Anmelden", "/login")
 	d["Next"] = next
 	d["LoggedOut"] = r.URL.Query().Has("abgemeldet")
 	a.render(w, http.StatusOK, "auth-login", d)
@@ -99,7 +107,7 @@ func (a *app) loginRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	next := loginNext(r.PostFormValue("weiter"))
-	d := a.page(nil, "Anmelden")
+	d := a.authPage("Anmelden", "/login")
 	d["Next"] = next
 	raw := strings.TrimSpace(r.PostFormValue("email"))
 	addr, err := mail.ParseAddress(raw)
@@ -171,7 +179,7 @@ func (a *app) loginConfirm(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, nil, err)
 		return
 	}
-	d := a.page(nil, "Anmelden")
+	d := a.authPage("Anmelden", "/login")
 	d["Token"], d["Next"] = token, loginNext(r.URL.Query().Get("weiter"))
 	a.render(w, http.StatusOK, "auth-confirm", d)
 }
