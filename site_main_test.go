@@ -45,9 +45,14 @@ func TestSiteMain(t *testing.T) {
 	}
 
 	want := map[string][]string{
-		"/funktionen": {"<title>Funktionen - Kammzeit</title>", "Geplant", "Anzahlung", "Google Kalender", "Eigene Domain", `aria-current="page">Funktionen`},
-		"/preise":     {"<title>Preise - Kammzeit</title>", "14,90&nbsp;€", "149&nbsp;€", "§&nbsp;19&nbsp;UStG", "kündbar", `<table class="compare">`},
+		"/funktionen": {"<title>Funktionen - Kammzeit</title>", "Geplant", "Anzahlung", "Google Kalender", "Eigene Domain", `aria-current="page">Funktionen`,
+			"Warteschlange für Laufkundschaft", "Eigene Logins fürs Team", "Als App installieren", "Tour beim ersten Login", "Titelbild", "Kammzeit-News"},
+		"/preise": {"<title>Preise - Kammzeit</title>", "14,90&nbsp;€", "149&nbsp;€", "§&nbsp;19&nbsp;UStG", "kündbar", `<table class="compare">`,
+			"Mitarbeiter-Logins (Rollen Inhaber und Mitarbeiter)</th><td>Nein</td><td class=\"yes\">Ja", "Warteschlange für Laufkundschaft",
+			"Titelbild, Design-Optionen und Fotogalerie", "Mitarbeiter-Logins sind pausiert, die Warteschlange ist aus", "Gelöscht wird nichts"},
 	}
+	// Was es inzwischen gibt, darf nicht mehr als fehlend dastehen.
+	gone := []string{"eigene Logins für Mitarbeiter", "Logins für Mitarbeiter gibt es nicht", ", eine App.", "die nur du siehst"}
 	descRe := regexp.MustCompile(`<meta name="description" content="([^"]*)">`)
 	linkRe := regexp.MustCompile(`(?:href|src)="(/[^"#]*)`)
 	// ponytail: Seiten anderer Bereiche existieren erst nach dem Zusammenführen.
@@ -63,6 +68,11 @@ func TestSiteMain(t *testing.T) {
 		for _, n := range needles {
 			if !strings.Contains(body, n) {
 				t.Errorf("%s enthält nicht %q", path, n)
+			}
+		}
+		for _, g := range gone {
+			if strings.Contains(body, g) {
+				t.Errorf("%s enthält noch %q", path, g)
 			}
 		}
 		m := descRe.FindStringSubmatch(body)

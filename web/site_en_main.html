@@ -1,6 +1,6 @@
 {{/* Englische Seiten Features und Pricing (kammzeit.com), Gegenstück zu site_main.html.
      Layout aus site.html, Stil in site.css + site-main.css. Screenshots zeigen das deutsche UI,
-     das steht jeweils dabei. */}}
+     das steht jeweils dabei. Registrieren verlinkt /signup (englischer Alias von /registrieren). */}}
 
 {{define "en-features"}}{{template "site-top" .}}
 <link rel="stylesheet" href="/static/site-main.css">
@@ -10,15 +10,15 @@
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Features</li></ol></nav>
       <h1 id="h-fn">Everything your salon needs for online booking</h1>
-      <p class="lead">A booking page for your customers, a calendar and customer records for you. Here is what Kammzeit can do today, and what comes next.</p>
-      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/pricing">See pricing</a></p>
+      <p class="lead">A booking page for your customers, a calendar and customer records for you. Here is what Kammzeit can do today, what Pro adds and what comes next.</p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="https://demo-en.kammzeit.com">See the demo salon</a></p>
     </div>
     <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt="Kammi the hedgehog with a calendar page" fetchpriority="high"></div>
   </div>
 </section>
 
 <nav class="wrap fn-jump" aria-label="On this page">
-  <a href="#customers">For your customers</a><a href="#salon">For you at the salon</a><a href="#data">Data and security</a><a href="#planned">Coming next</a>
+  <a href="#customers">For your customers</a><a href="#salon">For you at the salon</a><a href="#everyday">Every day</a><a href="#pro">With Pro</a><a href="#data">Data and security</a><a href="#planned">Coming next</a>
 </nav>
 
 <section class="section" id="customers" aria-labelledby="h-customers">
@@ -33,11 +33,13 @@
         <li><img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt=""><h3>Your own booking page</h3><p>At yoursalon.kammzeit.com. Share the link in your Instagram bio, your Google Business Profile or on your website.</p></li>
         <li><img class="icon-lg" src="/static/img/icons/buchung.svg" width="48" height="48" alt=""><h3>Service, staff member, time</h3><p>Customers choose the service, then who with, or simply “anyone available”. Then a free time.</p></li>
         <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>Only free times</h3><p>Customers only see times that fit the working hours and are not taken. Breaks and existing appointments are left out.</p></li>
-        <li><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Confirmation with calendar entry</h3><p>Right after booking, an email arrives with all the details and a calendar file (.ics) for their own phone.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Confirmation with calendar entry</h3><p>Right after booking, a clear email arrives with your logo, all the details and a calendar file (.ics) for their own phone.</p></li>
         <li><img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt=""><h3>Reminder 24 hours before</h3><p>Automatically by email. So an appointment gets cancelled rather than forgotten.</p></li>
         <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Cancellation by link</h3><p>Up to the deadline you set. The slot can be booked again straight away, and you get an email.</p></li>
         <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>No app, no customer account</h3><p>Nothing to install, nothing to sign up for. The phone number is optional.</p></li>
-        <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Your salon, your colour</h3><p>Accent colour, address, phone number and a few words about your salon. You choose whether the booking page is in English or German.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Your logo, your colour</h3><p>Logo, accent colour, address, phone number and a few words about your salon. Plus your opening hours and links to Instagram, TikTok, Facebook, Google and WhatsApp.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>In English or German</h3><p>You choose the language of your booking page. In German it runs at yoursalon.kammzeit.de, handy if most of your customers speak German.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/pro.svg" width="48" height="48" alt=""><h3>Cover photo, gallery, design</h3><p>With Pro your booking page gets a cover photo, a photo gallery and a look of its own. <a href="#pro">More about Pro</a></p></li>
       </ul>
       <figure class="figure fn-phone">
         <img class="shot" src="/static/img/shots/buchung-start-mobil.webp" width="390" height="824" alt="Booking page of a sample salon on a phone, German version: name, address and services with duration and price" loading="lazy">
@@ -60,8 +62,8 @@
           <h3>Calendar by day and week</h3>
           <ul class="fn-checks">
             <li>Online bookings and appointments you add yourself side by side, one column per staff member</li>
-            <li>Add a phone booking with one click on a free slot</li>
-            <li>Mark no-shows and add an internal note to an appointment that only you can see</li>
+            <li>Add a phone booking with one click on a free slot, the calendar suggests free times that fit</li>
+            <li>Reschedule appointments, mark no-shows and add an internal note that customers never see</li>
             <li>An email to you for every online booking and every cancellation</li>
           </ul>
         </div>
@@ -86,7 +88,7 @@
             <li>Services with duration, price and a short description</li>
             <li>Staff members with their own working hours, up to two time blocks a day, so breaks are included</li>
             <li>You decide who does which service</li>
-            <li>One staff member on the Free plan, unlimited with Pro</li>
+            <li>One staff member on the Free plan, unlimited with Pro, each with their own login if you like</li>
           </ul>
         </div>
         <img class="shot" src="/static/img/shots/team.webp" width="1280" height="593" alt="Team overview with staff members and their working hours, German version" loading="lazy">
@@ -106,16 +108,83 @@
   </div>
 </section>
 
+<section class="section" id="everyday" aria-labelledby="h-everyday">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Every day</p>
+      <h2 id="h-everyday">Quick to set up, always at hand</h2>
+    </div>
+    <ul class="feature-list feature-list-3">
+      <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>Install it as an app</h3><p>Add the dashboard to your phone or computer straight from the browser, no app store needed. Shortcuts take you to a new appointment, your customers or the queue. The app keeps no customer data on the device.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/start.svg" width="48" height="48" alt=""><h3>A tour on your first login</h3><p>A short tour shows you where everything is. Restart it at any time with the question mark at the top of the dashboard or from the <a href="/help">Help centre</a>.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>Every EU time zone</h3><p>From Lisbon to Helsinki: every time zone in the EU is available, plus Switzerland. Your booking page, calendar and emails all run on your salon's local time.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>English and German</h3><p>Kammzeit is in English at kammzeit.com and in German at kammzeit.de, including the dashboard and emails. One account works on both.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/kamm.svg" width="48" height="48" alt=""><h3>Kammzeit news, if you want it</h3><p>New features and tips by email, only once you have confirmed. Unsubscribe at any time with one click or in your settings.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt=""><h3>Help that actually helps</h3><p>The <a href="/help">Help centre</a> explains every feature step by step. And when you email a question, a real person answers.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" id="pro" aria-labelledby="h-pro">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / With Pro</p>
+      <h2 id="h-pro">For teams and busy salons</h2>
+      <p class="lead">Pro costs €14.90 per month or €149 per year. It includes unlimited active staff, no Kammzeit note on your booking page and these three features.</p>
+    </div>
+    <div class="fn-rows">
+      <div class="split fn-row">
+        <div>
+          <h3>A queue for walk-ins</h3>
+          <ul class="fn-checks">
+            <li>Customers without an appointment scan a QR code in your salon and join the queue with their first name</li>
+            <li>On their phone they see live how many people are ahead of them and roughly how long it will take</li>
+            <li>If they leave an email address, they hear from you when you call them: you're up next</li>
+            <li>A screen in your salon shows the numbers, and you add people who ask at the counter yourself</li>
+            <li>You turn the queue on and off, and people can only join during your working hours</li>
+          </ul>
+        </div>
+        <img class="ill" src="/static/img/ill/branche-barbershop.webp" width="1200" height="900" alt="A barber cuts a customer's hair" loading="lazy">
+      </div>
+      <div class="split split-rev fn-row">
+        <div>
+          <h3>Logins for your team</h3>
+          <ul class="fn-checks">
+            <li>You invite staff by email from the Team page, and they log in with a link just like you</li>
+            <li>Two roles: owner and staff member</li>
+            <li>Staff see the calendar, customers and notes, run the queue and keep their own working hours up to date</li>
+            <li>Plan, settings, services, team and export stay with you</li>
+          </ul>
+        </div>
+        <img class="ill" src="/static/img/ill/team.webp" width="1000" height="800" alt="Three salon staff members in front of their weekly schedule" loading="lazy">
+      </div>
+      <div class="split fn-row">
+        <div>
+          <h3>Your booking page, in your style</h3>
+          <ul class="fn-checks">
+            <li>A cover photo at the top of your booking page</li>
+            <li>A photo gallery with up to 12 pictures, for example hairstyles or nail designs</li>
+            <li>A choice of three fonts, rounded or square corners, light or dark and a welcome message of your own</li>
+            <li>Pictures are resized, and location data is removed from your photos</li>
+          </ul>
+        </div>
+        <img class="ill" src="/static/img/ill/branche-nagelstudio.webp" width="1200" height="900" alt="A nail technician at work at her table" loading="lazy">
+      </div>
+    </div>
+    <p class="pr-terms-more"><a class="link-more" href="/pricing">Compare Free and Pro</a></p>
+  </div>
+</section>
+
 <section class="section" id="data" aria-labelledby="h-data">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>03</span> / Data and security</p>
+      <p class="section-num"><span>05</span> / Data and security</p>
       <h2 id="h-data">Your data stays yours</h2>
     </div>
     <ul class="feature-list feature-list-3">
       <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>Servers in the EU</h3><p>In a data centre in Eygelshoven in the Netherlands. Bookings and customer records never leave the EU.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><h3>Data processing agreement</h3><p>For your customers' data there is a <a href="/dpa">DPA under Art. 28 GDPR</a>. No tracking, no ads.</p></li>
-      <li><img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h3>Log in with an email link</h3><p>No password that could be guessed. One login per salon, there are no separate staff logins.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h3>Log in with an email link</h3><p>No password that could be guessed. With Pro everyone on your team logs in on their own and only sees what they need for their work.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/export.svg" width="48" height="48" alt=""><h3>Export at any time</h3><p>Customer records as CSV, all of your salon's data as a JSON file.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Delete your account yourself</h3><p>In the dashboard, without a phone call or a cancellation letter.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/offen.svg" width="48" height="48" alt=""><h3>Open source</h3><p>The code is licensed under AGPL-3.0 and you can run it on your own server. <a href="/open-source">Learn more</a></p></li>
@@ -126,7 +195,7 @@
 <section class="section section-alt wave-top" id="planned" aria-labelledby="h-planned">
   <div class="wrap">
     <div class="section-head">
-      <p class="section-num"><span>04</span> / Coming next</p>
+      <p class="section-num"><span>06</span> / Coming next</p>
       <h2 id="h-planned">Planned, but not here yet</h2>
       <p class="lead">These three features are next in line. We are not promising a date.</p>
     </div>
@@ -135,16 +204,16 @@
       <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Google Calendar</h3><p>See your Kammzeit appointments in your own Google Calendar.</p></li>
       <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Custom domain</h3><p>Your booking page at your own address instead of yoursalon.kammzeit.com.</p></li>
     </ul>
-    <p class="fn-not"><b>Not included today:</b> SMS, point of sale, gift vouchers, waiting list, reviews, multiple locations, booking rooms or equipment, separate staff logins, an app.</p>
+    <p class="fn-not"><b>Not included today:</b> SMS, point of sale, gift vouchers, a waiting list for fully booked days, reviews, multiple locations, booking rooms or equipment.</p>
   </div>
 </section>
 
 <section class="cta-band" aria-labelledby="h-fn-cta">
   <div class="wrap cta-band-in">
     <div>
-      <h2 id="h-fn-cta">Try it with your own salon</h2>
-      <p>Free and with no time limit. All you need is an email address.</p>
-      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/pricing">See pricing</a></p>
+      <h2 id="h-fn-cta">See it in the demo salon</h2>
+      <p>Try the booking page without setting anything up. Or start your own salon straight away, for free.</p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="https://demo-en.kammzeit.com">See the demo salon</a></p>
     </div>
     <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
   </div>
@@ -159,7 +228,7 @@
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Pricing</li></ol></nav>
       <h1 id="h-pr">Start for free, go Pro as your team grows</h1>
-      <p class="lead">The Free plan has no time limit and covers one staff member. Pro costs €14.90 per month or €149 per year and covers your whole team.</p>
+      <p class="lead">The Free plan has no time limit and covers one staff member. Pro costs €14.90 per month or €149 per year and covers your whole team, with staff logins and a queue for walk-ins.</p>
     </div>
     <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="Kammi the hedgehog with a pair of scissors" fetchpriority="high"></div>
   </div>
@@ -177,9 +246,10 @@
           <li>1 active staff member</li>
           <li>Booking page, confirmation, reminder, cancellation by link</li>
           <li>Calendar and customer records</li>
+          <li>Logo, social links and opening hours on your booking page</li>
           <li>A small Kammzeit note on the booking page</li>
         </ul>
-        <p class="actions"><a class="btn" href="/registrieren">Start for free</a></p>
+        <p class="actions"><a class="btn" href="/signup">Start for free</a></p>
       </div>
       <div class="plan plan-pro">
         <h3>Pro</h3>
@@ -188,13 +258,17 @@
         <p class="pr-year"><b>or €149 per year</b>, cancel yearly. That works out at €12.42 a month, two months for free.</p>
         <ul>
           <li>Unlimited staff</li>
-          <li>Everything in Free</li>
+          <li>Staff logins with their own permissions</li>
+          <li>A queue for walk-ins</li>
+          <li>Cover photo, design and photo gallery on your booking page</li>
           <li>No Kammzeit note on the booking page</li>
+          <li>Everything in Free</li>
         </ul>
         <p class="pr-how">You start for free and switch on Pro in the dashboard under “Plan” as soon as you need it.</p>
       </div>
     </div>
     <p class="pr-tax">No VAT is charged (German small business scheme, §&nbsp;19&nbsp;UStG). For business customers in other EU countries the reverse charge procedure may apply. No set-up fee.</p>
+    <p class="pr-how">Want to look around first? <a href="https://demo-en.kammzeit.com">See the demo salon</a>, no sign-up needed.</p>
   </div>
 </section>
 
@@ -210,13 +284,18 @@
         <tbody>
           <tr><th scope="row">Booking page at yoursalon.kammzeit.com</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Active staff members</th><td>1</td><td>unlimited</td></tr>
+          <tr><th scope="row">Staff logins (owner and staff member roles)</th><td>No</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Queue for walk-ins with QR code and a screen for your salon</th><td>No</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Services with duration, price and description</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Working hours with breaks</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Confirmation with calendar entry, reminder, cancellation by link</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Calendar by day and week, add appointments yourself</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Customer records with notes and CSV export</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Logo, accent colour, address, text about the salon</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Opening hours and social links on your booking page</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Cover photo, design options and photo gallery (up to 12 pictures)</th><td>No</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Booking page in English or German</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
-          <tr><th scope="row">Your own accent colour, address, text about the salon</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Dashboard as an installable app, tour on your first login</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Data export (JSON), account deletion, DPA</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Support by email</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
           <tr><th scope="row">Kammzeit note on the booking page</th><td>Yes</td><td>No</td></tr>
@@ -235,7 +314,7 @@
     <div class="grid-3">
       <div class="card"><img class="icon-lg" src="/static/img/icons/pro.svg" width="48" height="48" alt=""><h3>No VAT under §&nbsp;19&nbsp;UStG</h3><p>Kammzeit is a small business under §&nbsp;19 of the German VAT Act (UStG), so the invoice shows no VAT and the price here is the price you pay. For business customers in other EU countries the reverse charge procedure may apply.</p></div>
       <div class="card"><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Payment via Stripe</h3><p>With the payment methods offered at checkout. The amount is due at the start of each month or year. Invoices arrive by email and are also in the customer portal.</p></div>
-      <div class="card"><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Cancel in the dashboard</h3><p>Under “Plan” via the customer portal, effective at the end of the paid month or year. Your salon then carries on with the Free plan, and your data is kept.</p></div>
+      <div class="card"><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Cancel in the dashboard</h3><p>Under “Plan” via the customer portal, effective at the end of the paid month or year. Your salon then carries on with the Free plan: staff logins are paused, the queue is off, and the cover photo, design and gallery are hidden. Nothing is deleted.</p></div>
     </div>
     <p class="pr-terms-more">The details are in the <a href="/terms">terms</a>.</p>
   </div>
@@ -249,9 +328,11 @@
     </div>
     <div class="faq landing-faq">
       <details><summary>Is there a trial for Pro?</summary>
-        <p>No, that is what the Free plan is for, with no time limit. It includes everything except more staff members, so you can try Kammzeit with your salon at your own pace.</p></details>
+        <p>No, that is what the Free plan is for, with no time limit. It includes everything except the Pro features: more staff, staff logins, the queue and the cover photo, design and gallery. So you can try Kammzeit with your salon at your own pace.</p></details>
       <details><summary>What happens if I cancel Pro?</summary>
-        <p>Pro stays available until the end of the paid period. After that, the limits of the Free plan apply again: one active staff member and the Kammzeit note on the booking page. Your data is kept.</p></details>
+        <p>Pro stays available until the end of the paid period. After that, the limits of the Free plan apply again: one active staff member and the Kammzeit note on the booking page. Staff logins are paused, the queue is off, and the cover photo, design and gallery are hidden. Nothing is deleted: your data, your team's access and your pictures are kept and come straight back with Pro.</p></details>
+      <details><summary>Does each staff member need their own Pro plan?</summary>
+        <p>No. One Pro plan covers the whole salon, however many staff members get a login.</p></details>
       <details><summary>Are there costs per booking or per email?</summary>
         <p>No. There is no set-up fee and no charge per booking, per staff member or per email. Just the price of the plan.</p></details>
       <details><summary>Why is no VAT charged?</summary>
@@ -271,7 +352,7 @@
     <div>
       <h2 id="h-pr-cta">Start for free, upgrade later</h2>
       <p>All you need is an email address. Switch on Pro when your team grows.</p>
-      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/features">All features</a></p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="/features">All features</a></p>
     </div>
     <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy"></div>
   </div>

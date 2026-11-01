@@ -1,7 +1,7 @@
 {{/* Startseite kammzeit.com (Englisch, Salons in ganz Europa). Gleicher Aufbau und Stil wie
      landing.html, Kopf und Fuß aus site.html. Der Startseiten-Handler rendert "landing-en" auf
-     der englischen Domain (.Title, .Lang). Kein JavaScript (CSP). Der Demo-Salon ist deutsch,
-     deshalb verlinkt diese Seite ihn nicht. */}}
+     der englischen Domain (.Title, .Lang). Kein JavaScript (CSP). Demo-Salon: demo-en.kammzeit.com,
+     Registrieren: /signup (englischer Alias). */}}
 {{define "landing-en"}}<!doctype html>
 <html lang="en">
 <head>
@@ -25,7 +25,7 @@
     <div>
       <h1 id="h-hero">Your customers book <mark class="hl">on their own</mark></h1>
       <p class="lead">Online booking for hairdressers and beauty salons. On your booking page, customers choose the service, the staff member and the time, with no app and no phone call. Every appointment lands in your calendar.</p>
-      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="#how-it-works">See how it works</a></p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="https://demo-en.kammzeit.com">See the demo salon</a></p>
       <p class="note">Free for one staff member, with no time limit. €14.90 a month for your whole team.</p>
     </div>
     <div class="hero-media">
@@ -81,7 +81,7 @@
         <li><h3>Add services and hours</h3><p>What you offer, how long it takes and what it costs. Then the working hours for you and your team, with breaks.</p></li>
         <li><h3>Share the link</h3><p>In your Instagram bio, your Google Business Profile, on your website. From then on customers book on their own and get a confirmation like this one.</p></li>
       </ol>
-      <p class="actions landing-setup-cta"><a class="btn" href="/registrieren">Create your salon for free</a></p>
+      <p class="actions landing-setup-cta"><a class="btn" href="/signup">Create your salon for free</a></p>
       </div>
       <figure class="figure landing-phone">
         <img class="shot" src="/static/img/shots/buchung-bestaetigt-mobil.webp" width="390" height="713" alt="Confirmation page after an online booking on a phone, German version: appointment, service, staff member, address, a button for the calendar entry and a link to cancel" loading="lazy">
@@ -108,10 +108,13 @@
     <ul class="feature-list feature-list-3 landing-features">
       <li><img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt=""><h3>Reminder 24 hours before</h3><p>By email, with a link to cancel. So appointments get cancelled rather than forgotten.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Cancellation by link</h3><p>The slot can be booked again straight away, and you get an email.</p></li>
-      <li><img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt=""><h3>Preferred staff member or anyone available</h3><p>Customers choose who they book with, or take whoever is free.</p></li>
-      <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>No app, no customer account</h3><p>The booking page runs in the browser. Customers only enter their name and email address.</p></li>
-      <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Your colour, your language</h3><p>Accent colour, address, phone number and a few words about your salon. The booking page speaks English or German, you choose.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/buchung.svg" width="48" height="48" alt=""><h3>Preferred staff member or anyone available</h3><p>Customers choose who they book with, or take whoever is free.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt=""><h3>No app, no customer account</h3><p>The booking page runs in the browser, in English or German, you choose. Customers only enter their name and email address.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Your logo, your colour</h3><p>Logo, accent colour, opening hours and links to Instagram and more on your booking page. With Pro, a cover photo and a photo gallery too.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/kalender.svg" width="48" height="48" alt=""><h3>Rules you set</h3><p>How short-notice a booking can be, until when customers can cancel, and how far ahead they can book.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>A queue for walk-ins</h3><p>With Pro: customers without an appointment join via QR code and see on their phone when it's their turn.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt=""><h3>Logins for your team</h3><p>With Pro, every staff member logs in on their own and sees the calendar and customers. Plan and settings stay with you.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>The dashboard as an app</h3><p>Install it on your phone or computer straight from the browser. On your first login, a short tour shows you around.</p></li>
     </ul>
     <figure class="figure landing-shot">
       <img class="shot" src="/static/img/shots/kalender.webp" width="1280" height="1067" alt="Calendar in the Kammzeit dashboard, German version: day view with the appointments of three staff members" loading="lazy">
@@ -160,7 +163,7 @@
     </div>
     <ul class="tiles">
       <li><a class="tile" href="/for/hairdressers"><img class="ill" src="/static/img/ill/branche-friseur.webp" width="1200" height="900" alt="" loading="lazy"><span class="tile-title">Hairdressers</span><span class="tile-text">Cut, colour, highlights: every service with its own duration and price.</span></a></li>
-      <li><a class="tile" href="/for/barbershops"><img class="ill" src="/static/img/ill/branche-barbershop.webp" width="1200" height="900" alt="" loading="lazy"><span class="tile-title">Barbershops</span><span class="tile-text">Short appointments, tightly scheduled. You set the minimum notice yourself.</span></a></li>
+      <li><a class="tile" href="/for/barbershops"><img class="ill" src="/static/img/ill/branche-barbershop.webp" width="1200" height="900" alt="" loading="lazy"><span class="tile-title">Barbershops</span><span class="tile-text">Short appointments, tightly scheduled. With Pro, walk-ins join the queue via QR code.</span></a></li>
       <li><a class="tile" href="/for/beauty-salons"><img class="ill" src="/static/img/ill/branche-kosmetik.webp" width="1200" height="900" alt="" loading="lazy"><span class="tile-title">Beauty salons</span><span class="tile-text">Long treatments with a description, so it is clear what is being booked.</span></a></li>
       <li><a class="tile" href="/for/nail-salons"><img class="ill" src="/static/img/ill/branche-nagelstudio.webp" width="1200" height="900" alt="" loading="lazy"><span class="tile-title">Nail salons</span><span class="tile-text">New set, infill, polish: duration and price for each service.</span></a></li>
     </ul>
@@ -181,6 +184,7 @@
         <ul>
           <li>1 staff member</li>
           <li>Booking page, reminders, calendar, customer records</li>
+          <li>Logo, social links and opening hours</li>
           <li>A small Kammzeit note on the booking page</li>
         </ul>
       </div>
@@ -190,7 +194,8 @@
         <p class="price-per">per month, or €149 per year</p>
         <ul>
           <li>Unlimited staff</li>
-          <li>Everything in Free</li>
+          <li>Staff logins and a queue for walk-ins</li>
+          <li>Cover photo, design and photo gallery</li>
           <li>No Kammzeit note</li>
         </ul>
       </div>
@@ -208,7 +213,7 @@
     <ul class="feature-list landing-trust">
       <li><img class="icon-lg" src="/static/img/icons/offen.svg" width="48" height="48" alt=""><h3>Open source under AGPL-3.0</h3><p>The source code is public. You can read what happens to your data, and even run Kammzeit on your own server.</p><p><a class="link-more" href="/open-source">More about open source</a></p></li>
       <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>Data centre in Eygelshoven</h3><p>In the Netherlands, so inside the EU. No tracking, no ads. A data processing agreement under the GDPR is included.</p><p><a class="link-more" href="/security">Data and security</a></p></li>
-      <li><img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h3>Log in without a password</h3><p>You log in with a link sent by email. There is no password for anyone to guess.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h3>Log in without a password</h3><p>You log in with a link sent by email. There is no password for anyone to guess. With Pro, your team gets logins of its own.</p></li>
       <li><img class="icon-lg" src="/static/img/icons/export.svg" width="48" height="48" alt=""><h3>Your data belongs to you</h3><p>Export your customer records as CSV and all data as JSON. And delete your account yourself at any time.</p></li>
     </ul>
   </div>
@@ -223,9 +228,13 @@
     </div>
     <div class="faq landing-faq">
       <details><summary>What does Kammzeit cost?</summary>
-        <p>Nothing with one staff member, for as long as you like. For more staff and without the Kammzeit note there is Pro at €14.90 per month or €149 per year. No VAT is charged (German small business scheme, §&nbsp;19&nbsp;UStG). For business customers in other EU countries the reverse charge procedure may apply.</p></details>
+        <p>Nothing with one staff member, for as long as you like. For more staff, staff logins, the queue and no Kammzeit note there is Pro at €14.90 per month or €149 per year. No VAT is charged (German small business scheme, §&nbsp;19&nbsp;UStG). For business customers in other EU countries the reverse charge procedure may apply.</p></details>
       <details><summary>Do my customers need an app or an account?</summary>
         <p>No. The booking page runs in the browser on any phone or computer. Customers only enter their name and email address, the phone number is optional.</p></details>
+      <details><summary>Is there a Kammzeit app?</summary>
+        <p>For you, yes: install the dashboard on your phone or computer straight from the browser, no app store needed. It then opens like an app, with shortcuts to a new appointment, your customers and the queue. Your customers do not need an app.</p></details>
+      <details><summary>Can my staff log in themselves?</summary>
+        <p>With Pro, yes. You invite them from the Team page, and they log in with a link sent by email. Staff see the calendar and customers and keep their own working hours up to date. Plan, settings and export stay with you.</p></details>
       <details><summary>Is Kammzeit available in my language?</summary>
         <p>Kammzeit is available in English and German, from the website to the dashboard and the emails. Each salon chooses the language of its booking page.</p></details>
       <details><summary>Where is my data stored?</summary>
@@ -244,7 +253,7 @@
     <div>
       <h2 id="h-final">Try it with your salon</h2>
       <p>Free and with no time limit. All you need is an email address.</p>
-      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/pricing">See pricing</a></p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="https://demo-en.kammzeit.com">See the demo salon</a></p>
     </div>
     <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy"></div>
   </div>
