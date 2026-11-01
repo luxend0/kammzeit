@@ -1,13 +1,14 @@
 {{/* Einstellungen, Datenexport, Konto löschen (dash_settings.go). Präfix "einst-".
      Fehler am Feld: aria-invalid + aria-describedby auf span.field-error (Stil aus dash.css).
      Jeder Abschnitt ist eine Karte mit .section-title und buntem 48px-Icon. Die drei Abschnitte im
-     Formular bleiben <section class="einst-section"> in fester Reihenfolge (assets/screenshots/shoot.mjs). */}}
+     Formular bleiben <section class="einst-section"> in fester Reihenfolge (assets/screenshots/shoot.mjs).
+     Texte: deutscher Text = Schlüssel ({{t .Lang "..."}}), Fehler und Auswahl-Labels kommen deutsch aus Go. */}}
 {{define "einst-seite"}}{{template "dash-top" .}}
 <div class="page-head">
   <img class="page-head-icon" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>Daten deines Salons und die Regeln für deine Buchungsseite.</p>
+    <p>{{t .Lang "Daten deines Salons und die Regeln für deine Buchungsseite."}}</p>
   </div>
 </div>
 <style>
@@ -27,126 +28,147 @@
 #einst-url { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 15px; background: #fff; }
 #einst-copy-status { font-weight: 600; }
 .einst-more { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.einst-news form { margin: 0; }
 .einst-danger-link a { color: var(--danger); font-weight: 700; }
-/* Breit: Salon links, Aussehen und Buchungsregeln rechts; Login und Daten nebeneinander */
+/* Breit: Salon links, Aussehen und Buchungsregeln rechts; Login, News und Daten nebeneinander */
 @media (min-width: 1000px) {
   .einst-form { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-rows: auto 1fr; align-items: start; }
   .einst-form > .einst-section:first-of-type { grid-row: span 2; }
   .einst-form > .actions { grid-column: 1 / -1; }
-  .einst-more { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .einst-more { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
 }
 </style>
 <script src="/static/einstellungen.js" defer></script>
 <div class="einst-wide">
 
 <section class="einst-section einst-share card card-sky" id="teilen">
-  <div class="section-title"><img src="/static/img/icons/link.svg" width="48" height="48" alt=""><h2>Deine Buchungsseite</h2></div>
+  <div class="section-title"><img src="/static/img/icons/link.svg" width="48" height="48" alt=""><h2>{{t .Lang "Deine Buchungsseite"}}</h2></div>
   <div class="field">
-    <label>Adresse<input type="text" id="einst-url" value="{{.BookingURL}}" readonly aria-describedby="einst-hint-url"></label>
-    <span class="hint" id="einst-hint-url">Die Adresse ist fest. Verlinke sie bei Google, Instagram oder auf deiner Website.</span>
+    <label>{{t .Lang "Adresse"}}<input type="text" id="einst-url" value="{{.BookingURL}}" readonly aria-describedby="einst-hint-url"></label>
+    <span class="hint" id="einst-hint-url">{{t .Lang "Die Adresse ist fest. Verlinke sie bei Google, Instagram oder auf deiner Website."}}</span>
   </div>
   <div class="actions">
-    <button class="btn btn-secondary" type="button" id="einst-copy" hidden>Link kopieren</button>
-    <a href="{{.BookingURL}}" target="_blank" rel="noopener">Buchungsseite ansehen</a>
-    <span id="einst-copy-status" role="status"></span>
+    <button class="btn btn-secondary" type="button" id="einst-copy" hidden>{{t .Lang "Link kopieren"}}</button>
+    <a href="{{.BookingURL}}" target="_blank" rel="noopener">{{t .Lang "Buchungsseite ansehen"}}</a>
+    <span id="einst-copy-status" role="status" data-copied="{{t .Lang "Kopiert"}}" data-manual="{{t .Lang "Bitte jetzt kopieren (Strg+C, am Mac Cmd+C)."}}"></span>
   </div>
 </section>
 
-{{if .Errors}}<p class="error" role="alert">Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert.</p>{{end}}
+{{if .Errors}}<p class="error" role="alert">{{t .Lang "Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert."}}</p>{{end}}
 <form method="post" action="/dashboard/einstellungen" class="form einst-form" novalidate>
   <section class="einst-section card" id="salon">
-    <div class="section-title"><img src="/static/img/icons/kamm.svg" width="48" height="48" alt=""><h2>Salon</h2></div>
+    <div class="section-title"><img src="/static/img/icons/kamm.svg" width="48" height="48" alt=""><h2>{{t .Lang "Salon"}}</h2></div>
     <div class="field">
-      <label>Name<input type="text" name="name" value="{{.Form.Name}}" maxlength="80" required{{if .Errors.name}} aria-invalid="true" aria-describedby="einst-err-name"{{end}}></label>
-      {{with .Errors.name}}<span class="field-error" id="einst-err-name">{{.}}</span>{{end}}
+      <label>{{t .Lang "Name"}}<input type="text" name="name" value="{{.Form.Name}}" maxlength="80" required{{if .Errors.name}} aria-invalid="true" aria-describedby="einst-err-name"{{end}}></label>
+      {{with .Errors.name}}<span class="field-error" id="einst-err-name">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>E-Mail für Buchungsinfos<input type="email" name="email" value="{{.Form.Email}}" maxlength="200"
+      <label>{{t .Lang "E-Mail für Buchungsinfos"}}<input type="email" name="email" value="{{.Form.Email}}" maxlength="200"
         aria-describedby="einst-hint-email{{if .Errors.email}} einst-err-email{{end}}"{{if .Errors.email}} aria-invalid="true"{{end}}></label>
-      <span class="hint" id="einst-hint-email">Hierhin schicken wir neue Buchungen und Absagen. Leer lassen = keine Mails.</span>
-      {{with .Errors.email}}<span class="field-error" id="einst-err-email">{{.}}</span>{{end}}
+      <span class="hint" id="einst-hint-email">{{t .Lang "Hierhin schicken wir neue Buchungen und Absagen. Leer lassen = keine Mails."}}</span>
+      {{with .Errors.email}}<span class="field-error" id="einst-err-email">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Telefon<input type="tel" name="phone" value="{{.Form.Phone}}" maxlength="40"{{if .Errors.phone}} aria-invalid="true" aria-describedby="einst-err-phone"{{end}}></label>
-      {{with .Errors.phone}}<span class="field-error" id="einst-err-phone">{{.}}</span>{{end}}
+      <label>{{t .Lang "Telefon"}}<input type="tel" name="phone" value="{{.Form.Phone}}" maxlength="40"{{if .Errors.phone}} aria-invalid="true" aria-describedby="einst-err-phone"{{end}}></label>
+      {{with .Errors.phone}}<span class="field-error" id="einst-err-phone">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Adresse<textarea name="address" rows="3" maxlength="300"{{if .Errors.address}} aria-invalid="true" aria-describedby="einst-err-address"{{end}}>{{.Form.Address}}</textarea></label>
-      {{with .Errors.address}}<span class="field-error" id="einst-err-address">{{.}}</span>{{end}}
+      <label>{{t .Lang "Adresse"}}<textarea name="address" rows="3" maxlength="300"{{if .Errors.address}} aria-invalid="true" aria-describedby="einst-err-address"{{end}}>{{.Form.Address}}</textarea></label>
+      {{with .Errors.address}}<span class="field-error" id="einst-err-address">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Website<input type="url" name="website" value="{{.Form.Website}}" maxlength="200" placeholder="www.dein-salon.de" autocapitalize="off" spellcheck="false"{{if .Errors.website}} aria-invalid="true" aria-describedby="einst-err-website"{{end}}></label>
-      {{with .Errors.website}}<span class="field-error" id="einst-err-website">{{.}}</span>{{end}}
+      <label>{{t .Lang "Website"}}<input type="url" name="website" value="{{.Form.Website}}" maxlength="200" placeholder="{{t .Lang "www.dein-salon.de"}}" autocapitalize="off" spellcheck="false"{{if .Errors.website}} aria-invalid="true" aria-describedby="einst-err-website"{{end}}></label>
+      {{with .Errors.website}}<span class="field-error" id="einst-err-website">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Impressum deines Salons<input type="url" name="imprint_url" value="{{.Form.ImprintURL}}" maxlength="200" placeholder="www.dein-salon.de/impressum" autocapitalize="off" spellcheck="false"
+      <label>{{t .Lang "Impressum deines Salons"}}<input type="url" name="imprint_url" value="{{.Form.ImprintURL}}" maxlength="200" placeholder="{{t .Lang "www.dein-salon.de/impressum"}}" autocapitalize="off" spellcheck="false"
         aria-describedby="einst-hint-imprint{{if .Errors.imprint_url}} einst-err-imprint{{end}}"{{if .Errors.imprint_url}} aria-invalid="true"{{end}}></label>
-      <span class="hint" id="einst-hint-imprint">Link zu deinem Impressum. Steht auf deiner Buchungsseite.</span>
-      {{with .Errors.imprint_url}}<span class="field-error" id="einst-err-imprint">{{.}}</span>{{end}}
+      <span class="hint" id="einst-hint-imprint">{{t .Lang "Link zu deinem Impressum. Steht auf deiner Buchungsseite."}}</span>
+      {{with .Errors.imprint_url}}<span class="field-error" id="einst-err-imprint">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Über uns<textarea name="about" rows="4" maxlength="500"
+      <label>{{t .Lang "Über uns"}}<textarea name="about" rows="4" maxlength="500"
         aria-describedby="einst-hint-about{{if .Errors.about}} einst-err-about{{end}}"{{if .Errors.about}} aria-invalid="true"{{end}}>{{.Form.About}}</textarea></label>
-      <span class="hint" id="einst-hint-about">Kurzer Text auf der Buchungsseite, höchstens 500 Zeichen.</span>
-      {{with .Errors.about}}<span class="field-error" id="einst-err-about">{{.}}</span>{{end}}
+      <span class="hint" id="einst-hint-about">{{t .Lang "Kurzer Text auf der Buchungsseite, höchstens 500 Zeichen."}}</span>
+      {{with .Errors.about}}<span class="field-error" id="einst-err-about">{{t $.Lang .}}</span>{{end}}
     </div>
   </section>
 
   <section class="einst-section card" id="aussehen">
-    <div class="section-title"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h2>Aussehen</h2></div>
+    <div class="section-title"><img src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h2>{{t .Lang "Aussehen"}}</h2></div>
     <div class="field">
-      <label for="einst-accent">Akzentfarbe</label>
+      <label for="einst-accent">{{t .Lang "Akzentfarbe"}}</label>
       <span class="einst-color" id="einst-preview-box" style="--accent: {{.Form.Accent}}; --on-accent: {{.PreviewOn}}">
         <input type="color" name="accent" id="einst-accent" value="{{.Form.Accent}}"
           aria-describedby="einst-hint-accent{{if .Errors.accent}} einst-err-accent{{end}}"{{if .Errors.accent}} aria-invalid="true"{{end}}>
-        <span class="einst-preview" aria-hidden="true">Termin buchen</span>
+        <span class="einst-preview" aria-hidden="true">{{t .Lang "Termin buchen"}}</span>
       </span>
-      <span class="hint" id="einst-hint-accent">Für Buttons und Markierungen auf deiner Buchungsseite. Die Schrift darauf wird automatisch schwarz oder weiß.</span>
-      {{with .Errors.accent}}<span class="field-error" id="einst-err-accent">{{.}}</span>{{end}}
+      <span class="hint" id="einst-hint-accent">{{t .Lang "Für Buttons und Markierungen auf deiner Buchungsseite. Die Schrift darauf wird automatisch schwarz oder weiß."}}</span>
+      {{with .Errors.accent}}<span class="field-error" id="einst-err-accent">{{t $.Lang .}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>{{t .Lang "Sprache der Buchungsseite"}}<select name="lang"
+        aria-describedby="einst-hint-lang{{if .Errors.lang}} einst-err-lang{{end}}"{{if .Errors.lang}} aria-invalid="true"{{end}}>{{range .Langs}}<option value="{{.Value}}" lang="{{.Value}}"{{if eq .Value $.Form.Lang}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-lang">{{t .Lang "In dieser Sprache sehen deine Kunden die Buchungsseite und die Mails zu ihren Terminen. Die Adresse oben passt sich an, bisherige Links funktionieren weiter."}}</span>
+      {{with .Errors.lang}}<span class="field-error" id="einst-err-lang">{{t $.Lang .}}</span>{{end}}
     </div>
   </section>
 
   <section class="einst-section card" id="regeln">
-    <div class="section-title"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h2>Buchungsregeln</h2></div>
+    <div class="section-title"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h2>{{t .Lang "Buchungsregeln"}}</h2></div>
     <div class="field">
-      <label>Zeitzone<select name="timezone"{{if .Errors.timezone}} aria-invalid="true" aria-describedby="einst-err-timezone"{{end}}>{{range .Timezones}}<option value="{{.Value}}"{{if eq .Value $.Form.TZ}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-      {{with .Errors.timezone}}<span class="field-error" id="einst-err-timezone">{{.}}</span>{{end}}
+      <label>{{t .Lang "Zeitzone"}}<select name="timezone"{{if .Errors.timezone}} aria-invalid="true" aria-describedby="einst-err-timezone"{{end}}>{{range .Timezones}}<option value="{{.Value}}"{{if eq .Value $.Form.TZ}} selected{{end}}>{{t $.Lang .Label}}</option>{{end}}</select></label>
+      {{with .Errors.timezone}}<span class="field-error" id="einst-err-timezone">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Online buchbar frühestens<select name="min_notice"
-        aria-describedby="einst-hint-min{{if .Errors.min_notice}} einst-err-min{{end}}"{{if .Errors.min_notice}} aria-invalid="true"{{end}}>{{range .MinNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.MinNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-      <span class="hint" id="einst-hint-min">So kurzfristig dürfen Kunden vor Terminbeginn noch online buchen.</span>
-      {{with .Errors.min_notice}}<span class="field-error" id="einst-err-min">{{.}}</span>{{end}}
+      <label>{{t .Lang "Online buchbar frühestens"}}<select name="min_notice"
+        aria-describedby="einst-hint-min{{if .Errors.min_notice}} einst-err-min{{end}}"{{if .Errors.min_notice}} aria-invalid="true"{{end}}>{{range .MinNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.MinNoticeMin}} selected{{end}}>{{t $.Lang .Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-min">{{t .Lang "So kurzfristig dürfen Kunden vor Terminbeginn noch online buchen."}}</span>
+      {{with .Errors.min_notice}}<span class="field-error" id="einst-err-min">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Online absagen<select name="cancel_notice"
-        aria-describedby="einst-hint-cancel{{if .Errors.cancel_notice}} einst-err-cancel{{end}}"{{if .Errors.cancel_notice}} aria-invalid="true"{{end}}>{{range .CancelNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.CancelNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-      <span class="hint" id="einst-hint-cancel">Bis wann Kunden über den Link in ihrer Mail selbst absagen können.</span>
-      {{with .Errors.cancel_notice}}<span class="field-error" id="einst-err-cancel">{{.}}</span>{{end}}
+      <label>{{t .Lang "Online absagen"}}<select name="cancel_notice"
+        aria-describedby="einst-hint-cancel{{if .Errors.cancel_notice}} einst-err-cancel{{end}}"{{if .Errors.cancel_notice}} aria-invalid="true"{{end}}>{{range .CancelNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.CancelNoticeMin}} selected{{end}}>{{t $.Lang .Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-cancel">{{t .Lang "Bis wann Kunden über den Link in ihrer Mail selbst absagen können."}}</span>
+      {{with .Errors.cancel_notice}}<span class="field-error" id="einst-err-cancel">{{t $.Lang .}}</span>{{end}}
     </div>
     <div class="field">
-      <label>Im Voraus buchbar<select name="horizon"
-        aria-describedby="einst-hint-horizon{{if .Errors.horizon}} einst-err-horizon{{end}}"{{if .Errors.horizon}} aria-invalid="true"{{end}}>{{range .Horizon}}<option value="{{.Value}}"{{if eq .Value $.Form.HorizonDays}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-      <span class="hint" id="einst-hint-horizon">So weit in die Zukunft zeigt die Buchungsseite freie Termine.</span>
-      {{with .Errors.horizon}}<span class="field-error" id="einst-err-horizon">{{.}}</span>{{end}}
+      <label>{{t .Lang "Im Voraus buchbar"}}<select name="horizon"
+        aria-describedby="einst-hint-horizon{{if .Errors.horizon}} einst-err-horizon{{end}}"{{if .Errors.horizon}} aria-invalid="true"{{end}}>{{range .Horizon}}<option value="{{.Value}}"{{if eq .Value $.Form.HorizonDays}} selected{{end}}>{{t $.Lang .Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-horizon">{{t .Lang "So weit in die Zukunft zeigt die Buchungsseite freie Termine."}}</span>
+      {{with .Errors.horizon}}<span class="field-error" id="einst-err-horizon">{{t $.Lang .}}</span>{{end}}
     </div>
   </section>
 
-  <div class="actions"><button class="btn" type="submit">Speichern</button></div>
+  <div class="actions"><button class="btn" type="submit">{{t .Lang "Speichern"}}</button></div>
 </form>
 
 <div class="einst-more">
 <section class="einst-section card" id="login">
-  <div class="section-title"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h2>Login</h2></div>
-  <dl class="kv"><dt>Login-E-Mail</dt><dd>{{.User.Email}}</dd></dl>
-  <p class="muted small">Du meldest dich mit einem Link per Mail an. Zum Ändern der Login-Adresse schreib uns kurz (Kontakt im <a href="/impressum">Impressum</a>).</p>
+  <div class="section-title"><img src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h2>{{t .Lang "Login"}}</h2></div>
+  <dl class="kv"><dt>{{t .Lang "Login-E-Mail"}}</dt><dd>{{.User.Email}}</dd></dl>
+  <p class="muted small">{{t .Lang "Du meldest dich mit einem Link per Mail an. Zum Ändern der Login-Adresse schreib uns kurz"}} (<a href="{{if eq .Lang "en"}}/imprint{{else}}/impressum{{end}}">{{t .Lang "Kontakt im Impressum"}}</a>).</p>
+</section>
+
+<section class="einst-section einst-news card" id="news">
+  <div class="section-title"><img src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h2>{{t .Lang "Kammzeit-News per E-Mail"}}</h2></div>
+  <p>{{t .Lang "Ab und zu eine Mail mit Neuigkeiten von Kammzeit, zum Beispiel neue Funktionen. Nur Kammzeit, keine Werbung für andere. Abbestellen geht jederzeit."}}</p>
+  {{if eq .News "an"}}
+  <p><span class="chip chip-mint">{{t .Lang "Angemeldet"}}</span> {{tf .Lang "News gehen an %s." .User.Email}}</p>
+  <form method="post" action="/dashboard/einstellungen/news"><input type="hidden" name="news" value="aus"><button class="btn btn-secondary btn-small" type="submit">{{t .Lang "News abbestellen"}}</button></form>
+  {{else if eq .News "ausstehend"}}
+  <p><span class="chip chip-sun">{{t .Lang "Bestätigung fehlt"}}</span> {{tf .Lang "Bitte klick auf den Link in der Mail, die wir an %s geschickt haben." .User.Email}}</p>
+  <form method="post" action="/dashboard/einstellungen/news"><input type="hidden" name="news" value="an"><button class="btn btn-secondary btn-small" type="submit">{{t .Lang "Mail erneut senden"}}</button></form>
+  {{else}}
+  <form method="post" action="/dashboard/einstellungen/news"><input type="hidden" name="news" value="an"><button class="btn btn-secondary btn-small" type="submit">{{t .Lang "News abonnieren"}}</button></form>
+  {{end}}
 </section>
 
 <section class="einst-section card" id="daten">
-  <div class="section-title"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""><h2>Deine Daten</h2></div>
-  <p>Alle Daten deines Salons (Team, Leistungen, Arbeitszeiten, Kunden, Termine) als JSON-Datei.</p>
-  <p><a class="btn btn-secondary" href="/dashboard/einstellungen/export">Daten exportieren</a></p>
-  <p class="muted small einst-danger-link" style="margin-top: 24px">Salon und Konto endgültig entfernen: <a href="/dashboard/einstellungen/loeschen">Konto löschen</a></p>
+  <div class="section-title"><img src="/static/img/icons/export.svg" width="48" height="48" alt=""><h2>{{t .Lang "Deine Daten"}}</h2></div>
+  <p>{{t .Lang "Alle Daten deines Salons (Team, Leistungen, Arbeitszeiten, Kunden, Termine) als JSON-Datei."}}</p>
+  <p><a class="btn btn-secondary" href="/dashboard/einstellungen/export">{{t .Lang "Daten exportieren"}}</a></p>
+  <p class="muted small einst-danger-link" style="margin-top: 24px">{{t .Lang "Salon und Konto endgültig entfernen:"}} <a href="/dashboard/einstellungen/loeschen">{{t .Lang "Konto löschen"}}</a></p>
 </section>
 </div>
 </div>
@@ -154,30 +176,30 @@
 
 {{define "einst-loeschen"}}{{template "dash-top" .}}
 <div class="page-head">
-  <a class="page-head-back" href="/dashboard/einstellungen">Zurück zu den Einstellungen</a>
+  <a class="page-head-back" href="/dashboard/einstellungen">{{t .Lang "Zurück zu den Einstellungen"}}</a>
   <img class="page-head-icon" src="/static/img/icons/absage.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>Salon, Buchungsseite und alle Daten endgültig entfernen.</p>
+    <p>{{t .Lang "Salon, Buchungsseite und alle Daten endgültig entfernen."}}</p>
   </div>
 </div>
 <div class="form card">
-{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{with .Error}}<p class="error" role="alert">{{t $.Lang .}}</p>{{end}}
 {{if .HasAbo}}
-  {{if not .Error}}<p class="error"><span>Bitte zuerst das Pro-Abo unter <a href="/dashboard/abo">/dashboard/abo</a> kündigen. Danach kannst du das Konto löschen.</span></p>{{end}}
-  <p><a href="/dashboard/abo">Zum Abo</a> · <a href="/dashboard/einstellungen">Zurück zu den Einstellungen</a></p>
+  {{if not .Error}}<p class="error">{{t .Lang "Bitte zuerst das Pro-Abo unter /dashboard/abo kündigen. Danach kannst du das Konto löschen."}}</p>{{end}}
+  <p><a href="/dashboard/abo">{{t .Lang "Zum Abo"}}</a> · <a href="/dashboard/einstellungen">{{t .Lang "Zurück zu den Einstellungen"}}</a></p>
 {{else}}
-  <p>Damit löschst du <strong>{{.Salon.Name}}</strong> endgültig: Buchungsseite, Team, Leistungen, Arbeitszeiten, Kundenkartei, alle Termine und deinen Login. Das lässt sich nicht rückgängig machen.</p>
-  <p>Kunden mit offenen Terminen bekommen keine Nachricht. Sag ihnen vorher Bescheid.</p>
-  <p>Willst du die Daten behalten? Lade vorher den <a href="/dashboard/einstellungen/export">Datenexport</a> herunter.</p>
+  <p>{{t .Lang "Damit löschst du"}} <strong>{{.Salon.Name}}</strong> {{t .Lang "endgültig: Buchungsseite, Team, Leistungen, Arbeitszeiten, Kundenkartei, alle Termine und deinen Login. Das lässt sich nicht rückgängig machen."}}</p>
+  <p>{{t .Lang "Kunden mit offenen Terminen bekommen keine Nachricht. Sag ihnen vorher Bescheid."}}</p>
+  <p>{{t .Lang "Willst du die Daten behalten? Lade vorher den"}} <a href="/dashboard/einstellungen/export">{{t .Lang "Datenexport"}}</a> {{t .Lang "herunter."}}</p>
   <form method="post" action="/dashboard/einstellungen/loeschen">
     <div class="field">
-      <label>Adresse deines Salons<input type="text" name="slug" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="einst-hint-slug"></label>
-      <span class="hint" id="einst-hint-slug">Zum Bestätigen eintippen: <strong>{{.Salon.Slug}}</strong></span>
+      <label>{{t .Lang "Adresse deines Salons"}}<input type="text" name="slug" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="einst-hint-slug"></label>
+      <span class="hint" id="einst-hint-slug">{{t .Lang "Zum Bestätigen eintippen:"}} <strong>{{.Salon.Slug}}</strong></span>
     </div>
     <div class="actions">
-      <button class="btn btn-danger" type="submit">Endgültig löschen</button>
-      <a href="/dashboard/einstellungen">Abbrechen</a>
+      <button class="btn btn-danger" type="submit">{{t .Lang "Endgültig löschen"}}</button>
+      <a href="/dashboard/einstellungen">{{t .Lang "Abbrechen"}}</a>
     </div>
   </form>
 {{end}}

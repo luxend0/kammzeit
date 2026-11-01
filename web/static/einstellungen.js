@@ -1,4 +1,5 @@
 // Einstellungen: Live-Vorschau der Akzentfarbe, Link der Buchungsseite kopieren und am Handy teilen.
+// Texte (übersetzt) kommen aus data-copied und data-manual am Statusfeld.
 
 // onAccent wie in handlers.go: Schwarz oder Weiß, je nachdem, was nach WCAG mehr Kontrast hat.
 function onAccent(hex) {
@@ -27,10 +28,10 @@ if (url && copy && status) {
     status.textContent = "";
     try {
       await navigator.clipboard.writeText(url.value);
-      status.textContent = "Kopiert";
+      status.textContent = status.dataset.copied;
     } catch {
       url.focus(); // markiert die Adresse
-      status.textContent = "Bitte jetzt kopieren (Strg+C, am Mac Cmd+C).";
+      status.textContent = status.dataset.manual;
     }
     if (navigator.share && matchMedia("(pointer: coarse)").matches) {
       navigator.share({ url: url.value }).catch(() => {}); // abgebrochen: nichts zu tun
