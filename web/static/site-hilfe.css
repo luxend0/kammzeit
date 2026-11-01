@@ -1,0 +1,190 @@
+/* Hilfe-Center, Open Source, Daten und Sicherheit, Häufige Fragen (web/site_hilfe.html).
+   Wird nach site.css geladen und ergänzt nur, was es nur in diesem Bereich gibt.
+   Palette v2: Himmel hell, Himmel, Blau kräftig, Sonnengelb, Koralle, Mint, Nachtblau.
+   Text auf Blau nur weiß, auf Gelb nur Nachtblau, Koralle und Mint nie als Textfarbe. */
+
+:root {
+  --h-himmel-hell: #e3f3ff;
+  --h-himmel: #7cc4ff;
+  --h-blau: #1e6bff;
+  --h-gelb: #ffc93c;
+  --h-gelb-hell: #fff4d6;
+  --h-koralle: #ff7a59;
+  --h-mint: #3ccf91;
+  --h-nacht: #13294b;
+  --h-grau: #46597a;      /* Nebentext, 6,9:1 auf Weiß */
+  --h-rand: #cfe7fb;
+  --h-rund: 20px;
+}
+
+/* Seitenkopf: Illustration oder Medaillon rechts, weicher Blob dahinter */
+.hilfe-kopf .page-head-media { position: relative; justify-self: center; width: min(19rem, 72%); margin: 0; }
+@media (min-width: 64rem) { .hilfe-kopf .page-head-media { justify-self: end; width: 24rem; margin: 0; } }
+.hilfe-kopf .page-head-media::before {
+  content: ""; position: absolute; inset: 6% 2% 4% 6%; z-index: 0;
+  border-radius: 58% 42% 52% 48% / 46% 56% 44% 54%; background: var(--h-himmel); opacity: .35;
+}
+.hilfe-ill { position: relative; z-index: 1; display: block; width: 100%; height: auto; }
+.hilfe-medaillon {
+  position: relative; z-index: 1; display: grid; place-items: center; width: 78%; aspect-ratio: 1; margin: 11%;
+  border-radius: 50%; background: #fff; box-shadow: 0 0 0 .8rem rgb(124 196 255 / .4), 0 0 0 1rem var(--h-gelb);
+}
+.hilfe-medaillon img { width: 46%; height: auto; }
+.hilfe-medaillon::after { content: ""; position: absolute; right: -4%; top: 6%; width: 1.1rem; height: 1.1rem; border-radius: 50%; background: var(--h-koralle); }
+
+/* /hilfe: Einstieg "Erste Schritte" als blaue Karte */
+.hilfe-start {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem 2rem; align-items: center;
+  margin-top: clamp(2rem, 1rem + 3vw, 3.5rem); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  border-radius: 24px; background: var(--h-blau); /* einfarbig: Weiß auf #3d8bff hätte nur 3,3:1 */ color: #fff; text-decoration: none;
+}
+@media (min-width: 48rem) { .hilfe-start { grid-template-columns: auto minmax(0, 1fr) auto; } }
+.hilfe-start::before, .hilfe-start::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
+.hilfe-start::before { right: -3rem; top: -3rem; width: 9rem; height: 9rem; border: 1.1rem solid rgb(255 255 255 / .12); }
+.hilfe-start::after { right: 2.6rem; top: 2.6rem; width: .7rem; height: .7rem; background: var(--h-gelb); }
+.hilfe-start-zeit { font: 800 clamp(3.5rem, 2rem + 5vw, 5.5rem)/.9 var(--font-display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.hilfe-start-zeit small { margin-left: .2em; font-size: .32em; letter-spacing: 0; }
+.hilfe-start-text { display: grid; gap: .4rem; max-width: 36em; }
+.hilfe-start-titel { font: 800 clamp(1.375rem, 1.1rem + 1vw, 1.75rem)/1.15 var(--font-display); }
+.hilfe-start-knopf {
+  position: relative; z-index: 1; justify-self: start; display: inline-flex; align-items: center; gap: .5rem;
+  padding: .8rem 1.25rem .8rem 1.5rem; border-radius: 999px; background: var(--h-gelb); color: var(--h-nacht); font-weight: 800; white-space: nowrap;
+}
+.hilfe-start-knopf img { width: 22px; height: 22px; }
+.hilfe-start:hover .hilfe-start-knopf { background: var(--h-nacht); color: #fff; }
+.hilfe-start:hover .hilfe-start-knopf img { filter: brightness(0) invert(1); }
+.hilfe-start:focus-visible { outline: 3px solid var(--h-gelb); outline-offset: 4px; }
+
+/* /hilfe: Karten je Anleitung */
+.hilfe-karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); gap: 1.25rem; }
+.hilfe-karte {
+  display: grid; align-content: start; gap: .45rem; height: 100%; padding: 1.5rem 1.5rem 1.75rem;
+  border: 2px solid var(--h-rand); border-radius: var(--h-rund); background: #fff; color: var(--h-nacht); text-decoration: none;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.hilfe-karte img { width: 64px; height: 64px; margin-bottom: .6rem; padding: 8px; border-radius: 50%; background: var(--h-himmel-hell); }
+.hilfe-karte b { font: 800 1.25rem/1.2 var(--font-display); }
+.hilfe-karte span { color: var(--h-grau); font-size: 1rem; line-height: 1.45; }
+.hilfe-karte:hover { transform: translateY(-3px); border-color: var(--h-blau); box-shadow: 0 10px 24px rgb(19 41 75 / .12); }
+.hilfe-karte:hover b { color: var(--h-blau); }
+@media (prefers-reduced-motion: reduce) { .hilfe-karte { transition: none; } .hilfe-karte:hover { transform: none; } }
+@media (max-width: 47.99rem) {
+  .hilfe-karte { grid-template-columns: 56px minmax(0, 1fr); column-gap: 1rem; padding: 1.1rem 1.25rem; }
+  .hilfe-karte img { grid-row: span 2; width: 56px; height: 56px; margin: 0; }
+}
+/* weiße Sektion nach einer hellblauen: Abstand oben wieder voll (site.css nimmt ihn bei .section + .section weg) */
+.section-alt + .section:not(.section-alt) { padding-top: var(--space, 6rem); }
+
+/* Anleitung: Text links, Liste aller Anleitungen rechts (mobil darunter) */
+.hilfe-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 3.5rem; padding-block: clamp(3rem, 2rem + 3vw, 5rem) var(--space, 6rem); }
+@media (min-width: 64rem) { .hilfe-layout { grid-template-columns: minmax(0, 1fr) 17rem; gap: clamp(3rem, 6vw, 6rem); align-items: start; } }
+.hilfe-artikel { max-width: 42rem; color: var(--h-nacht); }
+.hilfe-artikel h2 { scroll-margin-top: 1.5rem; }
+.hilfe-artikel > :first-child { margin-top: 0; }
+
+.hilfe-aside { padding: 1.25rem 1.25rem 1.5rem; border-radius: var(--h-rund); background: var(--h-himmel-hell); color: var(--h-nacht); font-size: .9375rem; }
+@media (min-width: 64rem) { .hilfe-aside { position: sticky; top: 1.5rem; } }
+.hilfe-aside-titel { font: 800 1.125rem/1.2 var(--font-display); }
+.hilfe-aside-titel a { text-decoration: none; }
+.hilfe-aside-gruppe { margin-top: 1.25rem; font-size: .8125rem; font-weight: 700; letter-spacing: .02em; color: var(--h-grau); }
+.hilfe-aside ul { margin: .4rem 0 0; padding: 0; list-style: none; }
+.hilfe-aside a { display: block; padding: .35rem .75rem; margin-inline: -.75rem; border-radius: 999px; text-decoration: none; }
+.hilfe-aside-titel a { display: inline; padding: 0; margin: 0; }
+.hilfe-aside li a:hover { background: #fff; color: var(--h-blau); }
+.hilfe-aside a[aria-current="page"] { background: #fff; color: var(--h-blau); font-weight: 800; box-shadow: inset 4px 0 0 var(--h-gelb); }
+
+/* Schritte: Ziffer im gelben Kreis, gepunktete Linie verbindet sie */
+.prose .hilfe-schritte, .hilfe-schritte { margin: 0; padding: 0; list-style: none; counter-reset: schritt; }
+.hilfe-schritte > li { position: relative; counter-increment: schritt; min-height: 2.25rem; margin: 0; padding: .2rem 0 1.25rem 3.25rem; }
+.hilfe-schritte > li::before {
+  content: counter(schritt); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 2.25rem; height: 2.25rem;
+  border-radius: 50%; background: var(--h-gelb); color: var(--h-nacht); font: 800 1.0625rem/1 var(--font-display);
+}
+.hilfe-schritte > li:not(:last-child)::after { content: ""; position: absolute; left: calc(1.125rem - 1px); top: 2.6rem; bottom: .35rem; border-left: 2px dotted var(--h-himmel); }
+.hilfe-schritte > li:last-child { padding-bottom: 0; }
+.hilfe-schritte b:not(.ui) { color: var(--h-nacht); }
+
+/* Bezeichnungen aus dem Dashboard (Menüpunkte, Felder, Buttons) */
+b.ui { padding: .05em .45em; border: 1px solid var(--h-rand); border-radius: 6px; background: var(--h-himmel-hell); color: var(--h-nacht); font-weight: 700; white-space: nowrap; }
+
+/* Hinweis- und Tipp-Kasten */
+.hilfe-hinweis { padding: 1.25rem 1.5rem; border-radius: var(--h-rund); background: var(--h-gelb-hell); color: var(--h-nacht); }
+.hilfe-hinweis > * + * { margin-top: .6em; }
+.hilfe-hinweis-breit { max-width: 52rem; margin-top: 2.5rem; }
+.prose .hilfe-hinweis { margin-block: 1.75em; }
+
+/* Code: Nachtblau, runde Ecken */
+.hilfe-code, .prose .hilfe-code { margin: 0; padding: 1.25rem 1.5rem; overflow-x: auto; border-radius: var(--h-rund); background: var(--h-nacht); color: #fff; font: .875rem/1.65 var(--font-mono, ui-monospace, monospace); tab-size: 4; }
+.hilfe-code code { padding: 0; background: none; color: inherit; font: inherit; }
+.hilfe-code-c { color: var(--h-himmel); }
+
+/* Bilder in Anleitungen */
+.hilfe-artikel .figure img { margin: 0; border-radius: var(--h-rund); }
+.hilfe-figur-schmal { max-width: 20rem; }
+
+/* Tabellen: .compare-wrap/.compare aus site.css, hier nur Abstände und Mindestbreite fürs Handy */
+.hilfe-artikel .compare, .hilfe-vergleich { margin: 0; }
+.hilfe-artikel .compare :is(th, td), .hilfe-vergleich :is(th, td) { hyphens: auto; overflow-wrap: break-word; }
+.hilfe-artikel .compare caption { padding: .9rem 1.25rem .4rem; text-align: left; font-weight: 700; color: var(--h-grau); }
+.prose .compare-wrap { margin-block: 1.5em; }
+
+/* "Weiter"-Link am Ende einer Anleitung: weißer Pill-Button mit blauem Rand */
+.hilfe-weiter { margin-top: 3rem; padding-top: 2rem; border-top: 2px dotted var(--h-himmel); }
+.hilfe-weiter a {
+  display: inline-flex; align-items: center; gap: .6rem; padding: .85rem 1.4rem; border: 2px solid var(--h-blau); border-radius: 999px;
+  background: #fff; color: var(--h-blau); font-weight: 800; text-decoration: none;
+}
+.hilfe-weiter a::after { content: "\2192"; content: "\2192" / ""; font-size: 1.15em; line-height: 1; }
+.hilfe-weiter a:hover { background: var(--h-blau); color: #fff; }
+
+/* Open Source: drei Kästen, farbige Oberkante */
+.hilfe-boxen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+@media (min-width: 64rem) { .hilfe-boxen { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.hilfe-box { padding: 1.75rem 1.75rem 2rem; border: 2px solid var(--h-rand); border-radius: var(--h-rund); background: #fff; color: var(--h-nacht); }
+.hilfe-box > * + * { margin-top: .75rem; }
+.hilfe-box img { width: 72px; height: 72px; padding: 10px; border-radius: 50%; background: var(--h-himmel-hell); }
+.hilfe-box h3 { font: 800 1.375rem/1.2 var(--font-display); }
+.hilfe-box ul { margin-bottom: 0; padding-left: 1.2em; }
+.hilfe-box li + li { margin-top: .35em; }
+.hilfe-box li::marker { color: var(--h-blau); }
+.hilfe-box-mint img { background: #dff7ec; }
+.hilfe-box-gelb img { background: var(--h-gelb-hell); }
+.hilfe-box-koralle img { background: #ffe6df; }
+.hilfe-fein { margin-top: 1.25rem; max-width: 52rem; }
+.hilfe-unter { max-width: 42em; margin-top: 1.5rem; }
+.hilfe-vergleich td { font-weight: 600; }
+.hilfe-os-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; align-items: start; }
+@media (min-width: 64rem) { .hilfe-os-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(3rem, 5vw, 5rem); } }
+.hilfe-os-grid .hilfe-schritte code { font-size: .875em; }
+
+/* Sicherheit: Standort groß auf Blau, darunter die Fakten als Karten */
+.hilfe-ort {
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem 1.75rem; align-items: center; margin-top: clamp(2rem, 1rem + 3vw, 3.5rem); padding: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  border-radius: 24px; background: var(--h-blau); /* einfarbig: Weiß auf #3d8bff hätte nur 3,3:1 */ color: #fff;
+}
+@media (min-width: 48rem) { .hilfe-ort { grid-template-columns: auto minmax(0, 1fr); } }
+.hilfe-ort img { width: 88px; height: 88px; padding: 16px; border-radius: 50%; background: #fff; }
+.hilfe-ort-name { display: block; font: 800 clamp(2.75rem, 1.5rem + 5vw, 5.5rem)/.95 var(--font-display); letter-spacing: -.03em; }
+.hilfe-ort-zeile { display: block; margin-top: .6rem; max-width: 40em; font-size: 1.0625rem; }
+.hilfe-fakten { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: 1rem; margin: 1.25rem 0 0; }
+.hilfe-fakten > div { padding: 1.25rem 1.25rem 1.4rem; border: 2px solid var(--h-rand); border-radius: var(--h-rund); background: #fff; color: var(--h-nacht); }
+.hilfe-fakten dt { display: flex; align-items: center; gap: .55rem; font: 800 1.125rem/1.2 var(--font-display); }
+.hilfe-fakten dt::before { content: ""; flex: none; width: .75rem; height: .75rem; border-radius: 50%; background: var(--h-gelb); }
+.hilfe-fakten > div:nth-child(4n+2) dt::before { background: var(--h-koralle); }
+.hilfe-fakten > div:nth-child(4n+3) dt::before { background: var(--h-mint); }
+.hilfe-fakten > div:nth-child(4n+4) dt::before { background: var(--h-himmel); }
+.hilfe-fakten dd { margin: .45rem 0 0; color: var(--h-grau); font-size: 1rem; line-height: 1.45; }
+
+/* Fragen: Themenliste links, Gruppen rechts */
+.hilfe-fragen { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; padding-block: clamp(3rem, 2rem + 3vw, 5rem) var(--space, 6rem); }
+@media (min-width: 64rem) { .hilfe-fragen { grid-template-columns: 13rem minmax(0, 1fr); gap: clamp(3rem, 6vw, 6rem); align-items: start; } }
+.hilfe-faq-gruppe { scroll-margin-top: 1.5rem; }
+.hilfe-faq-gruppe + .hilfe-faq-gruppe { margin-top: clamp(3rem, 2rem + 3vw, 4.5rem); }
+.hilfe-faq-gruppe h2 { margin: .5rem 0 1.25rem; }
+.hilfe-faq-gruppe .faq { max-width: 48rem; }
+@media (max-width: 63.99rem) {
+  .hilfe-fragen > .hilfe-aside ul { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .hilfe-fragen > .hilfe-aside a { margin: 0; background: #fff; }
+}
+.hilfe-artikel .compare td { width: auto; font-weight: 400; }
+.hilfe-vergleich td { width: 34%; }
