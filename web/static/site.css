@@ -1,0 +1,170 @@
+/* Landingpage kammzeit.de. Schwarz/Weiß, eine Akzentfarbe, Systemschriften. */
+:root {
+  --ink: #000;
+  --paper: #fff;
+  --grey: #595959; /* 7:1 auf Weiß */
+  --rule: #d0d0d0;
+  --accent: #3b82f6; /* nur Flächen/Linien, Text darauf schwarz (5,7:1) */
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --pad: 1.25rem;
+  --gap: clamp(4.5rem, 3rem + 7vw, 9rem);
+  color-scheme: light;
+}
+@media (min-width: 48rem) { :root { --pad: 2.5rem; } }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font: 1.0625rem/1.55 var(--sans); color: var(--ink); background: var(--paper); -webkit-text-size-adjust: 100%; }
+h1, h2, h3, p, figure { margin: 0; }
+h1, h2, h3 { font-weight: 800; letter-spacing: -.03em; text-wrap: balance; }
+h2 { font-size: clamp(2.1rem, 1.4rem + 2.6vw, 3.4rem); line-height: 1.02; }
+h3 { font-size: 1.1875rem; line-height: 1.25; letter-spacing: -.015em; }
+a { color: inherit; text-decoration-thickness: 2px; text-underline-offset: .25em; }
+a:hover { text-decoration-color: var(--accent); }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+img { display: block; }
+
+.wrap { max-width: 76rem; margin: 0 auto; padding-inline: var(--pad); }
+.sec { padding-top: var(--gap); }
+.skip { position: absolute; left: -999rem; top: 1rem; padding: .6rem 1rem; background: var(--ink); color: var(--paper); }
+.skip:focus { left: 1rem; z-index: 1; }
+
+.btn { display: inline-block; padding: .9rem 1.4rem; border: 2px solid var(--ink); background: var(--ink); color: var(--paper); font-weight: 700; line-height: 1.2; text-decoration: none; }
+.btn:hover { background: var(--paper); color: var(--ink); }
+.btn-small { padding: .5rem .85rem; }
+.link { font-weight: 700; }
+.cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.75rem; }
+.note { color: var(--grey); font-size: .9375rem; }
+.intro { margin-top: 1.25rem; max-width: 36em; font-size: 1.125rem; }
+
+/* Kopf */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.25rem; }
+.brand { display: flex; align-items: center; gap: .6rem; font-size: 1.3rem; font-weight: 800; letter-spacing: -.035em; text-decoration: none; }
+.top nav { display: flex; align-items: center; gap: 1.6rem; font-weight: 600; font-size: .9375rem; }
+.top nav a:not(.btn) { text-decoration: none; }
+.top nav a:not(.btn):hover { text-decoration: underline; text-decoration-color: var(--accent); }
+.nav-anchor { display: none; }
+@media (max-width: 29.99rem) { .nav-cta { display: none; } } /* auf dem Handy steht der Button direkt darunter im Hero */
+@media (min-width: 56rem) { .nav-anchor { display: inline; } }
+
+/* Hero */
+.hero { display: grid; gap: 3.5rem; padding-top: clamp(2rem, 1rem + 5vw, 5.5rem); }
+@media (min-width: 62rem) { .hero { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 5rem; align-items: start; } }
+.hero h1 { font-size: clamp(2.6rem, 1.2rem + 5.4vw, 5rem); line-height: .98; letter-spacing: -.045em; }
+.lead { margin-top: 1.75rem; max-width: 33em; font-size: clamp(1.125rem, 1rem + .45vw, 1.3rem); line-height: 1.5; }
+.hero .cta { margin-top: 2.25rem; }
+.hero .note { margin-top: 1.1rem; }
+
+/* Terminbuch: 15-Minuten-Zeilen, das Lineal links sieht aus wie ein Kamm */
+.tb-sheet {
+  --row: 1.25rem;
+  display: grid; grid-template-columns: 2.75rem 1fr 1fr; grid-template-rows: auto repeat(20, var(--row));
+  border-top: 3px solid var(--ink); border-bottom: 2px solid var(--ink);
+  font-size: .75rem; line-height: 1.25; font-variant-numeric: tabular-nums;
+}
+@media (min-width: 40rem) { .tb-sheet { --row: 1.5rem; grid-template-columns: 3.25rem 1fr 1fr; font-size: .8125rem; } }
+.tb-day, .tb-who { grid-row: 1; padding: .55rem .5rem; border-bottom: 2px solid var(--ink); font-size: 1rem; font-weight: 800; letter-spacing: -.02em; }
+.tb-day { grid-column: 1; padding-left: 0; }
+.tb-ruler {
+  grid-column: 1; grid-row: 2 / -1; border-right: 2px solid var(--ink);
+  background:
+    repeating-linear-gradient(var(--ink) 0 2px, transparent 2px calc(var(--row) * 4)) right top / 14px 100% no-repeat,
+    repeating-linear-gradient(var(--ink) 0 1px, transparent 1px var(--row)) right top / 7px 100% no-repeat;
+}
+.tb-h { grid-column: 1; padding-top: .3rem; font-size: 1.125rem; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
+.tb-h sup { font-size: .55em; margin-left: 1px; }
+.tb-lane { grid-row: 2 / -1; background: repeating-linear-gradient(var(--rule) 0 1px, transparent 1px calc(var(--row) * 4)); }
+.tb-lane + .tb-lane { border-left: 1px solid var(--rule); }
+.tb-a { margin: 2px 3px 1px; padding: .2rem .4rem; overflow: hidden; background: var(--ink); color: var(--paper); }
+@media (min-width: 40rem) { .tb-a { padding: .3rem .5rem; } }
+.tb-a b, .tb-a small { display: block; }
+.tb-a small { font-size: 1em; color: #c4c4c4; }
+.tb-a.is-new { background: var(--accent); color: var(--ink); }
+.tb-a.is-new small { color: var(--ink); }
+figcaption { margin-top: .9rem; max-width: 34em; color: var(--grey); font-size: .875rem; }
+
+/* So funktioniert's */
+.steps { display: grid; gap: 3.5rem; }
+@media (min-width: 62rem) { .steps { grid-template-columns: minmax(0, 1fr) 24rem; gap: 6rem; align-items: start; } }
+.steplist { margin: 2.5rem 0 0; padding: 0; list-style: none; counter-reset: step; max-width: 38rem; }
+.steplist li { counter-increment: step; display: grid; grid-template-columns: 3.5rem 1fr; column-gap: 1rem; padding-block: 1.5rem; border-top: 2px solid var(--ink); }
+.steplist li::before { content: counter(step); grid-row: span 2; font-size: 3.5rem; font-weight: 800; line-height: .8; letter-spacing: -.05em; }
+.steplist p { margin-top: .35rem; }
+
+/* Nachbau der Buchungsseite (style.css), ohne Fensterrahmen */
+.bp-page { padding: 1.4rem 1.25rem 1.5rem; border: 1px solid var(--ink); font-size: .875rem; line-height: 1.4; }
+.bp-url { margin-bottom: 1.25rem; color: var(--grey); font-weight: 600; }
+.bp-name { font-size: 1.75rem; font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+.bp-lead { color: var(--grey); }
+.bp-leg { margin-top: 1.1rem; padding-top: .45rem; border-top: 2px solid var(--ink); font-weight: 700; }
+.bp-opt { display: flex; align-items: center; gap: .6rem; padding-block: .45rem; border-bottom: 1px solid var(--rule); }
+.bp-opt span { flex: 1; }
+.bp-opt small { font-size: 1em; color: var(--grey); white-space: nowrap; }
+.bp-radio { flex: none; width: .9rem; height: .9rem; border: 1.5px solid var(--ink); border-radius: 50%; }
+.bp-radio.on { background: radial-gradient(circle, var(--ink) 0 40%, transparent 45%); }
+.bp-date { margin-top: .6rem; padding: .5rem .6rem; border: 1px solid var(--ink); }
+.bp-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; margin-top: .6rem; }
+.bp-slots span { padding-block: .45rem; border: 1px solid var(--ink); text-align: center; font-variant-numeric: tabular-nums; }
+.bp-slots .on { background: var(--accent); border-color: var(--accent); font-weight: 700; }
+.bp-btn { margin-top: 1.1rem; padding: .75rem; background: var(--ink); color: var(--paper); text-align: center; font-weight: 700; }
+
+/* Funktionen als Leistungsliste wie im Salon: Name ..... Preis */
+.menu { display: grid; gap: 2rem 5rem; margin: 3rem 0 0; padding: 0; list-style: none; }
+@media (min-width: 62rem) { .menu { grid-template-columns: 1fr 1fr; } }
+.menu-head { display: flex; align-items: baseline; align-items: last baseline; gap: .6rem; }
+.dots { flex: 1; min-width: 1.5rem; border-bottom: 2px dotted var(--ink); }
+.menu-head h3 { font-size: 1.0625rem; text-wrap: wrap; } /* kurze Titel, damit Name und Preis auch mobil in eine Zeile passen */
+@media (min-width: 40rem) { .menu-head h3 { font-size: 1.1875rem; } }
+.val { font-weight: 700; white-space: nowrap; }
+.menu p { margin-top: .35rem; max-width: 32em; }
+
+/* Preise */
+.plans { display: grid; margin-top: 3rem; border-top: 3px solid var(--ink); }
+.plan { padding-block: 1.5rem 2rem; }
+.plan + .plan { border-top: 2px solid var(--ink); }
+@media (min-width: 48rem) {
+  .plans { grid-template-columns: 1fr 1fr; }
+  .plan + .plan { border-top: 0; border-left: 2px solid var(--ink); padding-left: 2.5rem; }
+}
+.plan h3 { font-size: 1.5rem; }
+.amount { margin-top: .75rem; font-size: clamp(3.25rem, 1.5rem + 5vw, 6rem); font-weight: 800; line-height: 1; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.per { margin-top: .5rem; color: var(--grey); }
+.plan ul { margin: 1.5rem 0 0; padding: 0; list-style: none; max-width: 30rem; }
+.plan li { padding-block: .55rem; border-top: 1px solid var(--rule); }
+.fine { margin-top: 1.5rem; font-weight: 600; }
+#preise .cta { margin-top: 2rem; }
+#preise .note { margin-top: 1rem; }
+
+/* Open Source, schwarz */
+.band { margin-top: var(--gap); padding-block: clamp(3.5rem, 2rem + 6vw, 7rem); background: var(--ink); color: var(--paper); }
+.oss { display: grid; gap: 2.5rem; }
+@media (min-width: 62rem) { .oss { grid-template-columns: minmax(0, 1fr) minmax(0, 30rem); gap: 5rem; align-items: end; } }
+.oss p { margin-top: 1.1rem; max-width: 34em; }
+.oss a { font-weight: 700; }
+.oss pre { margin: 0; padding: 1.25rem; overflow-x: auto; border: 1px solid var(--paper); font: .75rem/1.7 var(--mono); }
+@media (min-width: 40rem) { .oss pre { font-size: .875rem; } }
+.oss .c { color: #a8a8a8; }
+
+/* Fragen */
+.faq { display: grid; gap: 2.5rem; }
+@media (min-width: 62rem) { .faq { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 5rem; } }
+.faq .note { margin-top: 1rem; }
+.faq-list { border-top: 3px solid var(--ink); }
+details { border-bottom: 1px solid var(--ink); }
+summary { display: flex; justify-content: space-between; gap: 1.5rem; padding-block: 1.1rem; font-size: 1.125rem; font-weight: 700; cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; content: "+" / ""; font-size: 1.5rem; font-weight: 400; line-height: 1; }
+details[open] summary::after { content: "\2212"; content: "\2212" / ""; }
+details p { max-width: 40em; padding-bottom: 1.4rem; }
+
+/* Schluss + Fußzeile */
+.final { padding-bottom: var(--gap); }
+.final .cta { margin-top: 2rem; }
+.foot { padding-block: 2.5rem 3rem; border-top: 3px solid var(--ink); font-size: .9375rem; }
+.foot-in { display: grid; gap: 1rem; }
+@media (min-width: 56rem) { .foot-in { grid-template-columns: auto 1fr auto; align-items: center; gap: 2.5rem; } }
+.foot .brand { font-size: 1.1rem; }
+.foot nav { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
+.foot nav a { padding-block: .25rem; text-decoration: none; }
+.foot nav a:hover { text-decoration: underline; text-decoration-color: var(--accent); }
