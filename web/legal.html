@@ -1,0 +1,52 @@
+{{/* Rechtstexte: Impressum, Datenschutz, AGB, AVV */}}
+{{define "impressum"}}{{template "top" .}}
+<h1>Impressum</h1>
+<p class="lead">Angaben nach § 5 DDG</p>
+<p>Ben Oliver Mallow<br>Sickinger Straße 7<br>55758 Sien<br>Deutschland</p>
+<p>Kammzeit ist ein Angebot des Einzelunternehmens von Ben Oliver Mallow, das auch unter dem Namen InstantNode auftritt. Es gibt keine eigene Gesellschaft und keinen Handelsregistereintrag.</p>
+<h2>Kontakt</h2>
+<p>E-Mail: <a href="mailto:contact@instantnode.eu">contact@instantnode.eu</a><br>Telefon: +49 176 41969046</p>
+<h2>Umsatzsteuer</h2>
+<p>USt-IdNr. nach § 27a UStG: DE463618169. Als Kleinunternehmer nach § 19 UStG wird keine Umsatzsteuer berechnet.</p>
+<h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+<p>Ben Oliver Mallow, Anschrift wie oben.</p>
+<h2>Buchungsseiten der Salons</h2>
+<p>Für die Inhalte auf den Buchungsseiten (z. B. salonname.kammzeit.de) ist der jeweilige Salon verantwortlich.</p>
+<h2>Verbraucherstreitbeilegung</h2>
+<p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+{{template "bottom" .}}{{end}}
+
+{{define "datenschutz"}}{{template "top" .}}
+<h1>Datenschutz</h1>
+<p class="lead">Stand: 1. November 2026</p>
+
+<h2>1. Verantwortlicher</h2>
+<p>Ben Oliver Mallow, Sickinger Straße 7, 55758 Sien, Deutschland, E-Mail <a href="mailto:contact@instantnode.eu">contact@instantnode.eu</a>. Weitere Angaben im <a href="/impressum">Impressum</a>.</p>
+
+<h2>2. Zwei Rollen</h2>
+<p>Für die Website kammzeit.de und die Konten der Salons sind wir verantwortlich. Für Buchungen auf der Seite eines Salons (z. B. salonname.kammzeit.de) ist <strong>der Salon</strong> verantwortlich. Wir verarbeiten diese Daten nur in seinem Auftrag und nach seinen Weisungen (Auftragsverarbeitung nach Art. 28 DSGVO). Fragen zu einer Buchung richtest du am besten direkt an den Salon.</p>
+
+<h2>3. Hosting</h2>
+<p>Kammzeit läuft auf eigenen Servern von InstantNode in einem Rechenzentrum in Eygelshoven (Niederlande), also in der EU. Daten werden nicht in Länder außerhalb der EU übermittelt.</p>
+
+<h2>4. Aufruf der Website</h2>
+<p>Beim Aufruf verarbeitet der Server technisch notwendig deine IP-Adresse und die angefragte Adresse, um die Seite auszuliefern (Art. 6 Abs. 1 lit. f DSGVO). Wir speichern keine Zugriffsprotokolle. Fehlerprotokolle des Servers können E-Mail-Adressen enthalten (z. B. wenn eine Mail nicht zugestellt werden konnte) und werden nach 14 Tagen gelöscht.</p>
+<p>Es gibt keine Tracking- oder Analyse-Tools, keine Werbung und keine Cookies zu Marketingzwecken. Cookies setzen wir nur, soweit sie technisch nötig sind, etwa für die Anmeldung von Salons.</p>
+
+<h2>5. Terminbuchung</h2>
+<p>Wenn du einen Termin buchst, verarbeiten wir im Auftrag des Salons: Name, E-Mail-Adresse, auf Wunsch Telefonnummer, gewählte Leistung, Mitarbeiter und Zeitpunkt. Der Salon kann zu dir Notizen in seiner Kundenkartei hinterlegen. Zweck ist die Durchführung des Termins, einschließlich Bestätigung, Erinnerung und Absage-Link per E-Mail. Rechtsgrundlage für den Salon ist Art. 6 Abs. 1 lit. b DSGVO. Wie lange die Daten gespeichert bleiben, bestimmt der Salon. Endet der Vertrag zwischen Salon und Kammzeit, löschen wir seine Daten.</p>
+
+<h2>6. E-Mails</h2>
+<p>Bestätigungen und Erinnerungen versenden wir über eigene Mailserver von InstantNode in der EU.</p>
+
+<h2>7. Google Kalender (in Vorbereitung)</h2>
+<p>Salons können künftig den Google Kalender ihrer Mitarbeiter verbinden. Nur nach dieser ausdrücklichen Freigabe greift Kammzeit über die Google Calendar API auf den verbundenen Kalender zu, und zwar ausschließlich, um</p>
+<ul>
+<li>belegte Zeiten abzufragen, damit nur freie Termine angeboten werden (es werden keine Titel oder Inhalte fremder Termine gespeichert), und</li>
+<li>über Kammzeit gebuchte Termine in diesen Kalender einzutragen, zu ändern oder zu löschen.</li>
+</ul>
+<p>Die Zugangsschlüssel speichern wir verschlüsselt. Die Verbindung lässt sich jederzeit in Kammzeit oder in den Google-Kontoeinstellungen trennen, die Schlüssel löschen wir dann. Die Nutzung und Weitergabe von Informationen, die über Google-APIs empfangen werden, erfolgt gemäß der <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, einschließlich der Anforderungen zur eingeschränkten Nutzung (Limited Use). Wir geben diese Daten nicht weiter, verkaufen sie nicht und nutzen sie nicht für Werbung oder zum Trainieren von KI-Modellen.</p>
+
+<h2>8. Deine Rechte</h2>
+<p>Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15 bis 21 DSGVO). Bei Buchungsdaten wende dich an den Salon, wir unterstützen ihn dabei. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren, für uns zuständig ist der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Rheinland-Pfalz.</p>
+{{template "bottom" .}}{{end}}
