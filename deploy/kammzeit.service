@@ -6,6 +6,7 @@ Wants=network-online.target
 [Service]
 User=kammzeit
 EnvironmentFile=/etc/kammzeit.env
+WorkingDirectory=/var/lib/kammzeit
 ExecStart=/usr/local/bin/kammzeit
 Restart=on-failure
 StateDirectory=kammzeit
