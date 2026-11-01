@@ -2,7 +2,7 @@
 # Alle Generatoren: jedes yield = ein sichtbarer Bauschritt. Ursprung = Bodenmitte, Front nach -Y.
 import math
 from kzlib import (toon, flat, empty, slab, ring_slab, ellipse, rrect, loft_z, lathe, capsule, ellipsoid,
-                   band, bez2, text, shadow, log, mix_hex,
+                   band, bez2, text, say, shadow, log, mix_hex,
                    SKY_L, SKY, BLUE, YELLOW, CORAL, MINT, NIGHT, WHITE)
 
 R = math.radians
@@ -394,7 +394,7 @@ def customer_card(n, root, w=0.46, h=0.32, tilt=14):
          mat=flat(WHITE), line=False)
     slab(n + "_Name", rrect(0.17, 0.024, 0.012, 6, -w / 2 + 0.22, h - 0.06), z, z + 0.002, parent=g, mat=ink, line=False)
     slab(n + "_Tel", rrect(0.12, 0.016, 0.008, 6, -w / 2 + 0.195, h - 0.097), z, z + 0.002, parent=g, mat=grey, line=False)
-    text(n + "_Notiz", "Farbe 7/1, 6 %", 0.026, font="Roboto-Medium.ttf", parent=g, loc=(-w / 2 + 0.03, h - 0.175, z), mat=ink)
+    text(n + "_Notiz", say("Farbe 7/1, 6 %", "Colour 7/1, 6 %"), 0.026, font="Roboto-Medium.ttf", parent=g, loc=(-w / 2 + 0.03, h - 0.175, z), mat=ink)
     slab(n + "_Notiz_Linie", rrect(w - 0.06, 0.004, 0.002, 2, 0, h - 0.19), z, z + 0.002, parent=g, mat=grey, line=False)
     for i in range(3):
         y = h - 0.225 - i * 0.032
@@ -459,7 +459,7 @@ def week_grid(n, d, w, h, staff=(CORAL, MINT, YELLOW, SKY)):
     grey = flat(mix_hex(NIGHT, WHITE, 0.88))
     z = 0.0022
     slab(n + "_Kopf", rrect(w, 0.05, 0.012, 4, 0, h - 0.025), z, z + 0.001, parent=d, mat=flat(SKY_L), line=False)
-    days = ["Mo", "Di", "Mi", "Do", "Fr"]
+    days = say(["Mo", "Di", "Mi", "Do", "Fr"], ["Mon", "Tue", "Wed", "Thu", "Fri"])
     cw = (w - 0.06) / 5
     for i, t in enumerate(days):
         x = -w / 2 + 0.06 + cw * (i + 0.5)

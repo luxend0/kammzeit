@@ -1,12 +1,18 @@
 // Steuert Brave headless über das DevTools-Protokoll und speichert PNGs.
 // Wird von shoot.sh aufgerufen (dort stehen Server, Daten und Umwandlung in WebP).
-// Umgebung: CDP_PORT, PORT, COOKIE (kz_session=...), OUT, DAY (YYYY-MM-DD, "heute").
+// Umgebung: CDP_PORT, PORT, COOKIE (kz_session=...), OUT, DAY (YYYY-MM-DD, "heute"),
+// SHOT_LANG (de|en), SITE (Hauptdomain), SALON (Host der Buchungsseite).
 // Node >= 22 (fetch und WebSocket eingebaut), keine Abhängigkeiten.
 import { writeFileSync } from "node:fs";
 
-const { CDP_PORT, PORT, COOKIE, OUT, DAY } = process.env;
-const site = `http://kammzeit.test:${PORT}`;
-const salon = `http://lindner.kammzeit.test:${PORT}`;
+const { CDP_PORT, PORT, COOKIE, OUT, DAY, SITE, SALON } = process.env;
+const site = `http://${SITE}:${PORT}`;
+const salon = `http://${SALON}:${PORT}`;
+// Was je Sprache anders ist (Daten aus seed.py)
+const L = {
+  de: { locale: "de-DE", customer: "Neumann", name: "Lena Hoffmann", email: "lena.hoffmann@example.com" },
+  en: { locale: "en-GB", customer: "Martin", name: "Hannah Clarke", email: "hannah.clarke@example.com" },
+}[process.env.SHOT_LANG || "de"];
 
 const target = await (await fetch(`http://127.0.0.1:${CDP_PORT}/json/new?about:blank`, { method: "PUT" })).json();
 const ws = new WebSocket(target.webSocketDebuggerUrl);
@@ -85,9 +91,9 @@ async function shot(name, { top, bottom, pad = 32, left = 0, width } = {}) {
 
 await send("Page.enable");
 await send("Runtime.enable");
-await send("Emulation.setLocaleOverride", { locale: "de-DE" });
+await send("Emulation.setLocaleOverride", { locale: L.locale });
 const [name, ...rest] = COOKIE.split("=");
-await send("Network.setCookie", { name, value: rest.join("="), domain: "kammzeit.test", path: "/", httpOnly: true });
+await send("Network.setCookie", { name, value: rest.join("="), domain: SITE, path: "/", httpOnly: true });
 
 // Dashboard, 1280 breit
 await viewport(1280);
@@ -96,7 +102,7 @@ await go(`${site}/dashboard`);
 await js(`localStorage.setItem(document.getElementById("kz-tour").dataset.key, "done"), true`);
 await go(`${site}/dashboard`);
 await shot("kalender", { bottom: ".kal-scroll" });
-await go(`${site}/dashboard/kunden?q=Neumann`);
+await go(`${site}/dashboard/kunden?q=${L.customer}`);
 const card = await js(`document.querySelector('#kunden-tabelle a[href^="/dashboard/kunden/"]').href`);
 await go(card);
 await shot("kunde", { bottom: "main .table-wrap" });
@@ -110,6 +116,8 @@ await shot("einstellungen", { bottom: `${form} > .actions` }); // zweispaltig: S
 // Zusatz: nur die Karte Buchungsregeln
 const col = await js(`(() => { const r = document.querySelector('#regeln').getBoundingClientRect(); return [r.left, r.width]; })()`);
 await shot("einstellungen-regeln", { top: "#regeln", bottom: "#regeln", pad: 24, left: col[0] - 24, width: col[1] + 48 });
+await go(`${site}/dashboard/warteschlange`);
+await shot("warteschlange", { bottom: ".queue-layout" });
 
 // Mobil, 390 breit
 await viewport(390);
@@ -138,8 +146,8 @@ await js(`(() => {
     [...document.querySelectorAll('#slots .slot')].map((l) => l.textContent.trim()).join(' '));
   l.querySelector('input').click();
   const f = document.querySelector('form[action="/book"]');
-  f.querySelector('[name=name]').value = 'Lena Hoffmann';
-  f.querySelector('[name=email]').value = 'lena.hoffmann@example.com';
+  f.querySelector('[name=name]').value = ${JSON.stringify(L.name)};
+  f.querySelector('[name=email]').value = ${JSON.stringify(L.email)};
   return true;
 })()`);
 // Schritt 3 und 4: Tag, gewählte Uhrzeit, Daten, Buchen-Knopf (etwa ein Handy-Bildschirm)

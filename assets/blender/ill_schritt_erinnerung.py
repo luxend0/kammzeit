@@ -19,15 +19,15 @@ def build():
     bell_pts = [(-0.215, card_y - 0.025), (-0.165, card_y - 0.025), (-0.17, card_y + 0.01), (-0.19, card_y + 0.03),
                 (-0.21, card_y + 0.01)]
     K.slab("Karte_Glocke", bell_pts, 0.0076, 0.0085, parent=d, mat=K.flat(NIGHT), line=False)
-    K.text("Karte_Titel", "Erinnerung", 0.042, parent=d, loc=(-0.115, card_y + 0.012, 0.0062), mat=K.flat(NIGHT))
-    K.text("Karte_Zeit", "Morgen, 10:30 Uhr", 0.034, font="Roboto-Medium.ttf", parent=d,
+    K.text("Karte_Titel", K.say("Erinnerung", "Reminder"), 0.042, parent=d, loc=(-0.115, card_y + 0.012, 0.0062), mat=K.flat(NIGHT))
+    K.text("Karte_Zeit", K.say("Morgen, 10:30 Uhr", "Tomorrow, 10:30"), 0.034, font="Roboto-Medium.ttf", parent=d,
            loc=(-0.115, card_y - 0.05, 0.0062), mat=K.flat(K.mix_hex(NIGHT, WHITE, 0.25)))
     log_lines = [(0.0, 0.62, 0.46), (0.0, 0.56, 0.34), (0.0, 0.5, 0.4)]
     for i, (x, y, w) in enumerate(log_lines):
         K.slab("Zeile_%d" % i, K.rrect(w, 0.028, 0.014, 6, -0.23 + w / 2, y), 0.003, 0.005, parent=d,
                mat=K.flat(K.mix_hex(NIGHT, WHITE, 0.86)), line=False)
     K.slab("Knopf", K.rrect(0.42, 0.085, 0.0425, 10, 0, 0.3), 0.003, 0.006, parent=d, mat=K.flat(YELLOW), line=False)
-    K.text("Knopf_Text", "Termin ansehen", 0.034, align="CENTER", parent=d, loc=(0, 0.288, 0.0062), mat=K.flat(NIGHT))
+    K.text("Knopf_Text", K.say("Termin ansehen", "View appointment"), 0.034, align="CENTER", parent=d, loc=(0, 0.288, 0.0062), mat=K.flat(NIGHT))
     yield
     # Glocke links neben dem Handy
     bl = K.empty("Glocke", loc=(-0.95, 0.05, 0), rot=(0, 0, R(-12)))
