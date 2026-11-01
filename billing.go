@@ -54,6 +54,7 @@ func (a *app) routesBilling(mux *http.ServeMux) {
 func (a *app) aboPage(w http.ResponseWriter, r *http.Request, c *dctx) {
 	cfg := stripeEnv()
 	d := a.dashPage(c, r, "abo", "Abo")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Online"] = cfg.online()
 	d["Portal"] = cfg.key != "" && c.Salon.StripeCustomerID != ""
 	d["Erfolg"] = r.URL.Query().Has("erfolg")

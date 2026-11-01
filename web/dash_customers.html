@@ -1,34 +1,54 @@
 {{/* Kundenkartei (dash_customers.go). Seiten: kunden-liste (Fragment kunden-tabelle für die Live-Suche),
-     kunden-neu, kunden-karte, kunden-loeschen. */}}
+     kunden-neu, kunden-karte, kunden-loeschen. Gemeinsame Klassen (.page-head, .empty, .card, .chip-*,
+     .section-title, .table-wrap) aus dash.css; hier nur, was es nur in der Kartei gibt.
+     Reihenfolge je Seite: eigene Meldung, .page-head, dann <style> (dash.css hängt die Meldung an den Seitenkopf). */}}
+
+{{define "kunden-style"}}<style>
+.kunden-kontakt { overflow-wrap: anywhere; }
+.kunden-name { font-weight: 700; }
+.kunden-export { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: 8px; }
+.kunden-export a { font-weight: 700; }
+.kunden-export img { flex: none; }
+.kunden-mob { display: none; margin-top: 2px; font-size: .8125rem; color: var(--muted); }
+/* Handy: Kontakt unter dem Namen statt eigener Spalte */
+@media (max-width: 560px) { .kunden-mobil-aus { display: none; } .kunden-mob { display: block; } }
+</style>{{end}}
 
 {{define "kunden-liste"}}{{template "dash-top" .}}
-<style>
-.kunden-suche { flex: 1 1 200px; max-width: 340px; margin-top: 0; }
-.kunden-neu { margin-left: auto; }
-.kunden-kontakt { overflow-wrap: anywhere; }
-@media (max-width: 560px) { .kunden-mobil-aus { display: none; } }
-</style>
 {{if .Deleted}}<p class="flash" role="status">Kunde gelöscht.</p>{{end}}
-<form class="toolbar" method="get" action="/dashboard/kunden" role="search">
+<div class="page-head">
+  <img class="page-head-icon" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>Deine Kundenkartei. Wer online bucht, landet automatisch hier.</p>
+  </div>
+  <div class="page-head-actions"><a class="btn" href="/dashboard/kunden/neu">Neuer Kunde</a></div>
+</div>
+{{template "kunden-style"}}
+<style>
+.kunden-suche-form .kunden-suche { flex: 1 1 260px; max-width: 420px; padding-left: 2.9rem;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2313294B' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m15.5 15.5 5 5'/%3E%3C/svg%3E") no-repeat .9rem center / 20px 20px; }
+</style>
+{{if or .Customers .Q .PrevURL}}<form class="toolbar kunden-suche-form" method="get" action="/dashboard/kunden" role="search">
   <input class="kunden-suche" type="search" name="q" value="{{.Q}}" maxlength="100" autocomplete="off" aria-label="Kunden suchen"
     placeholder="Name, E-Mail oder Telefon"
     hx-get="/dashboard/kunden" hx-trigger="input changed delay:300ms, search" hx-target="#kunden-tabelle" hx-push-url="true">
   <noscript><button class="btn btn-secondary" type="submit">Suchen</button></noscript>
-  <a class="btn kunden-neu" href="/dashboard/kunden/neu">Neuer Kunde</a>
-</form>
+</form>{{end}}
 <div id="kunden-tabelle">{{template "kunden-tabelle" .}}</div>
-{{if or .Customers .Q .PrevURL}}<p class="small" style="margin-top: 24px"><a href="/dashboard/kunden.csv">Alle Kunden als CSV-Datei herunterladen</a> <span class="muted">(für Excel oder LibreOffice)</span></p>{{end}}
+{{if or .Customers .Q .PrevURL}}<p class="small kunden-export"><img src="/static/img/icons/export.svg" width="32" height="32" alt="">
+  <a href="/dashboard/kunden.csv">Alle Kunden als CSV-Datei herunterladen</a> <span class="muted">für Excel oder LibreOffice</span></p>{{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "kunden-tabelle"}}
 {{if .Customers}}
 <div class="table-wrap">
 <table class="table">
-  <thead><tr><th>Name</th><th>Kontakt</th><th class="num kunden-mobil-aus">Besuche</th><th class="kunden-mobil-aus">Letzter Besuch</th><th>Nächster Termin</th></tr></thead>
+  <thead><tr><th>Name</th><th class="kunden-mobil-aus">Kontakt</th><th class="num kunden-mobil-aus">Besuche</th><th class="kunden-mobil-aus">Letzter Besuch</th><th>Nächster Termin</th></tr></thead>
   <tbody>
   {{range .Customers}}<tr>
-    <td><a href="/dashboard/kunden/{{.ID}}"><strong>{{.Name}}</strong></a></td>
-    <td class="kunden-kontakt">{{if or .Email .Phone}}{{.Email}}{{if and .Email .Phone}}<br>{{end}}{{.Phone}}{{else}}<span class="muted">-</span>{{end}}</td>
+    <td><a class="kunden-name" href="/dashboard/kunden/{{.ID}}">{{.Name}}</a>{{if or .Phone .Email}}<span class="kunden-mob kunden-kontakt">{{.Phone}}{{if and .Email .Phone}}<br>{{end}}{{.Email}}</span>{{end}}</td>
+    <td class="kunden-kontakt kunden-mobil-aus">{{if or .Email .Phone}}{{.Email}}{{if and .Email .Phone}}<br>{{end}}{{.Phone}}{{else}}<span class="muted">-</span>{{end}}</td>
     <td class="num kunden-mobil-aus">{{.Visits}}</td>
     <td class="nowrap kunden-mobil-aus">{{or .LastVisit "-"}}</td>
     <td>{{or .NextAppt "-"}}</td>
@@ -42,9 +62,10 @@
 <p class="empty">Keine weiteren Kunden.</p>
 {{else}}
 <div class="empty">
-  <p><strong>Noch keine Kunden.</strong></p>
+  <img src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="">
+  <h2>Noch keine Kunden</h2>
   <p>Kunden landen automatisch hier, sobald sie online buchen. Stammkunden ohne Online-Buchung kannst du selbst anlegen.</p>
-  <p><a class="btn" href="/dashboard/kunden/neu">Neuer Kunde</a></p>
+  <p class="actions"><a class="btn" href="/dashboard/kunden/neu">Neuer Kunde</a></p>
 </div>
 {{end}}
 {{if or .PrevURL .NextURL}}<nav class="actions" aria-label="Seiten">
@@ -82,9 +103,16 @@
 {{define "kunden-fehler"}}{{if .}}<p class="error" role="alert">{{or .form "Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert."}}</p>{{end}}{{end}}
 
 {{define "kunden-neu"}}{{template "dash-top" .}}
-<style>.field-error { color: var(--danger); }</style>
+<div class="page-head">
+  <a class="page-head-back" href="/dashboard/kunden">Zurück zu Kunden</a>
+  <img class="page-head-icon" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>Für Stammkunden, die nicht online buchen. Wer online bucht, wird automatisch angelegt.</p>
+  </div>
+</div>
 {{template "kunden-fehler" .Errors}}
-<form class="form" method="post" action="/dashboard/kunden/neu">
+<form class="form card" method="post" action="/dashboard/kunden/neu">
   {{template "kunden-felder" .}}
   <div class="actions"><button class="btn" type="submit">Speichern</button><a href="/dashboard/kunden">Abbrechen</a></div>
 </form>
@@ -98,7 +126,7 @@
   <tbody>
   {{range .}}<tr>
     <td><a href="/dashboard/termine/{{.ID}}">{{.When}}</a></td>
-    <td><span class="badge {{.Badge}}">{{.Status}}</span></td>
+    <td><span class="chip {{if eq .Status "gebucht"}}chip-blue{{else if eq .Status "erledigt"}}chip-mint{{else if eq .Status "abgesagt"}}chip-grey{{else}}chip-coral{{end}}">{{.Status}}</span></td>
     <td>{{.Service}}</td>
     <td class="kunden-mobil-aus">{{.Staff}}</td>
     <td class="num nowrap kunden-mobil-aus">{{euro .PriceCents}}</td>
@@ -109,44 +137,64 @@
 {{end}}
 
 {{define "kunden-karte"}}{{template "dash-top" .}}
+<div class="page-head">
+  <a class="page-head-back" href="/dashboard/kunden">Zurück zu Kunden</a>
+  <img class="page-head-icon" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>Kunde seit {{.Customer.Created}}</p>
+  </div>
+  <div class="page-head-actions"><a class="btn" href="/dashboard/termine/neu?kunde={{.Customer.ID}}">Neuer Termin</a></div>
+</div>
+{{template "kunden-style"}}
 <style>
-  .kunden-notizen h2 { margin-top: 0; }
-  .kunden-notiz { white-space: pre-wrap; margin: 0 0 24px; padding: 12px 14px; border-left: 4px solid var(--fg); background: var(--soft); }
-  .kunden-bearbeiten { margin: 16px 0 8px; }
-  .kunden-bearbeiten > summary { list-style: none; margin-bottom: 16px; }
-  .kunden-bearbeiten > summary::-webkit-details-marker { display: none; }
-  .field-error { color: var(--danger); }
+  /* Notiz als gelber Zettel ganz oben: das Wichtigste vor dem Termin (Farbrezeptur, Wünsche). */
+  .kunden-zettel { position: relative; margin: 0 0 24px; padding: 20px 24px 22px; border-radius: 6px 18px 18px 18px;
+    background: #FFF1C2; box-shadow: 0 1px 0 #F2D27A, 0 8px 18px -10px rgb(19 41 75 / .35); }
+  .kunden-zettel::before { content: ""; position: absolute; top: -9px; left: 28px; width: 72px; height: 18px; border-radius: 3px;
+    background: rgb(124 196 255 / .7); transform: rotate(-3deg); }
+  .kunden-zettel h2 { margin: 0 0 8px; font-size: 1rem; }
+  .kunden-notiz { white-space: pre-wrap; margin: 0; font-size: 1.0625rem; line-height: 1.6; }
+  .kunden-zettel-leer { background: #FFF8E1; box-shadow: none; border: 2px dashed #F2D27A; }
+  .kunden-zettel-leer::before { display: none; }
+  .kunden-zettel-leer p { margin: 0; color: var(--muted); }
+  .kunden-facts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  @media (min-width: 720px) { .kunden-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .kunden-facts .section-title { margin-bottom: 12px; }
+  .kunden-facts dl.kv { margin: 0; }
+  .kunden-visits { display: flex; align-items: baseline; gap: 10px; margin: 0 0 12px; }
+  .kunden-bearbeiten { margin: 20px 0 8px; }
+  .kunden-bearbeiten .form { margin-top: 16px; }
+  .kunden-termine-head { margin: 36px 0 14px; }
+  .kunden-loeschen-link { margin-top: 32px; }
+  .kunden-loeschen-link a { color: var(--danger); font-weight: 700; }
   /* Kommende und vergangene Termine mit gleichen Spalten; am Handy automatisch */
   @media (min-width: 561px) {
     .kunden-termine { table-layout: fixed; }
     .kt-when { width: 30%; } .kt-status { width: 17%; } .kt-staff { width: 16%; } .kt-price { width: 12%; }
   }
-  @media (max-width: 560px) { .kunden-mobil-aus { display: none; } }
 </style>
 {{template "kunden-fehler" .Errors}}
-<div class="toolbar">
-  <a class="btn" href="/dashboard/termine/neu?kunde={{.Customer.ID}}">Neuer Termin</a>
-  <span class="spacer"></span>
-  <a href="/dashboard/kunden">Alle Kunden</a>
-</div>
 
-<section class="kunden-notizen">
+{{with .Customer.Notes}}<section class="kunden-notizen kunden-zettel">
   <h2>Notizen</h2>
-  {{with .Customer.Notes}}<p class="kunden-notiz">{{.}}</p>{{else}}<p class="muted">Noch keine Notizen. Hier passt zum Beispiel die Farbrezeptur hin („7/1 + 20 Vol.“).</p>{{end}}
-</section>
+  <p class="kunden-notiz">{{.}}</p>
+</section>{{else}}<section class="kunden-notizen kunden-zettel kunden-zettel-leer">
+  <h2>Notizen</h2>
+  <p>Noch keine Notizen. Hier passt zum Beispiel die Farbrezeptur hin („7/1 + 20 Vol.“).</p>
+</section>{{end}}
 
-<div class="grid">
+<div class="kunden-facts">
   <section class="card">
-    <h2>Kontakt</h2>
+    <div class="section-title"><img src="/static/img/icons/telefon.svg" width="32" height="32" alt=""><h2>Kontakt</h2></div>
     <dl class="kv">
-      <dt>E-Mail</dt><dd>{{with .Customer.Email}}<a href="mailto:{{.}}">{{.}}</a>{{else}}<span class="muted">-</span>{{end}}</dd>
+      <dt>E-Mail</dt><dd class="kunden-kontakt">{{with .Customer.Email}}<a href="mailto:{{.}}">{{.}}</a>{{else}}<span class="muted">-</span>{{end}}</dd>
       <dt>Telefon</dt><dd>{{with .Customer.Phone}}<a href="tel:{{.}}">{{.}}</a>{{else}}<span class="muted">-</span>{{end}}</dd>
-      <dt>Kunde seit</dt><dd>{{.Customer.Created}}</dd>
     </dl>
   </section>
   <section class="card">
-    <h2>Besuche</h2>
-    <p class="stat" style="margin: 0 0 8px">{{.Visits}}</p>
+    <div class="section-title"><img src="/static/img/icons/kalender.svg" width="32" height="32" alt=""><h2>Besuche</h2></div>
+    <p class="kunden-visits"><span class="stat">{{.Visits}}</span> <span class="muted">erledigte Termine</span></p>
     <dl class="kv">
       <dt>Nächster Termin</dt><dd>{{or .Next "-"}}</dd>
       <dt>Umsatz bisher</dt><dd>{{euro .Revenue}}<br><span class="muted small">Summe der aktuellen Leistungspreise, nur zur Info</span></dd>
@@ -156,22 +204,31 @@
 
 <details class="kunden-bearbeiten"{{if .Errors}} open{{end}}>
   <summary class="btn btn-secondary">Kontakt und Notizen bearbeiten</summary>
-  <form class="form" method="post" action="/dashboard/kunden/{{.Customer.ID}}">
+  <form class="form card" method="post" action="/dashboard/kunden/{{.Customer.ID}}">
     {{template "kunden-felder" .}}
     <div class="actions"><button class="btn" type="submit">Speichern</button></div>
   </form>
 </details>
 
-<h2>Kommende Termine</h2>
+<div class="section-title kunden-termine-head"><img src="/static/img/icons/buchung.svg" width="32" height="32" alt=""><h2>Kommende Termine</h2></div>
 {{if .Upcoming}}{{template "kunden-termine" .Upcoming}}{{else}}<p class="muted">Kein kommender Termin.</p>{{end}}
 
-<h2>Vergangene Termine</h2>
+<div class="section-title kunden-termine-head"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt=""><h2>Vergangene Termine</h2></div>
 {{if .Past}}{{template "kunden-termine" .Past}}{{else}}<p class="muted">Noch keine vergangenen Termine.</p>{{end}}
 
-<p class="small" style="margin-top: 40px"><a href="/dashboard/kunden/{{.Customer.ID}}/loeschen">Kunde löschen</a></p>
+<p class="small kunden-loeschen-link"><a href="/dashboard/kunden/{{.Customer.ID}}/loeschen">Kunde löschen</a></p>
 {{template "dash-bottom" .}}{{end}}
 
 {{define "kunden-loeschen"}}{{template "dash-top" .}}
+<div class="page-head">
+  <a class="page-head-back" href="/dashboard/kunden/{{.Customer.ID}}">Zurück zur Karteikarte</a>
+  <img class="page-head-icon" src="/static/img/icons/absage.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>Bitte einmal bestätigen.</p>
+  </div>
+</div>
+<div class="card form">
 <p><strong>{{.Customer.Name}}</strong> wird endgültig gelöscht, mit Kontaktdaten, Notizen und {{.Appts}}.</p>
 {{if .Upcoming}}<p class="error">Darunter {{if eq .Upcoming 1}}ein kommender Termin. Er verschwindet{{else}}{{.Upcoming}} kommende Termine. Sie verschwinden{{end}} aus dem Kalender, der Kunde bekommt keine Nachricht.</p>{{end}}
 <p>Das lässt sich nicht rückgängig machen.</p>
@@ -179,4 +236,5 @@
   <button class="btn btn-danger" type="submit">Endgültig löschen</button>
   <a href="/dashboard/kunden/{{.Customer.ID}}">Abbrechen</a>
 </form>
+</div>
 {{template "dash-bottom" .}}{{end}}

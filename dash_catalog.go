@@ -149,6 +149,7 @@ func (a *app) leistList(w http.ResponseWriter, r *http.Request, c *dctx) {
 		list[0].First, list[n-1].Last = true, true
 	}
 	d := a.dashPage(c, r, "leistungen", "Leistungen")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Services"] = list
 	d["SavedMsg"] = catalogSaved[r.URL.Query().Get("gespeichert")]
 	a.render(w, http.StatusOK, "leist-liste", d)
@@ -185,6 +186,7 @@ func (a *app) leistRender(w http.ResponseWriter, r *http.Request, c *dctx, statu
 		}
 	}
 	d := a.dashPage(c, r, "leistungen", title)
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["F"], d["Error"] = f, msg
 	a.render(w, status, "leist-form", d)
 }
@@ -418,6 +420,7 @@ func (a *app) teamList(w http.ResponseWriter, r *http.Request, c *dctx) {
 		list[i].Hours = teamHoursSummary(hours[list[i].ID])
 	}
 	d := a.dashPage(c, r, "team", "Team")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Staff"] = list
 	d["SavedMsg"] = catalogSaved[r.URL.Query().Get("gespeichert")]
 	d["ShowLimit"] = !c.Salon.Pro() && !a.cfg.SingleTenant
@@ -569,6 +572,7 @@ func (a *app) teamRender(w http.ResponseWriter, r *http.Request, c *dctx, status
 		}
 	}
 	d := a.dashPage(c, r, "team", title)
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["F"], d["Error"], d["LimitHit"], d["Limit"] = f, msg, limit, freeStaffLimit
 	a.render(w, status, "team-form", d)
 }

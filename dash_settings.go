@@ -138,6 +138,7 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 
 func (a *app) renderSettings(w http.ResponseWriter, r *http.Request, c *dctx, status int, form salon, errs map[string]string) {
 	d := a.dashPage(c, r, "einstellungen", "Einstellungen")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Form"], d["Errors"], d["PreviewOn"] = form, errs, onAccent(form.Accent)
 	d["SavedMsg"] = einstGespeichert[r.URL.Query().Get("gespeichert")]
 	d["Timezones"], d["MinNotice"], d["CancelNotice"], d["Horizon"] = timezoneChoices, minNoticeChoices, cancelNoticeChoices, horizonChoices
@@ -252,6 +253,7 @@ const aboFirst = "Bitte zuerst das Pro-Abo unter /dashboard/abo kündigen. Danac
 
 func (a *app) renderDelete(w http.ResponseWriter, r *http.Request, c *dctx, status int, msg string) {
 	d := a.dashPage(c, r, "einstellungen", "Konto löschen")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Error"] = msg
 	d["HasAbo"] = c.Salon.StripeSubscriptionID != ""
 	a.render(w, status, "einst-loeschen", d)

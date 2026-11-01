@@ -345,7 +345,12 @@ func TestKundenSuche(t *testing.T) {
 func TestKundenLeer(t *testing.T) {
 	a, h := kundenTestApp(t)
 	mine, _ := kundenTestSalon(t, a, "mueller")
-	if body := kundenReq(h, mine, "/dashboard/kunden", nil).Body.String(); !strings.Contains(body, "sobald sie online buchen") {
+	body := kundenReq(h, mine, "/dashboard/kunden", nil).Body.String()
+	if !strings.Contains(body, "sobald sie online buchen") || !strings.Contains(body, "kammi-winkt") {
 		t.Error("Leerzustand fehlt")
+	}
+	// Eigener Seitenkopf mit Aktion: das Layout darf keine zweite Überschrift setzen.
+	if strings.Count(body, "<h1") != 1 || !strings.Contains(body, `class="page-head"`) {
+		t.Error("Seitenkopf: nicht genau ein h1")
 	}
 }

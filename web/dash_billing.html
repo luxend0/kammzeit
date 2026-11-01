@@ -1,49 +1,112 @@
-{{/* Abo-Seite (billing.go). Daten: dashPage + Online (Stripe eingerichtet), Portal (Kundenportal möglich), Erfolg (zurück vom Checkout). */}}
+{{/* Abo-Seite (billing.go). Daten: dashPage + Online (Stripe eingerichtet), Portal (Kundenportal möglich), Erfolg (zurück vom Checkout).
+     Aufbau wie /preise auf der Website: zwei Plan-Karten, Pro in Blau mit weißer Schrift. Preise mit normalem
+     Leerzeichen (billing_test.go sucht "14,90 €"), Umbruch verhindert white-space: nowrap. */}}
 {{define "abo-seite"}}{{template "dash-top" .}}
-<style>
-.abo-plan { font-size: 1.125rem; margin: 0 0 24px; }
-.abo-vergleich { max-width: 720px; margin-bottom: 8px; }
-.abo-vergleich th:not(:first-child), .abo-vergleich td:not(:first-child) { width: 32%; }
-.abo-aktiv { font-weight: 700; }
-/* Zeilenköpfe wie normale Zellen, nicht wie die Kopfzeile */
-.abo-vergleich tbody th { font-size: inherit; text-transform: none; letter-spacing: normal; color: var(--fg); font-weight: 400; border-bottom: 1px solid var(--line); }
-.abo-kauf form { margin: 0; }
-.abo-kauf { margin-top: 24px; }
-</style>
 {{if .Erfolg}}<p class="flash" role="status">Danke! Dein Pro-Abo ist aktiv, sobald die Zahlung bestätigt ist.</p>{{end}}
-
-<p class="abo-plan">Dein Plan: <strong>{{if .Salon.Pro}}Pro{{else}}Gratis{{end}}</strong></p>
-
-<div class="table-wrap">
-<table class="table abo-vergleich">
-  <thead><tr><th scope="col">Funktion</th><th scope="col">Gratis</th><th scope="col">Pro</th></tr></thead>
-  <tbody>
-    <tr><th scope="row">Mitarbeiter</th><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>1</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>unbegrenzt</td></tr>
-    <tr><th scope="row">Hinweis „Online-Termine mit Kammzeit“ auf deiner Buchungsseite</th><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>ja</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>nein</td></tr>
-    <tr><th scope="row">Preis</th><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>0 €</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>14,90 € im Monat<br>oder 149 € im Jahr (2 Monate geschenkt)</td></tr>
-  </tbody>
-</table>
-</div>
-<p class="muted small">Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p>
-
-<div class="abo-kauf">
-{{if .Salon.Pro}}
-  {{if .Portal}}
-  <p>Zahlungsart, Rechnungen und Kündigung verwaltest du im Kundenportal unseres Zahlungsanbieters Stripe.</p>
-  <form method="post" action="/dashboard/abo/portal"><button class="btn" type="submit">Abo verwalten / kündigen</button></form>
-  {{else}}
-  <p>Dein Pro-Zugang wurde von uns eingerichtet. Fragen dazu an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
-  {{end}}
-{{else if .Erfolg}}
-  <p>Die Bestätigung dauert meist nur ein paar Sekunden. <a href="/dashboard/abo">Seite neu laden</a></p>
-{{else if .Online}}
-  <div class="actions">
-    <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="monat"><button class="btn" type="submit">Pro monatlich</button></form>
-    <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="jahr"><button class="btn btn-secondary" type="submit">Pro jährlich</button></form>
+<div class="page-head">
+  <img class="page-head-icon" src="/static/img/icons/pro.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>{{if .Salon.Pro}}Dein Plan: <strong>Pro</strong>. Unbegrenzt Mitarbeiter, ohne Kammzeit-Hinweis.{{else}}Dein Plan: <strong>Gratis</strong>. Pro brauchst du ab dem zweiten aktiven Mitarbeiter.{{end}}</p>
   </div>
-  <p class="muted small">Du bezahlst über Stripe. Kündigen kannst du jederzeit zum Ende des bezahlten Zeitraums.</p>
-{{else}}
-  <p class="flash">Online-Zahlung wird gerade eingerichtet. Für Pro schreib uns an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></p>
-{{end}}
 </div>
+<style>
+.abo-plans { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin-bottom: 20px; }
+@media (min-width: 760px) { .abo-plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.abo-plan { position: relative; display: flex; flex-direction: column; margin: 0; padding: clamp(22px, 2.5vw, 32px); }
+.abo-plan > * { margin: 0; }
+.abo-plan-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.abo-plan-head img { flex: none; width: 56px; height: 56px; padding: 8px; border-radius: 50%; background: var(--sky-50, #E3F3FF); }
+.abo-plan-pro .abo-plan-head img { background: #fff; }
+.abo-plan-head h2 { margin: 0; font-size: 1.5rem; }
+.abo-plan-head .chip { margin-left: auto; }
+.abo-price { margin-top: 18px; font-weight: 800; font-size: clamp(2.75rem, 2rem + 2.5vw, 3.75rem); line-height: 1; letter-spacing: -.035em;
+  color: var(--blue, #1E6BFF); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.abo-per { margin-top: 6px; color: var(--muted); }
+.abo-year { margin-top: 16px; padding: 12px 14px; border-radius: 14px; }
+.abo-list { display: grid; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
+.abo-list li { display: flex; gap: 10px; align-items: baseline; }
+.abo-list li::before { content: ""; flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--mint, #3CCF91); transform: translateY(1px); }
+.abo-kauf { margin-top: auto; padding-top: 24px; }
+.abo-kauf > * + * { margin-top: 12px; }
+.abo-kauf form { margin: 0; }
+.abo-kauf p { margin-bottom: 0; }
+/* Pro: Blau kräftig, Schrift weiß (4,6:1), Punkte gelb */
+.abo-plan-pro { border-color: var(--blue, #1E6BFF); background: var(--blue, #1E6BFF); color: #fff; }
+.abo-plan-pro h2, .abo-plan-pro .abo-price, .abo-plan-pro .abo-per { color: #fff; }
+.abo-plan-pro .abo-year { background: #1557D6; }
+.abo-plan-pro .abo-list li::before { background: var(--sun, #FFC93C); }
+.abo-plan-pro a { color: #fff; text-decoration-color: var(--sun, #FFC93C); }
+.abo-plan-pro :focus-visible { outline-color: #fff; }
+.abo-plan-pro .btn-secondary { border-color: #fff; }
+.abo-price-small { white-space: nowrap; }
+/* Kammi mit Handy und das Kleingedruckte */
+.abo-info { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px 28px; align-items: center; margin: 0; }
+.abo-info img { width: 150px; height: auto; justify-self: center; }
+.abo-info h2 { margin: 0 0 6px; }
+.abo-info p { margin: 0 0 6px; }
+@media (min-width: 640px) { .abo-info { grid-template-columns: 180px minmax(0, 1fr); } .abo-info img { width: 180px; } }
+</style>
+
+<div class="abo-plans">
+  <section class="card abo-plan" aria-labelledby="abo-h-gratis">
+    <div class="abo-plan-head">
+      <img src="/static/img/icons/gratis.svg" width="48" height="48" alt="">
+      <h2 id="abo-h-gratis">Gratis</h2>
+      {{if not .Salon.Pro}}<span class="chip chip-mint">Dein Plan</span>{{end}}
+    </div>
+    <p class="abo-price">0 €</p>
+    <p class="abo-per">dauerhaft, ohne Zeitlimit</p>
+    <ul class="abo-list">
+      <li>1 aktiver Mitarbeiter</li>
+      <li>Buchungsseite, Kalender, Kundenkartei, Erinnerungen und Export</li>
+      <li>Hinweis „Online-Termine mit Kammzeit“ auf deiner Buchungsseite</li>
+    </ul>
+  </section>
+
+  <section class="card abo-plan abo-plan-pro" aria-labelledby="abo-h-pro">
+    <div class="abo-plan-head">
+      <img src="/static/img/icons/pro.svg" width="48" height="48" alt="">
+      <h2 id="abo-h-pro">Pro</h2>
+      {{if .Salon.Pro}}<span class="chip chip-sun">Dein Plan</span>{{end}}
+    </div>
+    <p class="abo-price">14,90 €</p>
+    <p class="abo-per">im Monat</p>
+    <p class="abo-year"><b class="abo-price-small">oder 149 € im Jahr</b>, das sind 2 Monate geschenkt.</p>
+    <ul class="abo-list">
+      <li>Unbegrenzt Mitarbeiter</li>
+      <li>Alles aus Gratis</li>
+      <li>Ohne Kammzeit-Hinweis auf deiner Buchungsseite</li>
+    </ul>
+    <div class="abo-kauf">
+    {{if .Salon.Pro}}
+      {{if .Portal}}
+      <p>Zahlungsart, Rechnungen und Kündigung verwaltest du im Kundenportal unseres Zahlungsanbieters Stripe.</p>
+      <form method="post" action="/dashboard/abo/portal"><button class="btn" type="submit">Abo verwalten / kündigen</button></form>
+      {{else}}
+      <p>Dein Pro-Zugang wurde von uns eingerichtet. Fragen dazu an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
+      {{end}}
+    {{else if .Erfolg}}
+      <p>Die Bestätigung dauert meist nur ein paar Sekunden. <a href="/dashboard/abo">Seite neu laden</a></p>
+    {{else if .Online}}
+      <div class="actions">
+        <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="monat"><button class="btn" type="submit">Pro monatlich</button></form>
+        <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="jahr"><button class="btn btn-secondary" type="submit">Pro jährlich</button></form>
+      </div>
+      <p class="small">Du bezahlst über Stripe. Kündigen kannst du jederzeit zum Ende des bezahlten Zeitraums.</p>
+    {{else}}
+      <p>Online-Zahlung wird gerade eingerichtet. Für Pro schreib uns an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></p>
+    {{end}}
+    </div>
+  </section>
+</div>
+
+<section class="card card-sky abo-info" aria-labelledby="abo-h-info">
+  <img src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="">
+  <div>
+    <h2 id="abo-h-info">Gut zu wissen</h2>
+    <p>Gekündigt wird zum Ende des bezahlten Monats oder Jahres. Bis dahin bleibt Pro aktiv, danach läuft dein Salon im Gratis-Plan weiter. Deine Daten bleiben erhalten.</p>
+    <p class="muted small">Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p>
+  </div>
+</section>
 {{template "dash-bottom" .}}{{end}}

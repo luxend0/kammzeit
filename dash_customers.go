@@ -116,6 +116,7 @@ func (a *app) kundenListe(w http.ResponseWriter, r *http.Request, c *dctx) {
 		return "/dashboard/kunden?" + v.Encode()
 	}
 	d := a.dashPage(c, r, "kunden", "Kunden")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Q"], d["Customers"], d["Deleted"] = q, list, r.URL.Query().Has("geloescht")
 	if page > 1 {
 		d["PrevURL"] = link(page - 1)
@@ -247,6 +248,7 @@ func kundeEmailVergeben(err error) bool {
 
 func (a *app) kundeNeu(w http.ResponseWriter, r *http.Request, c *dctx) {
 	d := a.dashPage(c, r, "kunden", "Neuer Kunde")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Form"], d["Errors"] = kunde{}, map[string]string{}
 	a.render(w, http.StatusOK, "kunden-neu", d)
 }
@@ -268,6 +270,7 @@ func (a *app) kundeAnlegen(w http.ResponseWriter, r *http.Request, c *dctx) {
 		errs["email"] = kundeEmailVergebenText
 	}
 	d := a.dashPage(c, r, "kunden", "Neuer Kunde")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Form"], d["Errors"] = k, errs
 	a.render(w, http.StatusBadRequest, "kunden-neu", d)
 }
@@ -388,6 +391,7 @@ func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, 
 		}
 	}
 	d := a.dashPage(c, r, "kunden", k.Name)
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Customer"], d["Form"], d["Errors"] = k, form, errs
 	d["Upcoming"], d["Past"], d["Visits"], d["Revenue"], d["Next"] = upcoming, past, visits, revenue, next
 	d["SavedMsg"] = kundenGespeichert[r.URL.Query().Get("gespeichert")]
@@ -420,6 +424,7 @@ func (a *app) kundeLoeschenSeite(w http.ResponseWriter, r *http.Request, c *dctx
 		appts = strconv.Itoa(total) + " Termine"
 	}
 	d := a.dashPage(c, r, "kunden", "Kunde löschen")
+	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Customer"], d["Appts"], d["Upcoming"] = k, appts, upcoming
 	a.render(w, http.StatusOK, "kunden-loeschen", d)
 }
