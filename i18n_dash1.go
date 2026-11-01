@@ -39,7 +39,6 @@ func init() {
 		"Erste Schritte":  "Getting started",
 		"Prüf Leistungen, Preise und Zeiten, bevor du den Link teilst.": "Check your services, prices and times before you share the link.",
 		"%d von %d erledigt.": "%d of %d done.",
-		"erledigt":            "done",
 		"Leistungen und Preise prüfen und auf aktiv stellen":    "Check services and prices and set them to active",
 		"Mitarbeiter benennen und Arbeitszeiten eintragen":      "Name your staff and enter their working hours",
 		"Adresse und Link zum Impressum eintragen":              "Enter your address and a link to your legal notice",

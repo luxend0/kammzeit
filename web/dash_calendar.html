@@ -345,7 +345,7 @@ fieldset.kal-group > legend + * { clear: both; }
     <dl class="kv">
       <dt>{{t $.Lang "Zeit"}}</dt><dd>{{.When}} ({{tf $.Lang "%d Min." .Minutes}})</dd>
       <dt>{{t $.Lang "Status"}}</dt><dd>{{template "kal-status" $}}</dd>
-      <dt>{{t $.Lang "Leistung"}}</dt><dd>{{.Service}}, {{euro .Price}}</dd>
+      <dt>{{t $.Lang "Leistung"}}</dt><dd>{{.Service}}, {{money $.Lang .Price}}</dd>
       <dt>{{t $.Lang "Mitarbeiter"}}</dt><dd>{{.Staff}}</dd>
       <dt>{{t $.Lang "Kunde"}}</dt><dd><a href="/dashboard/kunden/{{.CustomerID}}">{{.Customer}}</a></dd>
       <dt>{{t $.Lang "Telefon"}}</dt><dd>{{if .Tel}}<a href="{{.Tel}}">{{.Phone}}</a>{{else if .Phone}}{{.Phone}}{{else}}<span class="muted">{{t $.Lang "keine"}}</span>{{end}}</dd>
@@ -429,7 +429,7 @@ fieldset.kal-group > legend + * { clear: both; }
       <label class="field">{{t .Lang "Leistung"}}
         <select name="leistung" required{{if .Invalid.leistung}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>
           <option value="">{{t .Lang "Bitte wählen"}}</option>
-          {{range .Services}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Service}} selected{{end}}>{{.Name}} ({{tf $.Lang "%d Min." .Duration}}, {{euro .PriceCents}})</option>{{end}}
+          {{range .Services}}<option value="{{.ID}}"{{if eq (print .ID) $.F.Service}} selected{{end}}>{{.Name}} ({{tf $.Lang "%d Min." .Duration}}, {{money $.Lang .PriceCents}})</option>{{end}}
         </select></label>
       <label class="field">{{t .Lang "Mitarbeiter"}}
         <select name="mitarbeiter" required{{if .Invalid.mitarbeiter}} aria-invalid="true" aria-describedby="kal-fehler"{{end}}>
