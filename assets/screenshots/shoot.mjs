@@ -103,12 +103,10 @@ await go(`${site}/dashboard/leistungen`);
 await shot("leistungen", { bottom: "main .table-wrap" });
 await go(`${site}/dashboard/einstellungen`);
 const form = 'form[action="/dashboard/einstellungen"]';
-await shot("einstellungen", { bottom: `${form} .einst-section:nth-of-type(2)` }); // bis "Aussehen"
-// Zusatz: nur die Buchungsregeln, Spalte des Formulars
-const col = await js(`(() => { const r = document.querySelector('${form}').getBoundingClientRect(); return [r.left, r.width]; })()`);
-await shot("einstellungen-regeln", {
-  top: `${form} .einst-section:nth-of-type(3)`, bottom: `${form} > .actions`, left: col[0] - 40, width: col[1] + 80,
-});
+await shot("einstellungen", { bottom: `${form} > .actions` }); // zweispaltig: Salon links, Aussehen + Regeln rechts
+// Zusatz: nur die Karte Buchungsregeln
+const col = await js(`(() => { const r = document.querySelector('#regeln').getBoundingClientRect(); return [r.left, r.width]; })()`);
+await shot("einstellungen-regeln", { top: "#regeln", bottom: "#regeln", pad: 24, left: col[0] - 24, width: col[1] + 48 });
 
 // Mobil, 390 breit
 await viewport(390);
