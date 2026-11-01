@@ -1,0 +1,47 @@
+{{/* Abo-Seite (billing.go). Daten: dashPage + Online (Stripe eingerichtet), Portal (Kundenportal möglich), Erfolg (zurück vom Checkout). */}}
+{{define "abo-seite"}}{{template "dash-top" .}}
+<style>
+.abo-plan { font-size: 1.125rem; margin: 0 0 24px; }
+.abo-vergleich { max-width: 720px; margin-bottom: 8px; }
+.abo-vergleich th:not(:first-child), .abo-vergleich td:not(:first-child) { width: 32%; }
+.abo-aktiv { font-weight: 700; }
+.abo-kauf form { margin: 0; }
+.abo-kauf { margin-top: 24px; }
+</style>
+{{if .Erfolg}}<p class="flash" role="status">Danke! Dein Pro-Abo ist aktiv, sobald die Zahlung bestätigt ist.</p>{{end}}
+
+<p class="abo-plan">Dein Plan: <strong>{{if .Salon.Pro}}Pro{{else}}Gratis{{end}}</strong></p>
+
+<div class="table-wrap">
+<table class="table abo-vergleich">
+  <thead><tr><th></th><th>Gratis</th><th>Pro</th></tr></thead>
+  <tbody>
+    <tr><td>Mitarbeiter</td><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>1</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>unbegrenzt</td></tr>
+    <tr><td>Hinweis "Online-Termine mit Kammzeit" auf deiner Buchungsseite</td><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>ja</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>nein</td></tr>
+    <tr><td>Preis</td><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>0 €</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>14,90 € im Monat<br>oder 149 € im Jahr (2 Monate geschenkt)</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="muted small">Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer.</p>
+
+<div class="abo-kauf">
+{{if .Salon.Pro}}
+  {{if .Portal}}
+  <p>Zahlungsart, Rechnungen und Kündigung verwaltest du im Kundenportal unseres Zahlungsanbieters Stripe.</p>
+  <form method="post" action="/dashboard/abo/portal"><button class="btn" type="submit">Abo verwalten / kündigen</button></form>
+  {{else}}
+  <p>Dein Pro-Zugang wurde von uns eingerichtet. Fragen dazu an <a href="mailto:contact@instantnode.eu">contact@instantnode.eu</a>.</p>
+  {{end}}
+{{else if .Erfolg}}
+  <p>Die Bestätigung dauert meist nur ein paar Sekunden. <a href="/dashboard/abo">Seite neu laden</a></p>
+{{else if .Online}}
+  <div class="actions">
+    <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="monat"><button class="btn" type="submit">Pro monatlich</button></form>
+    <form method="post" action="/dashboard/abo/checkout"><input type="hidden" name="intervall" value="jahr"><button class="btn btn-secondary" type="submit">Pro jährlich</button></form>
+  </div>
+  <p class="muted small">Du bezahlst über Stripe. Kündigen kannst du jederzeit zum Ende des bezahlten Zeitraums.</p>
+{{else}}
+  <p class="flash">Online-Zahlung wird gerade eingerichtet. Für Pro schreib uns an <a href="mailto:contact@instantnode.eu">contact@instantnode.eu</a></p>
+{{end}}
+</div>
+{{template "dash-bottom" .}}{{end}}
