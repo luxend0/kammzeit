@@ -1,6 +1,8 @@
-{{/* Gemeinsames Layout aller öffentlichen Seiten von kammzeit.de (Landing, Funktionen, Preise,
+{{/* Gemeinsames Layout aller öffentlichen Seiten von kammzeit.de (Funktionen, Preise,
      Branchen, Hilfe, Ratgeber). Benutzung: {{template "site-top" .}} ... {{template "site-bottom" .}}
-     Daten: .Title, .Description, .Canonical, .Path (aus a.addPage). Gestaltung: web/static/site.css. */}}
+     Daten: .Title, .Description, .Canonical, .Path (aus a.addPage). Gestaltung: web/static/site.css.
+     Die Startseite (landing.html) ist ein eigenes Dokument und nutzt "site-assets", "site-header"
+     und "site-footer" direkt, damit Kopf und Fuß überall gleich sind. */}}
 {{define "site-top"}}<!doctype html>
 <html lang="de">
 <head>
@@ -12,40 +14,61 @@
 {{with .Canonical}}<link rel="canonical" href="{{.}}">
 <meta property="og:url" content="{{.}}">{{end}}
 <meta property="og:title" content="{{.Title}}">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="de_DE">
-<meta property="og:site_name" content="Kammzeit">
-<meta property="og:image" content="https://kammzeit.de/static/img/og.png">
-<link rel="icon" href="/static/img/kammzeit.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/site.css">
+{{template "site-assets"}}
 </head>
 <body class="site">
-<a class="skip" href="#inhalt">Zum Inhalt springen</a>
-<header class="site-head">
-  <a class="site-logo" href="/"><img src="/static/img/kammzeit.svg" alt="" width="28" height="28"><span>Kammzeit</span></a>
-  <nav class="site-nav" aria-label="Hauptmenü">
-    <a href="/funktionen"{{if eq .Path "/funktionen"}} aria-current="page"{{end}}>Funktionen</a>
-    <a href="/preise"{{if eq .Path "/preise"}} aria-current="page"{{end}}>Preise</a>
-    <a href="/fuer/friseure"{{if eq .Path "/fuer/friseure"}} aria-current="page"{{end}}>Für Salons</a>
-    <a href="/hilfe"{{if eq .Path "/hilfe"}} aria-current="page"{{end}}>Hilfe</a>
-  </nav>
-  <div class="site-head-end">
-    <a href="/login">Anmelden</a>
-    <a class="btn" href="/registrieren">Kostenlos starten</a>
-  </div>
-</header>
+{{template "site-header" .}}
 <main id="inhalt">
 {{end}}
 
 {{define "site-bottom"}}</main>
-<footer class="site-foot">
-  <div class="site-foot-cols">
-    <div><h2>Produkt</h2><a href="/funktionen">Funktionen</a><a href="/preise">Preise</a><a href="/open-source">Open Source</a><a href="/sicherheit">Daten und Sicherheit</a><a href="https://demo.kammzeit.de">Demo-Salon</a></div>
-    <div><h2>Für</h2><a href="/fuer/friseure">Friseure</a><a href="/fuer/barbershops">Barbershops</a><a href="/fuer/kosmetik">Kosmetikstudios</a><a href="/fuer/nagelstudios">Nagelstudios</a></div>
-    <div><h2>Hilfe</h2><a href="/hilfe">Hilfe-Center</a><a href="/fragen">Häufige Fragen</a><a href="/ratgeber">Ratgeber</a><a href="/kontakt">Kontakt</a></div>
-    <div><h2>Rechtliches</h2><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/agb">AGB</a><a href="/avv">AVV</a></div>
-  </div>
-  <p class="site-foot-note"><a href="/">Kammzeit</a> - Online-Terminbuchung für Salons. <a href="/login">Anmelden</a></p>
-</footer>
+{{template "site-footer" .}}
 </body>
 </html>{{end}}
+
+{{define "site-assets"}}<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:site_name" content="Kammzeit">
+<meta property="og:image" content="https://kammzeit.de/static/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/static/img/kammzeit.svg" type="image/svg+xml">
+<link rel="preload" href="/static/fonts/display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/site.css">{{end}}
+
+{{define "site-header"}}<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+<header class="site-head">
+  <div class="wrap site-head-in">
+    <a class="site-logo" href="/"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34">Kammzeit</a>
+    <nav class="site-nav" aria-label="Hauptmenü">
+      <a href="/funktionen"{{if eq .Path "/funktionen"}} aria-current="page"{{end}}>Funktionen</a>
+      <a href="/preise"{{if eq .Path "/preise"}} aria-current="page"{{end}}>Preise</a>
+      <a href="/fuer/friseure"{{if and .Path (eq (printf "%.5s" .Path) "/fuer")}} aria-current="page"{{end}}>Für Salons</a>
+      <a href="/hilfe"{{if and .Path (eq (printf "%.6s" .Path) "/hilfe")}} aria-current="page"{{end}}>Hilfe</a>
+    </nav>
+    <div class="site-head-end">
+      <a href="/login">Anmelden</a>
+      <a class="btn" href="/registrieren">Kostenlos starten</a>
+    </div>
+  </div>
+</header>{{end}}
+
+{{define "site-footer"}}<footer class="site-foot">
+  <div class="wrap">
+    <div class="site-foot-top">
+      <div>
+        <p class="site-foot-claim">Salon zu<br><span>Buchungsseite offen</span></p>
+        <p>Kunden buchen auch nach Feierabend, und morgens steht alles im Kalender.</p>
+      </div>
+      <div class="site-foot-kammi"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="" loading="lazy"></div>
+    </div>
+    <div class="site-foot-cols">
+      <nav aria-labelledby="f-produkt"><h2 id="f-produkt">Produkt</h2><a href="/funktionen">Funktionen</a><a href="/preise">Preise</a><a href="/open-source">Open Source</a><a href="/sicherheit">Daten und Sicherheit</a><a href="https://demo.kammzeit.de">Demo-Salon</a></nav>
+      <nav aria-labelledby="f-fuer"><h2 id="f-fuer">Für</h2><a href="/fuer/friseure">Friseure</a><a href="/fuer/barbershops">Barbershops</a><a href="/fuer/kosmetik">Kosmetikstudios</a><a href="/fuer/nagelstudios">Nagelstudios</a></nav>
+      <nav aria-labelledby="f-hilfe"><h2 id="f-hilfe">Hilfe</h2><a href="/hilfe">Hilfe-Center</a><a href="/fragen">Häufige Fragen</a><a href="/ratgeber">Ratgeber</a><a href="/kontakt">Kontakt</a><a href="/ueber">Über Kammzeit</a></nav>
+      <nav aria-labelledby="f-recht"><h2 id="f-recht">Rechtliches</h2><a href="/impressum">Impressum</a><a href="/datenschutz">Datenschutz</a><a href="/agb">AGB</a><a href="/avv">AVV</a></nav>
+    </div>
+    <p class="site-foot-note"><span>Kammzeit, Online-Terminbuchung für Salons</span><span>Open Source unter <a href="https://github.com/luxend0/kammzeit">AGPL-3.0</a></span><span>Server in Eygelshoven (Niederlande)</span><a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></p>
+  </div>
+</footer>{{end}}

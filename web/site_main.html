@@ -1,0 +1,274 @@
+{{/* Seiten Funktionen und Preise (Bereich "main"). Layout aus site.html, Stil in site.css + site-main.css. */}}
+
+{{define "main-funktionen"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-main.css">
+
+<section class="page-head" aria-labelledby="h-fn">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Funktionen</li></ol></nav>
+      <h1 id="h-fn">Alles, was dein Salon für Online-Termine braucht</h1>
+      <p class="lead">Eine Buchungsseite für deine Kunden, ein Kalender und eine Kundenkartei für dich. Hier steht, was Kammzeit heute kann, und was als Nächstes kommt.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a> <a class="btn-ghost" href="https://demo.kammzeit.de">Demo-Salon ansehen</a></p>
+    </div>
+    <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt="Der Igel Kammi mit einem Kalenderblatt" fetchpriority="high"></div>
+  </div>
+</section>
+
+<nav class="wrap fn-jump" aria-label="Auf dieser Seite">
+  <a href="#kunden">Für deine Kunden</a><a href="#salon">Für dich im Salon</a><a href="#daten">Daten und Sicherheit</a><a href="#geplant">Kommt als Nächstes</a>
+</nav>
+
+<section class="section" id="kunden" aria-labelledby="h-kunden">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Für deine Kunden</p>
+      <h2 id="h-kunden">Buchen ohne App und ohne Anruf</h2>
+      <p class="lead">Deine Buchungsseite läuft im Browser, auf jedem Handy. Kunden brauchen kein Konto, nur Namen und E-Mail-Adresse.</p>
+    </div>
+    <div class="fn-split">
+      <ul class="feature-list">
+        <li><img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt=""><h3>Eigene Buchungsseite</h3><p>Unter salonname.kammzeit.de. Den Link teilst du in der Instagram-Bio, im Google-Unternehmensprofil oder auf deiner Website.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/buchung.svg" width="48" height="48" alt=""><h3>Leistung, Mitarbeiter, Uhrzeit</h3><p>Kunden wählen die Leistung, dann bei wem, oder einfach „egal, wer frei ist“. Danach eine freie Uhrzeit.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>Nur freie Zeiten</h3><p>Angezeigt wird nur, was in die Arbeitszeiten passt und nicht belegt ist. Pausen und eingetragene Termine sind ausgespart.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Bestätigung mit Kalendereintrag</h3><p>Direkt nach der Buchung kommt eine Mail mit allen Angaben und einer Kalenderdatei (.ics) für das eigene Handy.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt=""><h3>Erinnerung 24 Stunden vorher</h3><p>Automatisch per Mail. So wird ein Termin eher abgesagt als vergessen.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Absage per Link</h3><p>Bis zu der Frist, die du festlegst. Der Platz ist sofort wieder buchbar, und du bekommst eine Mail.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>Ohne App, ohne Kundenkonto</h3><p>Nichts installieren, nichts registrieren. Die Telefonnummer ist freiwillig.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Dein Salon, deine Farbe</h3><p>Akzentfarbe, Adresse, Telefon und ein Text über deinen Salon stehen auf der Buchungsseite.</p></li>
+      </ul>
+      <figure class="figure fn-phone">
+        <img class="shot" src="/static/img/shots/buchung-start-mobil.webp" width="390" height="824" alt="Buchungsseite eines Beispielsalons auf dem Handy: Name, Adresse und Leistungen mit Dauer und Preis zur Auswahl" loading="lazy">
+        <figcaption>Die Buchungsseite eines Beispielsalons auf dem Handy.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" id="salon" aria-labelledby="h-salon">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Für dich im Salon</p>
+      <h2 id="h-salon">Kalender, Kartei und Team an einem Ort</h2>
+      <p class="lead">Im Dashboard auf kammzeit.de. Du meldest dich mit einem Link per Mail an, ein Passwort gibt es nicht.</p>
+    </div>
+    <div class="fn-rows">
+      <div class="split fn-row">
+        <div>
+          <h3>Kalender für Tag und Woche</h3>
+          <ul class="fn-checks">
+            <li>Online gebuchte und selbst eingetragene Termine nebeneinander, pro Mitarbeiter eine Spalte</li>
+            <li>Telefonische Termine trägst du mit einem Klick in eine freie Stelle ein</li>
+            <li>Nicht erschienen markieren und eine interne Notiz am Termin, die nur du siehst</li>
+            <li>Mail an dich bei jeder Online-Buchung und jeder Absage</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/kalender.webp" width="1280" height="1028" alt="Tagesansicht im Kalender mit Terminen von drei Mitarbeitern, einer davon als nicht erschienen markiert" loading="lazy">
+      </div>
+      <div class="split split-rev fn-row">
+        <div>
+          <h3>Kundenkartei mit Notizen</h3>
+          <ul class="fn-checks">
+            <li>Jede Buchung legt den Kunden an oder ordnet ihn zu</li>
+            <li>Notizen wie Farbrezeptur, Wunschlänge oder Lieblingsprodukt bleiben beim Kunden</li>
+            <li>Terminhistorie: wann jemand da war, was gemacht wurde, wer nicht gekommen ist</li>
+            <li>Die ganze Kartei als CSV exportieren</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/kunde.webp" width="1280" height="1231" alt="Karteikarte einer Kundin mit Notizen und Terminhistorie" loading="lazy">
+      </div>
+      <div class="split fn-row">
+        <div>
+          <h3>Team, Leistungen und Pausen</h3>
+          <ul class="fn-checks">
+            <li>Leistungen mit Dauer, Preis und kurzer Beschreibung</li>
+            <li>Mitarbeiter mit eigenen Arbeitszeiten, bis zu zwei Zeitblöcke am Tag, also auch mit Pause</li>
+            <li>Du legst fest, wer welche Leistung macht</li>
+            <li>Im Gratis-Plan ein Mitarbeiter, mit Pro unbegrenzt viele</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/team.webp" width="1280" height="500" alt="Teamübersicht mit Mitarbeitern und ihren Arbeitszeiten" loading="lazy">
+      </div>
+      <div class="split split-rev fn-row">
+        <div>
+          <h3>Deine Regeln fürs Buchen</h3>
+          <ul class="fn-checks">
+            <li>Mindestvorlauf: wie kurzfristig online gebucht werden darf</li>
+            <li>Absagefrist: bis wann Kunden selbst absagen können</li>
+            <li>Buchungshorizont: wie weit im Voraus gebucht werden kann</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/einstellungen-regeln.webp" width="1280" height="1064" alt="Einstellungen für Mindestvorlauf, Absagefrist und Buchungshorizont" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="daten" aria-labelledby="h-daten">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Daten und Sicherheit</p>
+      <h2 id="h-daten">Deine Daten bleiben deine</h2>
+    </div>
+    <ul class="feature-list feature-list-3">
+      <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>Server in der EU</h3><p>In einem Rechenzentrum in Eygelshoven in den Niederlanden. Buchungen und Kundenkartei verlassen die EU nicht.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><h3>Vertrag zur Auftragsverarbeitung</h3><p>Für die Daten deiner Kunden gibt es einen <a href="/avv">AVV nach Art. 28 DSGVO</a>. Kein Tracking, keine Werbung.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h3>Anmelden per E-Mail-Link</h3><p>Kein Passwort, das erraten werden kann. Ein Login pro Salon, eigene Logins für Mitarbeiter gibt es nicht.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/export.svg" width="48" height="48" alt=""><h3>Export jederzeit</h3><p>Kundenkartei als CSV, alle Daten deines Salons als JSON-Datei.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Konto selbst löschen</h3><p>Im Dashboard, ohne Anruf und ohne Kündigungsschreiben.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/offen.svg" width="48" height="48" alt=""><h3>Open Source</h3><p>Der Code steht unter AGPL-3.0 und lässt sich auch selbst betreiben. <a href="/open-source">Mehr dazu</a></p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt wave-top" id="geplant" aria-labelledby="h-geplant">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / Kommt als Nächstes</p>
+      <h2 id="h-geplant">Geplant, aber noch nicht da</h2>
+      <p class="lead">Diese drei Funktionen stehen als Nächstes an. Einen Termin dafür versprechen wir nicht.</p>
+    </div>
+    <ul class="grid-3">
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Anzahlung bei der Buchung</h3><p>Kunden zahlen beim Buchen einen Teil vorab, zum Beispiel bei langen Farbterminen.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Google Kalender</h3><p>Termine aus Kammzeit im eigenen Google Kalender sehen.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Eigene Domain</h3><p>Die Buchungsseite unter deiner eigenen Adresse statt salonname.kammzeit.de.</p></li>
+    </ul>
+    <p class="fn-not"><b>Heute nicht dabei:</b> SMS, Kasse, Gutscheine, Warteliste, Bewertungen, mehrere Standorte, Räume oder Geräte buchen, eigene Logins für Mitarbeiter, eine App.</p>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-fn-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-fn-cta">Sieh es dir im Demo-Salon an</h2>
+      <p>Buchungsseite ausprobieren, ohne etwas anzulegen. Oder gleich deinen eigenen Salon starten, gratis.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a> <a class="btn-ghost" href="https://demo.kammzeit.de">Demo-Salon ansehen</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{define "main-preise"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-main.css">
+
+<section class="page-head" aria-labelledby="h-pr">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Preise</li></ol></nav>
+      <h1 id="h-pr">Gratis starten, Pro wenn ihr mehr seid</h1>
+      <p class="lead">Der Gratis-Plan läuft ohne Zeitlimit, mit einem Mitarbeiter. Pro kostet 14,90&nbsp;€ im Monat oder 149&nbsp;€ im Jahr und gilt für das ganze Team.</p>
+    </div>
+    <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="Der Igel Kammi mit einer Schere" fetchpriority="high"></div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-plans">
+  <div class="wrap">
+    <h2 class="vh" id="h-plans">Die beiden Pläne</h2>
+    <div class="plans pr-plans">
+      <div class="plan">
+        <h3>Gratis</h3>
+        <p class="price">0&nbsp;€</p>
+        <p class="price-per">dauerhaft, ohne Zeitlimit</p>
+        <ul>
+          <li>1 aktiver Mitarbeiter</li>
+          <li>Buchungsseite, Bestätigung, Erinnerung, Absage per Link</li>
+          <li>Kalender und Kundenkartei</li>
+          <li>Hinweis „Online-Termine mit Kammzeit“ auf der Buchungsseite</li>
+        </ul>
+        <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a></p>
+      </div>
+      <div class="plan plan-pro">
+        <h3>Pro</h3>
+        <p class="price">14,90&nbsp;€</p>
+        <p class="price-per">im Monat, monatlich kündbar</p>
+        <p class="pr-year"><b>oder 149&nbsp;€ im Jahr</b>, jährlich kündbar. Das sind 12,42&nbsp;€ im Monat, zwei Monatsbeiträge weniger.</p>
+        <ul>
+          <li>Unbegrenzt Mitarbeiter</li>
+          <li>Alles aus Gratis</li>
+          <li>Ohne Kammzeit-Hinweis auf der Buchungsseite</li>
+        </ul>
+        <p class="pr-how">Du startest gratis und schaltest Pro im Dashboard unter „Abo“ frei, sobald du es brauchst.</p>
+      </div>
+    </div>
+    <p class="pr-tax">Alle Preise sind Endpreise. Keine Umsatzsteuer nach §&nbsp;19&nbsp;UStG, keine Einrichtungsgebühr.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-compare">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Vergleich</p>
+      <h2 id="h-compare">Was in welchem Plan drin ist</h2>
+    </div>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead><tr><th scope="col">Funktion</th><th scope="col">Gratis</th><th scope="col">Pro</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Buchungsseite unter salonname.kammzeit.de</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Aktive Mitarbeiter</th><td>1</td><td>unbegrenzt</td></tr>
+          <tr><th scope="row">Leistungen mit Dauer, Preis und Beschreibung</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Arbeitszeiten mit Pausen</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Bestätigung mit Kalendereintrag, Erinnerung, Absage per Link</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Kalender für Tag und Woche, Termine selbst eintragen</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Kundenkartei mit Notizen und CSV-Export</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Eigene Akzentfarbe, Adresse, Text über den Salon</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Datenexport (JSON), Konto löschen, AVV</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Support per E-Mail</th><td class="yes">Ja</td><td class="yes">Ja</td></tr>
+          <tr><th scope="row">Hinweis „Online-Termine mit Kammzeit“</th><td>Ja</td><td>Nein</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-terms">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Steuer, Zahlung, Kündigung</p>
+      <h2 id="h-terms">Das Kleingedruckte, groß geschrieben</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card"><img class="icon-lg" src="/static/img/icons/pro.svg" width="48" height="48" alt=""><h3>Endpreise nach §&nbsp;19&nbsp;UStG</h3><p>Kammzeit ist Kleinunternehmer im Sinne von §&nbsp;19&nbsp;UStG. Auf der Rechnung steht deshalb keine Umsatzsteuer, der Preis hier ist der Preis, den du zahlst.</p></div>
+      <div class="card"><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Zahlung über Stripe</h3><p>Mit den Zahlungsarten, die beim Bezahlen angeboten werden. Fällig ist der Betrag zu Beginn jedes Monats oder Jahres. Rechnungen kommen per Mail und liegen im Kundenportal.</p></div>
+      <div class="card"><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Kündigung im Dashboard</h3><p>Unter „Abo“ über das Kundenportal, zum Ende des bezahlten Monats oder Jahres. Danach läuft dein Salon im Gratis-Plan weiter, deine Daten bleiben erhalten.</p></div>
+    </div>
+    <p class="pr-terms-more">Die Einzelheiten stehen in den <a href="/agb">AGB</a>.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-pr-faq">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Fragen</p>
+      <h2 id="h-pr-faq">Fragen zum Preis</h2>
+    </div>
+    <div class="faq landing-faq">
+      <details><summary>Gibt es eine Testphase für Pro?</summary>
+        <p>Nein, dafür gibt es den Gratis-Plan ohne Zeitlimit. Darin steckt alles außer weiteren Mitarbeitern, du kannst Kammzeit also in Ruhe mit deinem Salon ausprobieren.</p></details>
+      <details><summary>Was passiert, wenn ich Pro kündige?</summary>
+        <p>Bis zum Ende des bezahlten Zeitraums bleibt Pro nutzbar. Danach gelten wieder die Grenzen des Gratis-Plans, also ein aktiver Mitarbeiter und der Kammzeit-Hinweis auf der Buchungsseite. Deine Daten bleiben erhalten.</p></details>
+      <details><summary>Gibt es Kosten pro Buchung oder pro Mail?</summary>
+        <p>Nein. Es gibt keine Einrichtungsgebühr und keine Kosten pro Buchung, pro Mitarbeiter oder pro Mail. Nur den Preis des Plans.</p></details>
+      <details><summary>Sind SMS-Erinnerungen dabei?</summary>
+        <p>SMS gibt es bei Kammzeit nicht. Erinnerungen und Bestätigungen gehen per Mail raus, die sind in beiden Plänen ohne Aufpreis dabei.</p></details>
+      <details><summary>Bekomme ich eine Rechnung?</summary>
+        <p>Ja, elektronisch per Mail. Alle Rechnungen findest du außerdem im Kundenportal, das du im Dashboard unter „Abo“ öffnest.</p></details>
+      <details><summary>Kann ich Kammzeit selbst hosten?</summary>
+        <p>Ja. Der Code steht unter der AGPL-3.0, selbst betreiben kostet nichts. Dann kümmerst du dich aber selbst um Server, Mails und Updates. <a href="/open-source">Mehr zu Open Source</a></p></details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-pr-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-pr-cta">Starte gratis, wechseln kannst du später</h2>
+      <p>Du brauchst nur eine E-Mail-Adresse. Pro schaltest du frei, wenn das Team wächst.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a> <a class="btn-ghost" href="/funktionen">Alle Funktionen</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
