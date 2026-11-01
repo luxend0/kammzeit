@@ -40,7 +40,7 @@ h2 { font-size: 1.125rem; margin: 28px 0 10px; }
 .toolbar .spacer { flex: 1; }
 
 /* Buttons */
-.btn, button.btn { display: inline-block; padding: 9px 16px; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
+.btn { display: inline-block; padding: 9px 16px; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
   color: #fff; background: var(--fg); border: 1px solid var(--fg); border-radius: 0; }
 .btn:hover, .btn:focus-visible { background: var(--accent); border-color: var(--accent); }
 .btn-secondary { color: var(--fg); background: var(--bg); }
