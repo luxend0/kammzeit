@@ -65,14 +65,14 @@ func init() {
 		"Die Warteschlange gibt es im Pro-Plan.":                                        "The queue is part of the Pro plan.",
 		"Kunden scannen einen QR-Code im Laden, tragen ihren Vornamen ein und sehen auf dem Handy, wann sie dran sind. Du rufst mit einem Klick auf, ein Bildschirm im Laden zeigt die Nummern.": "Customers scan a QR code in your salon, enter their first name and see on their phone when it's their turn. You call them with one click, and a screen in your salon shows the numbers.",
 		"Zu Pro wechseln": "Upgrade to Pro",
-		"Die Warteschlange ist an. Kunden können sich jetzt anstellen.":                 "The queue is on. Customers can join now.",
-		"Die Warteschlange ist aus.":                                                    "The queue is off.",
-		"Hinweis gespeichert.":                                                          "Note saved.",
-		"Eingereiht mit Nummer %d.":                                                     "Added with number %d.",
-		"Der Hinweis ist zu lang (höchstens 300 Zeichen).":                              "The note is too long (300 characters at most).",
-		"Bitte gib einen Namen an (höchstens 60 Zeichen, eine Zeile).":                  "Please enter a name (60 characters at most, one line).",
-		"Diese Leistung oder diesen Mitarbeiter gibt es so nicht mehr. Bitte wähl neu.": "This service or staff member no longer exists. Please choose again.",
-		"Diese Aktion gibt es nicht.":                                                   "This action does not exist.",
+		"Die Warteschlange ist an. Kunden können sich jetzt anstellen.": "The queue is on. Customers can join now.",
+		"Die Warteschlange ist aus.":                                    "The queue is off.",
+		"Hinweis gespeichert.":                                          "Note saved.",
+		"Eingereiht mit Nummer %d.":                                     "Added with number %d.",
+		"Der Hinweis ist zu lang (höchstens 300 Zeichen).":              "The note is too long (300 characters at most).",
+		"Bitte gib einen Namen an (höchstens 60 Zeichen, eine Zeile).":  "Please enter a name (60 characters at most, one line).",
+		// "Diese Leistung oder diesen Mitarbeiter gibt es so nicht mehr. Bitte wähl neu." steht in i18n_public.go
+		"Diese Aktion gibt es nicht.": "This action does not exist.",
 
 		// Druckseite und Anzeige
 		"QR-Code zum Anstellen":    "QR code for joining the queue",
