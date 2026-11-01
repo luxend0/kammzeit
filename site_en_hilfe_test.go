@@ -89,7 +89,7 @@ func TestSiteENHilfe(t *testing.T) {
 				t.Errorf("%s enthält nicht %q", p.Path, want)
 			}
 		}
-		for _, bad := range []string{"—", "<script", "{{", "ZgotmplZ"} {
+		for _, bad := range []string{"\u2014", "<script", "{{", "ZgotmplZ"} {
 			if strings.Contains(body, bad) {
 				t.Errorf("%s enthält %q", p.Path, bad)
 			}
