@@ -20,6 +20,7 @@ type salon struct {
 	MinNoticeMin, CancelNoticeMin          int
 	HorizonDays                            int
 	StripeCustomerID, StripeSubscriptionID string
+	Lang                                   string // Sprache der Buchungsseite: de | en
 	Loc                                    *time.Location
 }
 
@@ -27,16 +28,19 @@ type salon struct {
 func (s *salon) Pro() bool { return s.Plan == "pro" }
 
 const salonCols = `SELECT id, slug, name, email, accent, plan, timezone, address, phone, website, imprint_url, about,
-	min_notice_min, cancel_notice_min, booking_horizon_days, stripe_customer_id, stripe_subscription_id FROM salons `
+	min_notice_min, cancel_notice_min, booking_horizon_days, stripe_customer_id, stripe_subscription_id, lang FROM salons `
 
 func scanSalon(row interface{ Scan(...any) error }) (*salon, error) {
 	var s salon
 	err := row.Scan(&s.ID, &s.Slug, &s.Name, &s.Email, &s.Accent, &s.Plan, &s.TZ, &s.Address, &s.Phone, &s.Website,
-		&s.ImprintURL, &s.About, &s.MinNoticeMin, &s.CancelNoticeMin, &s.HorizonDays, &s.StripeCustomerID, &s.StripeSubscriptionID)
+		&s.ImprintURL, &s.About, &s.MinNoticeMin, &s.CancelNoticeMin, &s.HorizonDays, &s.StripeCustomerID, &s.StripeSubscriptionID, &s.Lang)
 	if err != nil {
 		return nil, err
 	}
 	s.Loc = location(s.TZ)
+	if s.Lang != "en" {
+		s.Lang = "de"
+	}
 	if !hexColor.MatchString(s.Accent) {
 		s.Accent = "#3b82f6"
 	}
@@ -56,6 +60,16 @@ var migrations = []string{
 	// 1: Nachweis, wann welche AGB/AVV-Fassung akzeptiert wurde.
 	`ALTER TABLE users ADD COLUMN terms_accepted_at INTEGER;
 	 ALTER TABLE users ADD COLUMN terms_version TEXT NOT NULL DEFAULT '';`,
+	// 2: Sprache der Buchungsseite; Marketing-Einwilligung der Salon-Inhaber mit
+	// Double-Opt-in (Nachweis: wann, über welchen Weg, welcher Text; Widerruf).
+	`ALTER TABLE salons ADD COLUMN lang TEXT NOT NULL DEFAULT 'de';
+	 ALTER TABLE users ADD COLUMN lang TEXT NOT NULL DEFAULT 'de';
+	 ALTER TABLE users ADD COLUMN marketing_at INTEGER;
+	 ALTER TABLE users ADD COLUMN marketing_source TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE users ADD COLUMN marketing_text TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE users ADD COLUMN marketing_withdrawn_at INTEGER;
+	 ALTER TABLE users ADD COLUMN marketing_pending_hash TEXT NOT NULL DEFAULT '';
+	 ALTER TABLE users ADD COLUMN marketing_pending_at INTEGER;`,
 }
 
 // termsVersion = Stand von AGB und AVV in web/legal.html. Bei inhaltlicher

@@ -85,8 +85,8 @@ func (a *app) aboCheckout(w http.ResponseWriter, r *http.Request, c *dctx) {
 		"client_reference_id":                   {id},
 		"metadata[salon_id]":                    {id},
 		"subscription_data[metadata][salon_id]": {id},
-		"success_url":                           {a.siteURL() + "/dashboard/abo?erfolg"},
-		"cancel_url":                            {a.siteURL() + "/dashboard/abo"},
+		"success_url":                           {a.siteURLFor(r) + "/dashboard/abo?erfolg"},
+		"cancel_url":                            {a.siteURLFor(r) + "/dashboard/abo"},
 		"locale":                                {"de"},
 	}
 	if c.Salon.StripeCustomerID != "" {
@@ -104,7 +104,7 @@ func (a *app) aboPortal(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	a.stripeRedirect(w, r, c, "/v1/billing_portal/sessions", url.Values{
 		"customer":   {c.Salon.StripeCustomerID},
-		"return_url": {a.siteURL() + "/dashboard/abo"},
+		"return_url": {a.siteURLFor(r) + "/dashboard/abo"},
 		"locale":     {"de"},
 	})
 }

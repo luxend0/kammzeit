@@ -50,7 +50,7 @@ func (a *app) authRootOnly(w http.ResponseWriter, r *http.Request) bool {
 	if a.onRootHost(r) {
 		return true
 	}
-	http.Redirect(w, r, a.siteURL()+r.URL.RequestURI(), http.StatusFound)
+	http.Redirect(w, r, a.siteURLFor(r)+r.URL.RequestURI(), http.StatusFound)
 	return false
 }
 
@@ -237,7 +237,10 @@ func (a *app) newLoginToken(userID int64) (string, error) {
 
 // mailLoginLink schickt den Link; next (schon geprüft) kommt als ?weiter= mit.
 func (a *app) mailLoginLink(email, token, next string) error {
-	link := a.siteURL() + "/login/" + token
+	// Link auf die Domain der Sprache des Kontos (users.lang: de -> kammzeit.de, en -> kammzeit.com).
+	var lang string
+	a.db.QueryRow(`SELECT lang FROM users WHERE email = ?`, email).Scan(&lang)
+	link := a.siteURLLang(lang) + "/login/" + token
 	if next != "" {
 		link += "?weiter=" + url.QueryEscape(next)
 	}

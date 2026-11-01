@@ -91,7 +91,7 @@ func suggestSlug(name string) string {
 // Ersteinrichtung, solange es noch keinen Salon gibt. Antwortet sonst selbst.
 func (a *app) signupOpen(w http.ResponseWriter, r *http.Request) bool {
 	if !a.onRootHost(r) {
-		http.Redirect(w, r, a.siteURL()+"/registrieren", http.StatusFound)
+		http.Redirect(w, r, a.siteURLFor(r)+"/registrieren", http.StatusFound)
 		return false
 	}
 	if a.cfg.SingleTenant {
@@ -129,7 +129,7 @@ func (a *app) signupForm(w http.ResponseWriter, r *http.Request, status int, err
 	}
 	d := a.authPage(title, "/registrieren")
 	if !a.cfg.SingleTenant { // steht in der Sitemap, darf in die Suche
-		d["Index"], d["Canonical"] = true, a.siteURL()+"/registrieren"
+		d["Index"], d["Canonical"] = true, a.siteURLFor(r)+"/registrieren"
 		d["Description"] = "Salon bei Kammzeit registrieren: eigene Buchungsseite, gratis für einen Mitarbeiter, ohne Zahlungsdaten."
 	}
 	d["Heading"], d["Error"], d["Errors"], d["Domain"] = title, msg, errs, a.cfg.BaseDomain

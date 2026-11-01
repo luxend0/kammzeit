@@ -76,7 +76,7 @@ func (a *app) routes() http.Handler {
 	a.routesSettings(mux)  // dash_settings.go: /dashboard/einstellungen
 	a.routesBilling(mux)   // billing.go: /dashboard/abo, /stripe/webhook
 	a.routesSite(mux)      // site.go: öffentliche Seiten, sitemap.xml, robots.txt
-	return securityHeaders(mux)
+	return securityHeaders(a.langRedirect(mux))
 }
 
 // static rendert eine Seite ohne Salon-Bezug (Impressum, Datenschutz).
@@ -103,10 +103,12 @@ func (a *app) tlsAllow(w http.ResponseWriter, r *http.Request) {
 // Mail-Adressen trotzdem ein Zertifikat nach dem anderen anfordern.
 func (a *app) tlsAllowed(domain string) bool {
 	domain = strings.ToLower(domain)
-	if domain == "www."+a.cfg.BaseDomain {
-		return true
+	for _, d := range a.domains() {
+		if domain == "www."+d.Host {
+			return true
+		}
 	}
-	slug, root := tenantSlug(domain, a.cfg.BaseDomain)
+	slug, root, _ := a.tenant(domain)
 	if root {
 		return true
 	}
@@ -143,8 +145,9 @@ func (a *app) render(w http.ResponseWriter, status int, name string, data map[st
 
 // page füllt die Felder, die jedes Layout braucht.
 func (a *app) page(s *salon, title string) map[string]any {
-	d := map[string]any{"Title": title}
+	d := map[string]any{"Title": title, "Lang": "de"}
 	if s != nil {
+		d["Lang"] = s.Lang
 		d["Salon"] = s
 		d["Accent"] = s.Accent
 		d["OnAccent"] = onAccent(s.Accent)
@@ -174,7 +177,7 @@ func (a *app) salonFor(w http.ResponseWriter, r *http.Request) *salon {
 	if a.cfg.SingleTenant {
 		row = a.db.QueryRow(salonCols + `ORDER BY id LIMIT 1`)
 	} else {
-		slug, _ := tenantSlug(r.Host, a.cfg.BaseDomain)
+		slug, _, _ := a.tenant(r.Host)
 		if slug == "" {
 			a.fail(w, nil, http.StatusNotFound, "Diesen Salon gibt es nicht.")
 			return nil
@@ -195,7 +198,13 @@ func (a *app) salonFor(w http.ResponseWriter, r *http.Request) *salon {
 
 func (a *app) home(w http.ResponseWriter, r *http.Request) {
 	if !a.cfg.SingleTenant {
-		if _, root := tenantSlug(r.Host, a.cfg.BaseDomain); root {
+		if _, root, d := a.tenant(r.Host); root {
+			if d.Lang == "en" && a.tpl.Lookup("landing-en") != nil {
+				p := a.page(nil, "Kammzeit - Online booking for salons")
+				p["Lang"] = "en"
+				a.render(w, http.StatusOK, "landing-en", p)
+				return
+			}
 			a.render(w, http.StatusOK, "landing", a.page(nil, "Kammzeit - Online-Terminbuchung für Salons"))
 			return
 		}
@@ -602,7 +611,7 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 		}
 		if s.Email != "" {
 			body := fmt.Sprintf("Neue Online-Buchung:\n\n%s\nKunde:    %s\nE-Mail:   %s\nTelefon:  %s\n\nAlle Termine: %s/dashboard\n",
-				bookingLines(b), b.Customer, b.Email, orDash(b.Phone), a.siteURL())
+				bookingLines(b), b.Customer, b.Email, orDash(b.Phone), a.siteURLLang(s.Lang))
 			if err := a.mail.send(s.Email, "Neue Buchung: "+deDate(b.Start), body); err != nil {
 				log.Printf("Salon-Info an %s: %v", s.Email, err)
 			}

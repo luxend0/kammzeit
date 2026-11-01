@@ -44,7 +44,7 @@ func (a *app) onRootHost(r *http.Request) bool {
 	if a.cfg.SingleTenant {
 		return true
 	}
-	_, root := tenantSlug(r.Host, a.cfg.BaseDomain)
+	_, root, _ := a.tenant(r.Host)
 	return root
 }
 
@@ -114,7 +114,7 @@ func sameOrigin(r *http.Request) bool {
 func (a *app) dash(h func(http.ResponseWriter, *http.Request, *dctx)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !a.onRootHost(r) {
-			http.Redirect(w, r, a.siteURL()+r.URL.RequestURI(), http.StatusFound)
+			http.Redirect(w, r, a.siteURLFor(r)+r.URL.RequestURI(), http.StatusFound)
 			return
 		}
 		if r.Method != http.MethodGet && r.Method != http.MethodHead && !sameOrigin(r) {
@@ -165,6 +165,7 @@ func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]a
 		"BookingURL": a.link(c.Salon.Slug, "/"),
 		"Saved":      r.URL.Query().Has("gespeichert"),
 		"Dashboard":  true,
+		"Lang":       a.langFor(r),
 	}
 }
 

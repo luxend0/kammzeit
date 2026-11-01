@@ -35,9 +35,10 @@ type config struct {
 	Port         string
 	BaseDomain   string // Salons laufen unter <slug>.<BaseDomain>
 	DBPath       string
-	SingleTenant bool   // Selbsthosten: genau ein Salon, keine Subdomains
-	PublicURL    string // Buchungsseite eines Salons, "{slug}" wird ersetzt
-	SiteURL      string // Hauptseite (Landing, Login, Dashboard)
+	SingleTenant bool        // Selbsthosten: genau ein Salon, keine Subdomains
+	PublicURL    string      // Buchungsseite eines Salons, "{slug}" wird ersetzt
+	SiteURL      string      // Hauptseite (Landing, Login, Dashboard) der ersten Domain
+	Domains      []domainCfg // alle Hauptdomains mit Sprache, [0] = Standard (i18n.go)
 }
 
 type app struct {
@@ -45,6 +46,8 @@ type app struct {
 	db   *sql.DB
 	tpl  *template.Template
 	mail mailer
+	// pages: registrierte öffentliche Seiten je Pfad und Sprache (site.go)
+	pages map[string]map[string]http.HandlerFunc
 }
 
 func env(key, def string) string {
@@ -71,6 +74,7 @@ func loadConfig() config {
 		site = c.PublicURL
 	}
 	c.SiteURL = strings.TrimRight(env("SITE_URL", site), "/")
+	c.Domains = parseDomains(os.Getenv("BASE_DOMAINS"), c.BaseDomain)
 	return c
 }
 
@@ -191,7 +195,10 @@ func mailerFromEnv() mailer {
 
 // send schickt eine Textmail. Ohne SMTP_HOST wird nur geloggt (Entwicklung).
 // `to` muss vorher durch mail.ParseAddress gegangen sein.
-func (m mailer) send(to, subject, body string) error {
+func (m mailer) send(to, subject, body string) error { return m.sendHTML(to, subject, body, "") }
+
+// sendHTML schickt Text und (falls nicht leer) HTML als multipart/alternative.
+func (m mailer) sendHTML(to, subject, body, html string) error {
 	if m.host == "" {
 		log.Printf("Mail (kein SMTP_HOST) an %s: %s\n%s", to, subject, body)
 		return nil
@@ -206,12 +213,16 @@ func (m mailer) send(to, subject, body string) error {
 		"Subject: " + mime.QEncoding.Encode("utf-8", subject) + "\r\n" + // kodiert auch CR/LF, kein Header-Einschleusen
 		"Date: " + time.Now().Format(time.RFC1123Z) + "\r\n" +
 		"Message-ID: <" + randomToken() + "@" + domain + ">\r\n" +
-		"MIME-Version: 1.0\r\n" +
-		"Content-Type: text/plain; charset=utf-8\r\n" +
-		"Content-Transfer-Encoding: 8bit\r\n\r\n" +
-		// Alle CR raus, auch einzelne (z. B. in einem von Hand gepflegten
-		// Kundennamen): die gingen sonst unverändert auf die Leitung (SMTP-Smuggling).
-		strings.ReplaceAll(strings.ReplaceAll(body, "\r", ""), "\n", "\r\n")
+		"MIME-Version: 1.0\r\n"
+	// Alle CR raus, auch einzelne (z. B. in einem von Hand gepflegten
+	// Kundennamen): die gingen sonst unverändert auf die Leitung (SMTP-Smuggling).
+	clean := func(s string) string { return strings.ReplaceAll(strings.ReplaceAll(s, "\r", ""), "\n", "\r\n") }
+	if html == "" {
+		msg += "Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n\r\n" + clean(body)
+	} else {
+		ct, b := multipartAlternative(strings.ReplaceAll(body, "\r", ""), strings.ReplaceAll(html, "\r", ""))
+		msg += "Content-Type: " + ct + "\r\n\r\n" + clean(b)
+	}
 	var auth smtp.Auth
 	if m.user != "" {
 		auth = smtp.PlainAuth("", m.user, m.pass, m.host)
