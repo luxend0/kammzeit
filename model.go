@@ -98,10 +98,11 @@ func clientIP(r *http.Request) string {
 // limiter erlaubt n Vorgänge pro Schlüssel und Zeitfenster.
 // ponytail: im Speicher, ein Prozess; reicht für eine Instanz.
 type limiter struct {
-	mu   sync.Mutex
-	n    int
-	per  time.Duration
-	hits map[string][]time.Time
+	mu    sync.Mutex
+	n     int
+	per   time.Duration
+	hits  map[string][]time.Time
+	swept time.Time
 }
 
 func newLimiter(n int, per time.Duration) *limiter {
@@ -112,7 +113,10 @@ func (l *limiter) allow(key string) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := time.Now()
-	if len(l.hits) > 10000 { // Speicher begrenzen: alte Schlüssel wegwerfen
+	// Abgelaufene Schlüssel (IP-Adressen, Mail-Adressen) spätestens nach einem
+	// Zeitfenster wegwerfen, so steht es auch in der Datenschutzerklärung.
+	if now.Sub(l.swept) > l.per || len(l.hits) > 10000 {
+		l.swept = now
 		for k, ts := range l.hits {
 			if len(ts) == 0 || now.Sub(ts[len(ts)-1]) > l.per {
 				delete(l.hits, k)
