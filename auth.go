@@ -103,6 +103,10 @@ func (a *app) loginPage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, cmp.Or(next, "/dashboard"), http.StatusFound)
 		return
 	}
+	if r.URL.Query().Has("pausiert") { // a.dash hat einen pausierten Mitarbeiter-Login abgemeldet
+		a.staffPausedPage(w, r, http.StatusOK)
+		return
+	}
 	d := a.authPage(r, "Anmelden", "/login")
 	d["Next"] = next
 	d["LoggedOut"] = r.URL.Query().Has("abgemeldet")
@@ -195,14 +199,21 @@ func (a *app) loginConfirm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := r.PathValue("token")
-	var one int
-	err := a.db.QueryRow(`SELECT 1 FROM login_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?`,
-		hashToken(token), time.Now().Unix()).Scan(&one)
+	var userID int64
+	err := a.db.QueryRow(`SELECT user_id FROM login_tokens WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?`,
+		hashToken(token), time.Now().Unix()).Scan(&userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		a.loginInvalid(w, r)
 		return
 	} else if err != nil {
 		a.authServerError(w, r, err)
+		return
+	}
+	if paused, err := a.staffPaused(userID); err != nil {
+		a.authServerError(w, r, err)
+		return
+	} else if paused {
+		a.staffPausedPage(w, r, http.StatusForbidden)
 		return
 	}
 	d := a.authPage(r, "Anmelden", "/login")
@@ -232,6 +243,13 @@ func (a *app) loginRedeem(w http.ResponseWriter, r *http.Request) {
 		return
 	} else if err != nil {
 		a.authServerError(w, r, err)
+		return
+	}
+	if paused, err := a.staffPaused(userID); err != nil {
+		a.authServerError(w, r, err)
+		return
+	} else if paused {
+		a.staffPausedPage(w, r, http.StatusForbidden)
 		return
 	}
 	if err := a.startSession(w, r, userID); err != nil {

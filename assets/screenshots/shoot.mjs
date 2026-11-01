@@ -92,6 +92,9 @@ await send("Network.setCookie", { name, value: rest.join("="), domain: "kammzeit
 // Dashboard, 1280 breit
 await viewport(1280);
 await go(`${site}/dashboard`);
+// Dashboard-Tour (tour.js) als gesehen markieren, sonst liegt sie über allen Bildern.
+await js(`localStorage.setItem(document.getElementById("kz-tour").dataset.key, "done"), true`);
+await go(`${site}/dashboard`);
 await shot("kalender", { bottom: ".kal-scroll" });
 await go(`${site}/dashboard/kunden?q=Neumann`);
 const card = await js(`document.querySelector('#kunden-tabelle a[href^="/dashboard/kunden/"]').href`);

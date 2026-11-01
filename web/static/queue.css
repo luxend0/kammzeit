@@ -1,0 +1,119 @@
+/* Warteschlange (queue.go, web/queue.html). Alles mit Präfix queue-.
+   1 Dashboard (auf dash.css)   2 Druckseite QR-Code   3 Anzeige im Laden (Nachtblau, große Nummern)
+   4 Öffentliche Seiten (auf style.css, Akzentfarbe des Salons) */
+
+/* 1 Dashboard --------------------------------------------------------------- */
+.queue-state-line { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem; margin: -.5rem 0 1.5rem; }
+.queue-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media (min-width: 68rem) { .queue-layout { grid-template-columns: minmax(0, 1fr) 22rem; } }
+.queue-side { display: grid; gap: 1.25rem; }
+.queue-side .card form { margin: 0; }
+.queue-side textarea { min-height: 5rem; }
+.queue-links { margin: 0 0 .75rem; }
+.queue-url { margin: 0 0 1rem; overflow-wrap: anywhere; }
+.queue-stats { margin-bottom: 1.25rem; }
+/* Handy: drei Zahlen nebeneinander statt drei hoher Karten */
+@media (max-width: 35.99rem) {
+  .queue-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+  .queue-stats .stat-card { padding: .6rem .7rem; }
+  .queue-stats .stat-card > img { display: none; }
+  .queue-stats .stat-label { font-size: .75rem; line-height: 1.25; }
+  .queue-stats .stat { font-size: 1.125rem; }
+}
+
+.queue-list { display: grid; gap: .75rem; margin: 0 0 1rem; padding: 0; list-style: none; }
+.queue-item {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .5rem 1rem; align-items: center;
+  padding: .85rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow);
+}
+.queue-nr {
+  display: grid; place-items: center; width: 3.25rem; height: 3.25rem; border-radius: 50%;
+  background: var(--sky-50); color: var(--night); font-weight: 800; font-size: 1.375rem; font-variant-numeric: tabular-nums;
+}
+.queue-item.queue-is-called .queue-nr { background: var(--blue); color: #fff; }
+.queue-item.queue-is-serving .queue-nr { background: var(--tint-mint); }
+.queue-item.queue-is-called { border-color: var(--blue); }
+.queue-info p { margin: 0; }
+.queue-name { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .6rem; font-weight: 800; font-size: 1.0625rem; overflow-wrap: anywhere; }
+.queue-meta { margin-top: .15rem !important; font-size: .875rem; color: var(--muted); }
+.queue-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .6rem; }
+.queue-actions form { margin: 0; }
+.queue-remove { min-height: 2.25rem; padding: 0 .4rem !important; font-size: .875rem; font-weight: 700; color: var(--danger) !important; }
+@media (min-width: 48rem) {
+  .queue-item { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .queue-actions { grid-column: auto; justify-content: flex-end; }
+}
+
+/* 2 Druckseite -------------------------------------------------------------- */
+.queue-print-page { background: var(--sky-50); }
+.queue-print { max-width: 820px; margin: 0 auto; padding: 1.5rem var(--pad) 3rem; }
+.queue-print-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1.25rem; font-weight: 700; }
+.queue-sheet { padding: clamp(1.5rem, 4vw, 3rem); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); text-align: center; }
+.queue-sheet-salon { margin: 0; font-weight: 800; font-size: 1.25rem; color: var(--muted); }
+.queue-sheet h1 { margin: .4rem 0 1.5rem; font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem); }
+.queue-sheet-qr { width: min(100%, 12cm); margin: 0 auto 1.5rem; }
+.queue-sheet-qr svg { display: block; width: 100%; height: auto; }
+.queue-sheet-steps { display: grid; gap: .4rem; width: fit-content; margin: 0 auto 1.25rem; padding-left: 1.4rem; text-align: left; font-size: 1.1875rem; font-weight: 600; }
+.queue-sheet-url { margin: 0; font-weight: 800; font-size: 1.25rem; color: var(--blue); overflow-wrap: anywhere; }
+@media print {
+  @page { size: A4; margin: 15mm; }
+  .queue-print-page { background: #fff; }
+  .queue-print { max-width: none; padding: 0; }
+  .queue-print-bar, .queue-noprint { display: none; }
+  .queue-sheet { box-shadow: none; padding: 0; }
+  .queue-sheet h1 { color: var(--night); }
+}
+
+/* 3 Anzeige im Laden: Nachtblau, Weiß 14,5:1, Gelb 9,4:1 ------------------- */
+.queue-tv { display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; margin: 0; background: var(--night); color: #fff; }
+.queue-tv :focus-visible { outline-color: var(--sun); box-shadow: none; }
+.queue-tv-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: clamp(.75rem, 2vh, 1.5rem) clamp(1rem, 3vw, 3rem); }
+.queue-tv-salon { font-weight: 800; font-size: clamp(1.25rem, 2.4vw, 2.5rem); letter-spacing: -.02em; }
+.queue-tv-fs { min-height: 2.75rem; padding: .4rem 1rem; border: 2px solid rgb(255 255 255 / .5); border-radius: 999px; background: none; color: #fff; font: 700 .9375rem/1 var(--font-text); cursor: pointer; }
+.queue-tv-fs:hover { border-color: #fff; }
+:fullscreen .queue-tv-fs { display: none; }
+.queue-tv-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(1.5rem, 3vw, 3rem); align-items: center; padding: 0 clamp(1rem, 3vw, 3rem) clamp(1rem, 3vh, 2.5rem); }
+@media (min-width: 48rem) { .queue-tv-body { grid-template-columns: minmax(0, 1fr) auto; } }
+.queue-tv-main { display: grid; gap: clamp(1.5rem, 5vh, 4rem); }
+.queue-tv-main h1, .queue-tv-main h2 { margin: 0 0 .5rem; color: var(--sky); font-weight: 800; font-size: clamp(1.5rem, 3.2vw, 3.25rem); letter-spacing: -.02em; }
+.queue-tv-big { margin: 0; font-weight: 800; font-size: clamp(6rem, 20vw, 20rem); line-height: .9; letter-spacing: -.04em; color: var(--sun); font-variant-numeric: tabular-nums; }
+.queue-tv-sep { color: rgb(255 255 255 / .4); }
+.queue-tv-none { color: rgb(255 255 255 / .35); }
+.queue-tv-serving { margin: .75rem 0 0; font-size: clamp(1.125rem, 2vw, 2rem); font-weight: 700; }
+.queue-tv-list { display: flex; flex-wrap: wrap; gap: clamp(.5rem, 1.2vw, 1.25rem); margin: 0; padding: 0; list-style: none; }
+.queue-tv-list li { min-width: 2.2em; padding: .15em .35em; border-radius: 18px; background: rgb(255 255 255 / .12); font-weight: 800; font-size: clamp(2rem, 5vw, 5rem); line-height: 1.1; text-align: center; font-variant-numeric: tabular-nums; }
+.queue-tv-list .queue-tv-more { background: none; color: var(--sky); }
+.queue-tv-empty, .queue-tv-closed { margin: 0; font-size: clamp(1.25rem, 2.4vw, 2.25rem); font-weight: 700; }
+.queue-tv-closed { margin-top: 1rem; color: var(--sun); }
+.queue-tv-qr { justify-self: center; width: clamp(13rem, 22vw, 24rem); padding: clamp(1rem, 1.5vw, 1.5rem); border-radius: var(--radius-img); background: #fff; color: var(--night); text-align: center; }
+.queue-tv-qr svg { display: block; width: 100%; height: auto; }
+.queue-tv-qr p { margin: 0; }
+.queue-tv-qr-title { margin-bottom: .5rem !important; font-weight: 800; font-size: clamp(1.25rem, 2vw, 2rem); }
+.queue-tv-url { margin-top: .5rem !important; font-weight: 700; font-size: clamp(.875rem, 1.1vw, 1.125rem); overflow-wrap: anywhere; }
+
+/* 4 Öffentliche Seiten ------------------------------------------------------- */
+.queue-pub select {
+  display: block; width: 100%; min-height: 48px; margin-top: 4px; padding: 10px; font: inherit; font-size: 1rem; font-weight: 400;
+  border: 1px solid var(--fg); border-radius: 0; background: var(--bg); color: var(--fg);
+}
+.queue-note { white-space: pre-line; }
+.queue-error { border-left-color: var(--danger); font-weight: 600; }
+.queue-now { margin: 20px 0 8px; padding: 12px 14px; border-left: 4px solid var(--accent); font-size: 1.0625rem; font-weight: 600; }
+.queue-stand { margin: 8px 0 24px; padding: 28px 20px 24px; border: 2px solid var(--fg); text-align: center; }
+.queue-stand p { margin: 0; }
+.queue-label { font-weight: 600; overflow-wrap: anywhere; }
+.queue-number { margin: 4px 0 12px !important; font-weight: 800; font-size: clamp(5.5rem, 32vw, 10rem); line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.queue-msg { font-size: 1.375rem; font-weight: 800; line-height: 1.25; }
+.queue-wait { margin-top: 6px !important; font-size: 1.125rem; }
+.queue-stand .small { margin-top: 12px; }
+.queue-hint { color: var(--muted); }
+.queue-stand .btn { margin: 20px auto 0; }
+.queue-stand.queue-is-called { border-color: var(--fg); background: var(--accent); color: var(--on-accent); }
+.queue-stand.queue-is-called .queue-hint { color: inherit; }
+.queue-stand.queue-is-called .queue-number { font-size: clamp(6rem, 36vw, 11rem); }
+.queue-leave { display: inline-block; width: auto; margin-top: 20px; padding: 10px 18px; border: 2px solid var(--fg); background: var(--bg); color: var(--fg); font-weight: 700; }
+.queue-leave:hover { background: var(--soft); color: var(--fg); }
+@media (prefers-reduced-motion: no-preference) {
+  .queue-stand.queue-is-called .queue-number { animation: queue-pop .6s ease-out; }
+  @keyframes queue-pop { from { transform: scale(.85); } to { transform: none; } }
+}

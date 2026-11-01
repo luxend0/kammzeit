@@ -1,17 +1,23 @@
-# Kammzeit hinter Caddy. Salon-Subdomains bekommen ihr Zertifikat beim ersten
-# Aufruf (on_demand), aber nur wenn Kammzeit den Salon kennt (/_tls/allow).
+# Kammzeit hinter Caddy: kammzeit.de (Deutsch) und kammzeit.com (Englisch, EU-Markt),
+# beide von derselben App (BASE_DOMAINS in /etc/kammzeit.env). Salon-Subdomains
+# bekommen ihr Zertifikat beim ersten Aufruf (on_demand), aber nur wenn Kammzeit
+# den Salon kennt (/_tls/allow).
 {
 	on_demand_tls {
 		ask http://127.0.0.1:8080/_tls/allow
 	}
 }
 
-kammzeit.de {
+kammzeit.de, kammzeit.com {
 	reverse_proxy 127.0.0.1:8080
 }
 
-www.kammzeit.de, kammzeit.com, www.kammzeit.com {
+www.kammzeit.de {
 	redir https://kammzeit.de{uri} permanent
+}
+
+www.kammzeit.com {
+	redir https://kammzeit.com{uri} permanent
 }
 
 https:// {

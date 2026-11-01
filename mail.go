@@ -124,11 +124,11 @@ func (a *app) salonMailData(s *salon, b *booking) (lang string, d map[string]any
 	}
 }
 
-// ownerLang = Sprache des (ersten) Kontos des Salons, sonst die der Buchungsseite.
-// ponytail: ein Konto pro Salon; bei mehreren zählt das älteste.
+// ownerLang = Sprache des (ersten) Inhaber-Kontos des Salons, sonst die der Buchungsseite.
+// ponytail: ein Inhaber pro Salon; bei mehreren zählt das älteste. Mitarbeiter-Logins zählen nicht.
 func (a *app) ownerLang(s *salon) string {
 	var lang string
-	a.db.QueryRow(`SELECT lang FROM users WHERE salon_id = ? ORDER BY id LIMIT 1`, s.ID).Scan(&lang)
+	a.db.QueryRow(`SELECT lang FROM users WHERE salon_id = ? AND role = 'owner' ORDER BY id LIMIT 1`, s.ID).Scan(&lang)
 	if lang != "de" && lang != "en" {
 		return s.Lang
 	}

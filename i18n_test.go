@@ -67,3 +67,10 @@ func TestTrFallback(t *testing.T) {
 		t.Fatal("trf ohne Übersetzung muss das deutsche Format nutzen")
 	}
 }
+
+// Zwei Bereiche dürfen denselben deutschen Text nicht verschieden übersetzen.
+func TestNoConflictingTranslations(t *testing.T) {
+	for _, k := range enConflicts {
+		t.Errorf("Schlüssel doppelt mit anderem Text: %q", k)
+	}
+}

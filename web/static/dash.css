@@ -113,7 +113,7 @@ strong, b { font-weight: 700; }
 .topbar-end { display: flex; align-items: center; gap: .2rem; margin-left: auto; }
 .topbar-end form { margin: 0; }
 .topbar-end svg { color: var(--blue); }
-@media (max-width: 79.99rem) {
+@media (max-width: 85.99rem) {
   .topbar-in { padding-bottom: 0; }
   .topnav { order: 3; flex: 1 0 100%; margin-inline: calc(-1 * var(--pad)); padding: .1rem var(--pad) .55rem; overflow-x: auto; scrollbar-width: thin; }
 }

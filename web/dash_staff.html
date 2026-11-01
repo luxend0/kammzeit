@@ -1,0 +1,77 @@
+{{/* Mitarbeiter-Logins (staff.go): staff-zugang (Karte im Mitarbeiter-Formular), staff-status
+     (Markierung in der Team-Liste), staff-zeiten (Meine Zeiten), staff-verboten (403 für Mitarbeiter).
+     Gemeinsame Klassen aus dash.css, die Arbeitszeiten-Tabelle ist "team-zeiten" aus dash_catalog.html. */}}
+
+{{/* Login-Status in der Team-Liste. Args: Lang, Login (0 keiner, 1 eingeladen, 2 angemeldet), Active, On (Pro). */}}
+{{define "staff-status"}}{{if .Login}}{{if or (not .On) (not .Active)}}<span class="catalog-sub chip chip-grey">{{t .Lang "Login pausiert"}}</span>
+{{- else if eq .Login 2}}<span class="catalog-sub chip chip-mint">{{t .Lang "Login aktiv"}}</span>
+{{- else}}<span class="catalog-sub chip chip-sun">{{t .Lang "eingeladen"}}</span>{{end}}
+{{- else if .On}}<span class="catalog-sub">{{t .Lang "kein Login"}}</span>{{end}}{{end}}
+
+{{/* Karte "Login fürs Dashboard". Daten: Seitendaten von teamRender plus staffAccessData
+     (Access, StaffLogins, AccessMsg, AccessErr), .F = Mitarbeiter. Steht außerhalb des Formulars. */}}
+{{define "staff-zugang"}}<style>
+.staff-zugang { margin-top: 24px; max-width: 760px; }
+.staff-zugang .section-title { margin-bottom: 8px; }
+.staff-zugang .flash, .staff-zugang .error { margin: 0 0 14px; }
+.staff-invite { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; margin: 14px 0 6px; }
+.staff-invite .field { flex: 1 1 260px; margin: 0; }
+.staff-zugang .actions form { margin: 0; }
+.staff-who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 6px; overflow-wrap: anywhere; }
+</style>
+<section class="card staff-zugang" id="zugang" aria-labelledby="zugang-h">
+  <div class="section-title"><img src="/static/img/icons/schloss.svg" width="32" height="32" alt=""><h2 id="zugang-h">{{t .Lang "Login fürs Dashboard"}}</h2></div>
+  {{with .AccessMsg}}<p class="flash" role="status">{{.}}</p>{{end}}
+  {{with .AccessErr}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{if .Access}}
+  <p class="staff-who">{{if or (not .StaffLogins) (not .F.Active)}}<span class="chip chip-grey">{{t .Lang "Login pausiert"}}</span>
+    {{- else if .Access.LastLogin}}<span class="chip chip-mint">{{t .Lang "Login aktiv"}}</span>
+    {{- else}}<span class="chip chip-sun">{{t .Lang "eingeladen"}}</span>{{end}} <strong>{{.Access.Email}}</strong></p>
+  <p class="muted small">{{with .Access.LastLogin}}{{tf $.Lang "Zuletzt angemeldet: %s." .}}{{else}}{{t .Lang "Noch nicht angemeldet."}}{{end}}
+    {{if not .StaffLogins}}{{t .Lang "Mitarbeiter-Logins gibt es nur im Pro-Plan. Der Zugang bleibt gespeichert und geht mit Pro wieder."}}
+    {{- else if not .F.Active}}{{t .Lang "Inaktive Mitarbeiter können sich nicht anmelden."}}{{end}}</p>
+  <div class="actions">
+    {{if and .StaffLogins .F.Active (not .Access.LastLogin)}}<form method="post" action="/dashboard/team/{{.F.ID}}/zugang"><button class="btn btn-secondary btn-small" type="submit">{{t .Lang "Einladung erneut schicken"}}</button></form>{{end}}
+    <form method="post" action="/dashboard/team/{{.F.ID}}/zugang/entfernen"><button class="btn btn-danger btn-small" type="submit">{{t .Lang "Zugang entfernen"}}</button></form>
+  </div>
+{{else if .StaffLogins}}
+  <p class="muted small">{{t .Lang "Mit eigenem Login sieht dein Mitarbeiter Kalender und Kunden, trägt Termine ein und pflegt seine Arbeitszeiten selbst. Abo, Einstellungen, Leistungen und Team bleiben bei dir."}}</p>
+  <form class="staff-invite" method="post" action="/dashboard/team/{{.F.ID}}/zugang">
+    <div class="field">
+      <label for="zugang-mail">{{t .Lang "Login-E-Mail"}}</label>
+      <input type="email" id="zugang-mail" name="email" maxlength="200" autocomplete="off" required{{if .AccessErr}} aria-invalid="true"{{end}}>
+    </div>
+    <button class="btn" type="submit">{{t .Lang "Zugang einladen"}}</button>
+  </form>
+  <p class="muted small">{{t .Lang "Wir schicken eine Einladung mit Login-Link. Ein Passwort braucht niemand."}}</p>
+{{else}}
+  <div class="card-sky team-pro" style="padding: 16px 18px; border-radius: 16px">
+    <img src="/static/img/icons/pro.svg" width="48" height="48" alt="">
+    <p>{{t .Lang "Mitarbeiter-Logins gibt es im Pro-Plan: Dein Team sieht Kalender und Kunden und pflegt die eigenen Arbeitszeiten."}}</p>
+    <a class="btn btn-secondary btn-small" href="/dashboard/abo">{{t .Lang "Pro ansehen"}}</a>
+  </div>
+{{end}}
+</section>{{end}}
+
+{{define "staff-zeiten"}}{{template "dash-top" .}}
+{{template "catalog-style"}}
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{with .F.Notice}}<p class="flash" role="status">{{.}}</p>{{end}}
+<form method="post" class="form form-wide" novalidate>
+  {{/* Enter in einem Feld löst den ersten Absende-Knopf aus: das soll Speichern sein, nicht "übertragen". */}}
+  <button class="catalog-sr" type="submit" tabindex="-1" aria-hidden="true">{{t .Lang "Speichern"}}</button>
+  {{template "team-zeiten" .}}
+  <div class="actions" style="margin-top: 24px">
+    <button class="btn" type="submit">{{t .Lang "Speichern"}}</button>
+  </div>
+</form>
+{{template "dash-bottom" .}}{{end}}
+
+{{define "staff-verboten"}}{{template "dash-top" .}}
+<div class="empty">
+  <img src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="">
+  <h2>{{t .Lang "Das darf nur die Inhaberin oder der Inhaber"}}</h2>
+  <p>{{t .Lang "Abo, Einstellungen, Leistungen und Team verwaltet die Inhaberin oder der Inhaber des Salons. Du kannst Termine eintragen, Kunden ansehen und deine Arbeitszeiten pflegen."}}</p>
+  <p class="actions"><a class="btn" href="/dashboard">{{t .Lang "Zum Kalender"}}</a> <a class="btn btn-secondary" href="/dashboard/meine-zeiten">{{t .Lang "Meine Zeiten"}}</a></p>
+</div>
+{{template "dash-bottom" .}}{{end}}

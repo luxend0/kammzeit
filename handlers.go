@@ -75,6 +75,8 @@ func (a *app) routes() http.Handler {
 	a.routesCatalog(mux)   // dash_catalog.go: /dashboard/leistungen, /dashboard/team
 	a.routesSettings(mux)  // dash_settings.go: /dashboard/einstellungen
 	a.routesBilling(mux)   // billing.go: /dashboard/abo, /stripe/webhook
+	a.routesQueue(mux)     // queue.go: /dashboard/warteschlange, /warteschlange
+	a.routesStaff(mux)     // staff.go: Mitarbeiter-Logins, /dashboard/meine-zeiten
 	a.routesSite(mux)      // site.go: öffentliche Seiten, sitemap.xml, robots.txt
 	a.routesPWA(mux)       // pwa.go: /manifest.webmanifest, /sw.js, /offline
 	a.routesMedia(mux)     // media.go: /media/{hash} (Logo, Titelbild, Galerie)
@@ -253,6 +255,7 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 	if s.CancelNoticeMin > 0 {
 		d["CancelNotice"] = noticeFor(s.Lang, s.CancelNoticeMin)
 	}
+	d["QueueLink"] = a.queueBookingLink(s)
 	if err := a.bookingExtras(s, d); err != nil { // Social-Links, Öffnungszeiten, Galerie (custom.go)
 		a.serverError(w, s, err)
 		return

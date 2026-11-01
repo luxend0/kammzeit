@@ -22,6 +22,9 @@ const (
 type user struct {
 	ID, SalonID int64
 	Email       string
+	Role        string // owner | staff (leer, z. B. in Tests, zählt als owner)
+	StaffID     int64  // nur bei staff: der eigene Mitarbeiter (0 = gelöscht)
+	StaffName   string // nur bei staff, lädt a.dash für den Kopf
 }
 
 // dctx = alles, was ein Dashboard-Handler braucht.
@@ -29,6 +32,10 @@ type dctx struct {
 	User  *user
 	Salon *salon
 }
+
+// Owner: Inhaber dürfen alles, Mitarbeiter-Logins (role staff, nur Pro) nur
+// Kalender, Kunden (ohne Löschen und Export), eigene Arbeitszeiten und Warteschlange.
+func (c *dctx) Owner() bool { return c.User.Role != "staff" }
 
 func hashToken(t string) string {
 	h := sha256.Sum256([]byte(t))
@@ -84,8 +91,8 @@ func (a *app) currentUser(r *http.Request) (*user, error) {
 		return nil, nil
 	}
 	var u user
-	err = a.db.QueryRow(`SELECT u.id, u.salon_id, u.email FROM sessions s JOIN users u ON u.id = s.user_id
-		WHERE s.token_hash = ? AND s.expires_at > unixepoch()`, hashToken(c.Value)).Scan(&u.ID, &u.SalonID, &u.Email)
+	err = a.db.QueryRow(`SELECT u.id, u.salon_id, u.email, u.role, COALESCE(u.staff_id, 0) FROM sessions s JOIN users u ON u.id = s.user_id
+		WHERE s.token_hash = ? AND s.expires_at > unixepoch()`, hashToken(c.Value)).Scan(&u.ID, &u.SalonID, &u.Email, &u.Role, &u.StaffID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
@@ -140,16 +147,53 @@ func (a *app) dash(h func(http.ResponseWriter, *http.Request, *dctx)) http.Handl
 			a.serverError(w, nil, err)
 			return
 		}
+		if u.Role == "staff" {
+			// Mitarbeiter-Logins nur mit Pro und solange der Mitarbeiter aktiv ist.
+			// Sonst abmelden und erklären (staff.go), gelöscht wird nichts.
+			var active bool
+			err := a.db.QueryRow(`SELECT name, active FROM staff WHERE id = ? AND salon_id = ?`, u.StaffID, s.ID).Scan(&u.StaffName, &active)
+			if err != nil && !errors.Is(err, sql.ErrNoRows) {
+				a.serverError(w, nil, err)
+				return
+			}
+			if !active || !a.staffLogins(s) {
+				a.endSession(w, r)
+				if r.Header.Get("HX-Request") != "" {
+					w.Header().Set("HX-Redirect", "/login?pausiert")
+					w.WriteHeader(http.StatusUnauthorized)
+					return
+				}
+				http.Redirect(w, r, "/login?pausiert", http.StatusFound)
+				return
+			}
+		}
 		h(w, r, &dctx{User: u, Salon: s})
 	}
 }
 
+// dashOwner ist a.dash nur für Inhaber: Mitarbeiter-Logins bekommen 403 "Nur für Inhaber".
+// Alles, was ein Mitarbeiter darf (Kalender, Kunden ansehen und bearbeiten,
+// Warteschlange), bleibt bei a.dash.
+func (a *app) dashOwner(h func(http.ResponseWriter, *http.Request, *dctx)) http.HandlerFunc {
+	return a.dash(func(w http.ResponseWriter, r *http.Request, c *dctx) {
+		if c.Owner() {
+			h(w, r, c)
+			return
+		}
+		d := a.dashPage(c, r, "", "Nur für Inhaber")
+		d["Icon"] = "schloss"
+		a.render(w, http.StatusForbidden, "staff-verboten", d)
+	})
+}
+
 // dashIcons: buntes 48px-Icon (web/static/img/icons) im Seitenkopf je Menüpunkt.
 var dashIcons = map[string]string{"kalender": "kalender", "kunden": "kartei", "leistungen": "schere",
-	"team": "team", "einstellungen": "farbe", "abo": "pro", "": "hilfe"}
+	"team": "team", "einstellungen": "farbe", "abo": "pro", "meine-zeiten": "uhr", "": "hilfe"}
 
 // dashPage füllt die Felder für das Dashboard-Layout (dash-top/dash-bottom).
-// nav = aktiver Menüpunkt: kalender, kunden, leistungen, team, einstellungen, abo.
+// nav = aktiver Menüpunkt: kalender, kunden, leistungen, team, einstellungen, abo, meine-zeiten.
+// IsStaff = Mitarbeiter-Login: Layout und Seiten blenden dann Inhaber-Sachen aus
+// (fehlt der Schlüssel, z. B. bei eigenen Daten, gilt die Inhaber-Ansicht).
 // Nach ?gespeichert zeigt das Layout d["SavedMsg"] (vom Handler gesetzt) oder "Gespeichert.".
 // Seitenkopf: Heading + Icon, optional d["Lead"] (ein Satz Erklärung unter der Überschrift).
 // title ist der deutsche Text (Schlüssel), übersetzt wird hier; Lead und SavedMsg übersetzt das Layout.
@@ -169,6 +213,7 @@ func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]a
 		"Saved":      r.URL.Query().Has("gespeichert"),
 		"Dashboard":  true,
 		"Lang":       lang,
+		"IsStaff":    !c.Owner(),
 	}
 }
 

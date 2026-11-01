@@ -516,7 +516,8 @@ func TestKalErsteSchritte(t *testing.T) {
 	if len(done()) != 0 {
 		t.Fatalf("Liste nach Online-Buchung noch da")
 	}
-	if body := kalDo(t, a, f.cookie, "GET", "/dashboard", nil).Body.String(); strings.Contains(body, "Erste Schritte") {
+	// Nach der Karte selbst suchen: die Dashboard-Tour (tour.html) nennt "Erste Schritte" auf jeder Seite.
+	if body := kalDo(t, a, f.cookie, "GET", "/dashboard", nil).Body.String(); strings.Contains(body, `class="card kal-steps"`) {
 		t.Errorf("Karte nach Online-Buchung noch sichtbar")
 	}
 }

@@ -315,13 +315,50 @@ func location(tz string) *time.Location {
 // ponytail: bis zum Admin-Bereich ist das der Weg, einen Salon anzulegen.
 // Das Demo-Konto gilt als schon angemeldet (last_login_at), sonst bekäme
 // demo.<Basis-Domain> kein Zertifikat (tlsAllowed).
+type demoSalon struct {
+	slug, lang, name, address, phone, about, email string
+	services                                       []struct {
+		name       string
+		min, cents int
+	}
+	staff []string
+}
+
+var demoSalons = []demoSalon{
+	{"demo", "de", "Salon Demo", "Musterstraße 1\n12345 Musterstadt", "01234 567890",
+		"Dies ist ein Beispiel-Salon zum Ausprobieren.", "demo@example.com",
+		[]struct {
+			name       string
+			min, cents int
+		}{{"Haarschnitt Damen", 60, 4500}, {"Haarschnitt Herren", 30, 2500}, {"Färben", 120, 7900}},
+		[]string{"Anna", "Ben"}},
+	{"demo-en", "en", "Demo Salon", "1 Sample Street\n1000 Sampletown", "+00 123 456 789",
+		"This is a sample salon to try out booking.", "demo-en@example.com",
+		[]struct {
+			name       string
+			min, cents int
+		}{{"Women's cut", 60, 4500}, {"Men's cut", 30, 2500}, {"Colour", 120, 7900}},
+		[]string{"Anna", "Ben"}},
+}
+
+// seedDemo legt die Beispiel-Salons "demo" (Deutsch, kammzeit.de) und "demo-en"
+// (Englisch, kammzeit.com) an (Aufruf: kammzeit demo). Mehrfach aufrufbar.
 func seedDemo(db *sql.DB) error {
+	for _, d := range demoSalons {
+		if err := seedDemoSalon(db, d); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func seedDemoSalon(db *sql.DB, d demoSalon) error {
 	var n int
-	if err := db.QueryRow(`SELECT COUNT(*) FROM salons WHERE slug = 'demo'`).Scan(&n); err != nil || n > 0 {
+	if err := db.QueryRow(`SELECT COUNT(*) FROM salons WHERE slug = ?`, d.slug).Scan(&n); err != nil || n > 0 {
 		if err == nil {
-			log.Print("Salon demo existiert schon")
+			log.Printf("Salon %s existiert schon", d.slug)
 			_, err = db.Exec(`UPDATE users SET last_login_at = unixepoch()
-				WHERE last_login_at IS NULL AND salon_id = (SELECT id FROM salons WHERE slug = 'demo')`)
+				WHERE last_login_at IS NULL AND salon_id = (SELECT id FROM salons WHERE slug = ?)`, d.slug)
 		}
 		return err
 	}
@@ -330,21 +367,18 @@ func seedDemo(db *sql.DB) error {
 		return err
 	}
 	defer tx.Rollback()
-	res, err := tx.Exec(`INSERT INTO salons (slug, name, plan, address, phone, about)
-		VALUES ('demo', 'Salon Demo', 'pro', 'Musterstraße 1' || char(10) || '12345 Musterstadt', '01234 567890', 'Dies ist ein Beispiel-Salon zum Ausprobieren.')`)
+	res, err := tx.Exec(`INSERT INTO salons (slug, name, plan, address, phone, about, lang) VALUES (?, ?, 'pro', ?, ?, ?, ?)`,
+		d.slug, d.name, d.address, d.phone, d.about, d.lang)
 	if err != nil {
 		return err
 	}
 	salonID, _ := res.LastInsertId()
-	for _, s := range []struct {
-		name       string
-		min, cents int
-	}{{"Haarschnitt Damen", 60, 4500}, {"Haarschnitt Herren", 30, 2500}, {"Färben", 120, 7900}} {
+	for _, s := range d.services {
 		if _, err := tx.Exec(`INSERT INTO services (salon_id, name, duration_min, price_cents) VALUES (?, ?, ?, ?)`, salonID, s.name, s.min, s.cents); err != nil {
 			return err
 		}
 	}
-	for _, name := range []string{"Anna", "Ben"} {
+	for _, name := range d.staff {
 		res, err := tx.Exec(`INSERT INTO staff (salon_id, name) VALUES (?, ?)`, salonID, name)
 		if err != nil {
 			return err
@@ -364,13 +398,13 @@ func seedDemo(db *sql.DB) error {
 		SELECT st.id, sv.id FROM staff st JOIN services sv ON sv.salon_id = st.salon_id WHERE st.salon_id = ?`, salonID); err != nil {
 		return err
 	}
-	if _, err := tx.Exec(`INSERT INTO users (salon_id, email, last_login_at) VALUES (?, 'demo@example.com', unixepoch())`, salonID); err != nil {
+	if _, err := tx.Exec(`INSERT INTO users (salon_id, email, lang, last_login_at) VALUES (?, ?, ?, unixepoch())`, salonID, d.email, d.lang); err != nil {
 		return err
 	}
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	log.Print("Salon demo angelegt (Login: demo@example.com)")
+	log.Printf("Salon %s angelegt (Login: %s)", d.slug, d.email)
 	return nil
 }
 

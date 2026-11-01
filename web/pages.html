@@ -50,6 +50,7 @@
     {{range .}}<li><a href="{{.URL}}" rel="noopener" target="_blank"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="/static/img/social.svg#s-{{.Net}}"/></svg>{{.Label}}</a></li>
     {{end}}</ul>{{end}}
 </header>
+{{if .QueueLink}}<p class="notice">{{t .Lang "Ohne Termin vorbeikommen?"}} <a href="/warteschlange">{{t .Lang "Online anstellen"}}</a></p>{{end}}
 {{if .Services}}
 <form method="post" action="/book">
   <fieldset hx-get="/mitarbeiter" hx-trigger="change" hx-target="#staff" hx-include="[name=service],[name=staff]">

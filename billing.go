@@ -45,9 +45,9 @@ func stripeEnv() stripeConf {
 func (s stripeConf) online() bool { return s.key != "" && s.monthly != "" && s.yearly != "" }
 
 func (a *app) routesBilling(mux *http.ServeMux) {
-	mux.HandleFunc("GET /dashboard/abo", a.dash(a.aboPage))
-	mux.HandleFunc("POST /dashboard/abo/checkout", a.dash(a.aboCheckout))
-	mux.HandleFunc("POST /dashboard/abo/portal", a.dash(a.aboPortal))
+	mux.HandleFunc("GET /dashboard/abo", a.dashOwner(a.aboPage))
+	mux.HandleFunc("POST /dashboard/abo/checkout", a.dashOwner(a.aboCheckout))
+	mux.HandleFunc("POST /dashboard/abo/portal", a.dashOwner(a.aboPortal))
 	mux.HandleFunc("POST /stripe/webhook", a.stripeWebhook)
 }
 

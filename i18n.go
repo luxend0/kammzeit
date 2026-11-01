@@ -124,6 +124,8 @@ func (a *app) otherSite(lang string) (url, otherLang string) {
 var (
 	enMu sync.RWMutex
 	en   = map[string]string{}
+	// enConflicts sammelt Schlüssel, die zwei Bereiche verschieden übersetzen (Test prüft: leer).
+	enConflicts []string
 )
 
 // addEN trägt englische Texte ein (Schlüssel = deutscher Text). Doppelte
@@ -134,6 +136,7 @@ func addEN(m map[string]string) {
 	for k, v := range m {
 		if old, ok := en[k]; ok && old != v {
 			log.Printf("i18n: Schlüssel doppelt mit anderem Text: %q", k)
+			enConflicts = append(enConflicts, k)
 		}
 		en[k] = v
 	}

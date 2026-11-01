@@ -325,6 +325,17 @@ func TestMediaUploadServeAndTenants(t *testing.T) {
 		t.Error("fremdes Logo verändert")
 	}
 
+	// Mitarbeiter-Logins (role staff) dürfen weder Einstellungen noch Galerie ändern.
+	res, _ := a.db.Exec(`INSERT INTO users (salon_id, email, role, staff_id) VALUES (?, 'mitarbeiter@example.com', 'staff', (SELECT id FROM staff WHERE salon_id = ?))`, aID, aID)
+	staffUser, _ := res.LastInsertId()
+	a.db.Exec(`INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, unixepoch() + 3600)`, hashToken("session-staff"), staffUser)
+	if w := mediaPost(a, "/dashboard/einstellungen/galerie", "session-staff", nil, map[string][][]byte{"fotos": {mediaPNG(t, 50, 50, false)}}); w.Code != http.StatusForbidden {
+		t.Errorf("Galerie als Mitarbeiter: %d", w.Code)
+	}
+	if w := mediaPost(a, "/dashboard/einstellungen", "session-staff", mediaForm("logo_weg", "1"), nil); w.Code != http.StatusForbidden {
+		t.Errorf("Logo löschen als Mitarbeiter: %d", w.Code)
+	}
+
 	// Galerie: nur Pro lädt hoch.
 	if w := mediaPost(a, "/dashboard/einstellungen/galerie", bCookie, nil, map[string][][]byte{"fotos": {mediaPNG(t, 50, 50, false)}}); w.Code != http.StatusForbidden {
 		t.Errorf("Galerie Gratis: %d", w.Code)
