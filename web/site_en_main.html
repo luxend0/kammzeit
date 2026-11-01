@@ -197,14 +197,17 @@
     <div class="section-head">
       <p class="section-num"><span>06</span> / Coming next</p>
       <h2 id="h-planned">Planned, but not here yet</h2>
-      <p class="lead">These three features are next in line. We are not promising a date.</p>
+      <p class="lead">These features are next in line. We are not promising a date.</p>
     </div>
     <ul class="grid-3">
-      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Deposit at booking</h3><p>Customers pay part of the price upfront when they book, for example for long colour appointments.</p></li>
-      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Google Calendar</h3><p>See your Kammzeit appointments in your own Google Calendar.</p></li>
       <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Custom domain</h3><p>Your booking page at your own address instead of yoursalon.kammzeit.com.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Google Calendar</h3><p>Appointments in the staff member's Google Calendar, private events block the time.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Holidays and time off</h3><p>Enter holidays, sick days and public holidays per staff member.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>More languages</h3><p>Booking page and emails in French, Dutch, Italian and Spanish too.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Import customers from CSV</h3><p>Bring in the customer list from your previous software or from Excel.</p></li>
     </ul>
-    <p class="fn-not"><b>Not included today:</b> SMS, point of sale, gift vouchers, a waiting list for fully booked days, reviews, multiple locations, booking rooms or equipment.</p>
+    <p class="link-more"><a href="/roadmap">More on this, and how to manage today</a></p>
+    <p class="fn-not"><b>Not included today:</b> SMS, deposits and online payment, point of sale, gift vouchers, a waiting list for fully booked days, reviews, multiple locations, booking rooms or equipment.</p>
   </div>
 </section>
 
@@ -355,6 +358,78 @@
       <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="/features">All features</a></p>
     </div>
     <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{define "en-roadmap"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-main.css">
+
+<section class="page-head" aria-labelledby="h-rm">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Roadmap</li></ol></nav>
+      <h1 id="h-rm">What's coming next</h1>
+      <p class="lead">These are the features we are building next. Planned means: not here yet. We don't promise dates, and the order may change.</p>
+    </div>
+    <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="Kammi the hedgehog waving" fetchpriority="high"></div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-rm-list">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Planned</p>
+      <h2 id="h-rm-list">Five features in the pipeline</h2>
+      <p class="lead">Each one says how you can manage today.</p>
+    </div>
+    <ul class="grid-3">
+      <li class="card fn-planned" id="custom-domain"><p class="fn-tag">Planned</p><img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt=""><h3>Custom domain</h3><p>Your booking page at your own address, for example bookings.lindner-hair.com, with a certificate. Most likely part of Pro.</p><p><b>Today:</b> yoursalon.kammzeit.com. If you <a href="/open-source">host Kammzeit yourself</a>, you can already use your own domain.</p></li>
+      <li class="card fn-planned" id="google-calendar"><p class="fn-tag">Planned</p><img class="icon-lg" src="/static/img/icons/kalender.svg" width="48" height="48" alt=""><h3>Google Calendar</h3><p>Kammzeit appointments show up in the staff member's Google Calendar. Private events there block the time on the booking page.</p><p><b>Today:</b> customers get a calendar file with every booking. You have your calendar as an <a href="/features#everyday">app on your phone</a>.</p></li>
+      <li class="card fn-planned" id="time-off"><p class="fn-tag">Planned</p><img class="icon-lg" src="/static/img/icons/pause.svg" width="48" height="48" alt=""><h3>Holidays and time off</h3><p>Enter holidays, sick days and public holidays per staff member. They can't be booked on those days, and their working hours stay as they are.</p><p><b>Today:</b> make the staff member temporarily unbookable or block the time in the calendar, <a href="/help/working-hours#holidays">here's how</a>.</p></li>
+      <li class="card fn-planned" id="languages"><p class="fn-tag">Planned</p><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>More languages</h3><p>Booking page and emails in French, Dutch, Italian, Spanish and more.</p><p><b>Today:</b> English or German. You set the booking page language in Settings.</p></li>
+      <li class="card fn-planned" id="csv-import"><p class="fn-tag">Planned</p><img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><h3>Import customers from CSV</h3><p>Bring in the customer list from your previous software or from Excel as a CSV file instead of typing it all again.</p><p><b>Today:</b> CSV export works, import doesn't yet. You add customers one by one, or they are created with their first booking.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt wave-top" aria-labelledby="h-rm-new">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Recently added</p>
+      <h2 id="h-rm-new">What's here now</h2>
+      <p class="lead">These features were on the list not long ago. Now they are live.</p>
+    </div>
+    <ul class="feature-list">
+      <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>Walk-in queue</h3><p>QR code at the door, live waiting time on the phone, a display for a screen in the salon. With Pro.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt=""><h3>Staff logins</h3><p>Staff log in themselves and see the calendar and customers, but not the plan or the settings. With Pro.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>Dashboard as an app</h3><p>Install it on your phone or computer, no app store needed.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Customise your booking page</h3><p>Logo, opening hours and social links for everyone. Cover image, design and photo gallery with Pro.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>English</h3><p>Booking page, emails and dashboard in English, at kammzeit.com.</p></li>
+    </ul>
+    <p class="link-more"><a href="/features">See all features</a></p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-rm-not">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Not planned</p>
+      <h2 id="h-rm-not">Not available today</h2>
+      <p class="lead">SMS, deposits and online payment, point of sale, gift vouchers, a waiting list for fully booked days, reviews, multiple locations, booking rooms or equipment.</p>
+      <p>Missing something in your day-to-day salon work? Write to <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>. Requests from salons help decide what gets built next.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-rm-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-rm-cta">Start with what's already here</h2>
+      <p>Booking page, calendar and customer records are ready, and free for one staff member.</p>
+      <p class="actions"><a class="btn" href="/signup">Start for free</a> <a class="btn-ghost" href="https://demo-en.kammzeit.com">See the demo salon</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
   </div>
 </section>
 {{template "site-bottom" .}}{{end}}

@@ -7,6 +7,7 @@ func init() {
 		"Zum Inhalt springen": "Skip to content",
 		"Hauptmenü":           "Main menu",
 		"Funktionen":          "Features",
+		"Geplant":             "Roadmap",
 		"Preise":              "Pricing",
 		"Für Salons":          "For salons",
 		"Hilfe":               "Help",

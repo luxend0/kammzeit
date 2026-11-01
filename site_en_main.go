@@ -15,6 +15,8 @@ func (a *app) routesSiteENMain(mux *http.ServeMux) {
 		"Booking page without an app, email reminders, calendar, customer records, dashboard as an app. With Pro: walk-in queue and staff logins. EU servers.")
 	a.addPageEN(mux, "/pricing", "/preise", "en-pricing", "Pricing - Kammzeit",
 		"Free for one staff member. Pro is €14.90 per month or €149 per year: unlimited staff, staff logins, walk-in queue. No VAT charged under § 19 UStG.")
+	a.addPageEN(mux, "/roadmap", "/geplant", "en-roadmap", "Roadmap: what's coming next - Kammzeit",
+		"What Kammzeit is building next: custom domain, Google Calendar, holidays and time off, more languages, importing customers from CSV. No fixed dates.")
 	if a.tpl != nil {
 		// ponytail: die Platzhalter aus init() an diese App binden, weil Hreflang und
 		// Sprachumschalter die konfigurierten Domains brauchen.
@@ -24,7 +26,7 @@ func (a *app) routesSiteENMain(mux *http.ServeMux) {
 
 // enPaths = englische Pfade der Seiten, die Kopf und Fuß verlinken (Vertrag kammzeit.com).
 var enPaths = map[string]string{
-	"/funktionen": "/features", "/preise": "/pricing",
+	"/funktionen": "/features", "/preise": "/pricing", "/geplant": "/roadmap",
 	"/fuer/friseure": "/for/hairdressers", "/fuer/barbershops": "/for/barbershops",
 	"/fuer/kosmetik": "/for/beauty-salons", "/fuer/nagelstudios": "/for/nail-salons",
 	"/hilfe": "/help", "/fragen": "/faq", "/ratgeber": "/guides", "/kontakt": "/contact", "/ueber": "/about",

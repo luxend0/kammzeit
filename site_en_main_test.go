@@ -59,8 +59,11 @@ func TestSiteENMain(t *testing.T) {
 		{"kammzeit-en.test", "/pricing", []string{"<title>Pricing - Kammzeit</title>", alt("de", de+"/preise"), sw(de + "/preise"),
 			`aria-current="page">Pricing`, "€14.90", "€149", "§&nbsp;19&nbsp;UStG", "reverse charge procedure may apply", `<table class="compare">`,
 			`href="/signup"`, `href="https://demo-en.kammzeit.com"`, "Staff logins (owner and staff member roles)</th><td>No</td>", "staff logins are paused, the queue is off", "Nothing is deleted"}},
+		{"kammzeit-en.test", "/roadmap", []string{"<title>Roadmap: what&#39;s coming next - Kammzeit</title>", alt("de", de+"/geplant"), sw(de + "/geplant"),
+			`aria-current="page">Roadmap`, "Custom domain", "Google Calendar", "Holidays and time off", "More languages", "Import customers from CSV", "Today:",
+			`href="/signup"`, `href="https://demo-en.kammzeit.com"`, `href="/roadmap">Roadmap</a>`}},
 		{"kammzeit.test", "/", []string{`<html lang="de">`, alt("de", de+"/"), alt("en", en+"/"), sw(en + "/?lang=en"), ">English</a>", `content="de_DE"`}},
-		{"kammzeit.test", "/funktionen", []string{`<html lang="de">`, alt("en", en+"/features"), sw(en + "/features"), `aria-current="page">Funktionen`}},
+		{"kammzeit.test", "/funktionen", []string{`<html lang="de">`, alt("en", en+"/features"), sw(en + "/features"), `aria-current="page">Funktionen`, `href="/geplant">Geplant</a>`}},
 		{"kammzeit.test", "/preise", []string{alt("en", en+"/pricing"), sw(en + "/pricing"), `href="/datenschutz"`}},
 	}
 	descRe := regexp.MustCompile(`<meta name="description" content="([^"]*)">`)

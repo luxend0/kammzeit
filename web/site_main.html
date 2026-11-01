@@ -195,14 +195,17 @@
     <div class="section-head">
       <p class="section-num"><span>06</span> / Kommt als Nächstes</p>
       <h2 id="h-geplant">Geplant, aber noch nicht da</h2>
-      <p class="lead">Diese drei Funktionen stehen als Nächstes an. Einen Termin dafür versprechen wir nicht.</p>
+      <p class="lead">Diese Funktionen stehen als Nächstes an. Einen Termin dafür versprechen wir nicht.</p>
     </div>
     <ul class="grid-3">
-      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Anzahlung bei der Buchung</h3><p>Kunden zahlen beim Buchen einen Teil vorab, zum Beispiel bei langen Farbterminen.</p></li>
-      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Google Kalender</h3><p>Termine aus Kammzeit im eigenen Google Kalender sehen.</p></li>
       <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Eigene Domain</h3><p>Die Buchungsseite unter deiner eigenen Adresse statt salonname.kammzeit.de.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Google Kalender</h3><p>Termine im Google Kalender des Mitarbeiters, private Termine sperren die Zeit.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Urlaub und Abwesenheiten</h3><p>Urlaub, Krankheit und Feiertage je Mitarbeiter eintragen.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Weitere Sprachen</h3><p>Buchungsseite und Mails auch auf Französisch, Niederländisch, Italienisch, Spanisch.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Geplant</p><h3>Kunden per CSV übernehmen</h3><p>Die Kundenliste aus dem bisherigen Programm oder aus Excel einlesen.</p></li>
     </ul>
-    <p class="fn-not"><b>Heute nicht dabei:</b> SMS, Kasse, Gutscheine, eine Warteliste für ausgebuchte Termine, Bewertungen, mehrere Standorte, Räume oder Geräte buchen.</p>
+    <p class="link-more"><a href="/geplant">Mehr dazu, und wie du heute zurechtkommst</a></p>
+    <p class="fn-not"><b>Heute nicht dabei:</b> SMS, Anzahlungen und Online-Zahlung, Kasse, Gutscheine, eine Warteliste für ausgebuchte Termine, Bewertungen, mehrere Standorte, Räume oder Geräte buchen.</p>
   </div>
 </section>
 
@@ -350,6 +353,78 @@
       <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a> <a class="btn-ghost" href="/funktionen">Alle Funktionen</a></p>
     </div>
     <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{define "main-geplant"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-main.css">
+
+<section class="page-head" aria-labelledby="h-gp">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Brotkrumen"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Geplant</li></ol></nav>
+      <h1 id="h-gp">Was als Nächstes kommt</h1>
+      <p class="lead">Diese Funktionen bauen wir als Nächstes. Geplant heißt: noch nicht da. Einen festen Termin versprechen wir nicht, und die Reihenfolge kann sich ändern.</p>
+    </div>
+    <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="Der Igel Kammi winkt" fetchpriority="high"></div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-gp-list">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Geplant</p>
+      <h2 id="h-gp-list">Fünf Funktionen stehen an</h2>
+      <p class="lead">Zu jeder steht dabei, wie du heute schon zurechtkommst.</p>
+    </div>
+    <ul class="grid-3">
+      <li class="card fn-planned" id="eigene-domain"><p class="fn-tag">Geplant</p><img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt=""><h3>Eigene Domain</h3><p>Deine Buchungsseite unter deiner eigenen Adresse, zum Beispiel termine.salon-lindner.de, mit Zertifikat. Voraussichtlich Teil von Pro.</p><p><b>Heute:</b> salonname.kammzeit.de. Wer Kammzeit <a href="/open-source">selbst hostet</a>, kann schon jetzt eine eigene Domain nutzen.</p></li>
+      <li class="card fn-planned" id="google-kalender"><p class="fn-tag">Geplant</p><img class="icon-lg" src="/static/img/icons/kalender.svg" width="48" height="48" alt=""><h3>Google Kalender</h3><p>Termine aus Kammzeit stehen im Google Kalender des Mitarbeiters. Private Termine dort sperren die Zeit auf der Buchungsseite.</p><p><b>Heute:</b> Kunden bekommen mit jeder Buchung eine Kalenderdatei. Deinen Kalender hast du als <a href="/funktionen#alltag">App auf dem Handy</a>.</p></li>
+      <li class="card fn-planned" id="abwesenheiten"><p class="fn-tag">Geplant</p><img class="icon-lg" src="/static/img/icons/pause.svg" width="48" height="48" alt=""><h3>Urlaub und Abwesenheiten</h3><p>Urlaub, Krankheit und Feiertage je Mitarbeiter eintragen. An diesen Tagen ist er nicht buchbar, die Arbeitszeiten bleiben, wie sie sind.</p><p><b>Heute:</b> Mitarbeiter vorübergehend nicht buchbar stellen oder die Zeit im Kalender blockieren, <a href="/hilfe/arbeitszeiten#urlaub">so geht's</a>.</p></li>
+      <li class="card fn-planned" id="sprachen"><p class="fn-tag">Geplant</p><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>Weitere Sprachen</h3><p>Buchungsseite und Mails auch auf Französisch, Niederländisch, Italienisch, Spanisch und in weiteren Sprachen.</p><p><b>Heute:</b> Deutsch oder Englisch. Die Sprache der Buchungsseite stellst du in den Einstellungen ein.</p></li>
+      <li class="card fn-planned" id="csv-import"><p class="fn-tag">Geplant</p><img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><h3>Kunden per CSV übernehmen</h3><p>Die Kundenliste aus deinem bisherigen Programm oder aus Excel als CSV-Datei einlesen, statt alles abzutippen.</p><p><b>Heute:</b> Export als CSV geht, Import noch nicht. Kunden legst du einzeln an, oder sie entstehen bei der ersten Buchung.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt wave-top" aria-labelledby="h-gp-neu">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Zuletzt dazugekommen</p>
+      <h2 id="h-gp-neu">Was es inzwischen gibt</h2>
+      <p class="lead">Diese Funktionen standen vor Kurzem noch auf der Liste. Jetzt sind sie da.</p>
+    </div>
+    <ul class="feature-list">
+      <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>Warteschlange für Laufkundschaft</h3><p>QR-Code am Eingang, Wartezeit live auf dem Handy, Anzeige für einen Bildschirm im Salon. Mit Pro.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt=""><h3>Eigene Logins fürs Team</h3><p>Mitarbeiter melden sich selbst an und sehen Kalender und Kunden, aber kein Abo und keine Einstellungen. Mit Pro.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>Dashboard als App</h3><p>Auf Handy oder PC installieren, ohne App-Store.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Buchungsseite gestalten</h3><p>Logo, Öffnungszeiten und Social-Links für alle. Titelbild, Design und Fotogalerie mit Pro.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>Englisch</h3><p>Buchungsseite, Mails und Dashboard auch auf Englisch, unter kammzeit.com.</p></li>
+    </ul>
+    <p class="link-more"><a href="/funktionen">Alle Funktionen ansehen</a></p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-gp-nicht">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Nicht geplant</p>
+      <h2 id="h-gp-nicht">Was es heute nicht gibt</h2>
+      <p class="lead">SMS, Anzahlungen und Online-Zahlung, Kasse, Gutscheine, eine Warteliste für ausgebuchte Termine, Bewertungen, mehrere Standorte, Räume oder Geräte buchen.</p>
+      <p>Fehlt dir etwas davon im Salonalltag? Schreib an <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>. Wünsche aus Salons entscheiden mit, was als Nächstes gebaut wird.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-gp-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-gp-cta">Starte mit dem, was es schon gibt</h2>
+      <p>Buchungsseite, Kalender und Kundenkartei sind fertig und gratis für einen Mitarbeiter.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Kostenlos starten</a> <a class="btn-ghost" href="https://demo.kammzeit.de">Demo-Salon ansehen</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
   </div>
 </section>
 {{template "site-bottom" .}}{{end}}
