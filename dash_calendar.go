@@ -368,7 +368,8 @@ func (a *app) kalDay(d map[string]any, s *salon, day, now time.Time) error {
 		}
 		slots = append(slots, kalTick{Top: pct(m), Height: pct(m+30) - pct(m), Time: label})
 	}
-	if day.Equal(kalParseDay("", s.Loc, now)) {
+	d["IsToday"] = day.Equal(kalParseDay("", s.Loc, now)) // Text im Leerzustand
+	if d["IsToday"] == true {
 		if m := kalMin(now, day); m >= lo && m < hi {
 			d["NowTop"] = pct(m)
 		}
@@ -525,6 +526,7 @@ func (a *app) kalDetail(w http.ResponseWriter, r *http.Request, c *dctx) {
 		return
 	}
 	d := a.dashPage(c, r, "kalender", t.Customer+", "+kalShortDay(t.Start)+", "+t.Start.Format("15:04"))
+	d["Heading"] = "" // eigener Seitenkopf mit Zurück-Link und Status
 	d["T"], d["Future"] = t, t.Start.After(time.Now())
 	d["BackHref"] = "/dashboard?tag=" + t.Start.Format(time.DateOnly)
 	d["SavedMsg"] = kalSavedMsg(r.URL.Query().Get("gespeichert"), t)
@@ -740,6 +742,7 @@ func (a *app) kalMovePage(w http.ResponseWriter, r *http.Request, c *dctx, t *ka
 	}
 	z.Invalid = field == "zeit"
 	d := a.dashPage(c, r, "kalender", "Termin verschieben")
+	d["Lead"] = "Neue Zeit oder anderer Mitarbeiter. Die freien Zeiten stehen unter dem Uhrzeit-Feld."
 	d["T"], d["F"], d["Staff"], d["Z"], d["Inform"], d["Error"] = t, f, staff, z, inform, msg
 	d["Invalid"] = map[string]bool{field: true}
 	a.render(w, status, "kal-verschieben", d)
@@ -978,6 +981,7 @@ func (a *app) kalFormPage(w http.ResponseWriter, r *http.Request, c *dctx, f kal
 	}
 	z.Invalid = field == "zeit"
 	d := a.dashPage(c, r, "kalender", "Neuer Termin")
+	d["Lead"] = "Für Anrufe und Laufkundschaft. Online-Buchungen landen von selbst im Kalender."
 	d["F"], d["Q"], d["Hits"], d["Error"], d["Z"] = f, q, hits, msg, z
 	d["Invalid"] = map[string]bool{field: true}
 	d["Services"], d["Staff"] = services, staff

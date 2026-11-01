@@ -1,133 +1,328 @@
-/* Dashboard. Ruhig, mit Farbakzenten aus der Kammzeit-Palette: Nachtblau als Text,
-   Himmel hell für Flächen, Sonnengelb für Haupt-Buttons, Mint für Erfolg, Koralle dunkel
-   für Fehler. Die Akzentfarbe des Salons gilt nur auf seiner Buchungsseite.
-   Komponenten für alle Dashboard-Seiten; seitenspezifisches CSS als <style> im Template. */
-:root {
-  --fg: #13294B;        /* Nachtblau */
-  --bg: #fff;
-  --muted: #4F5E75;     /* 6,6:1 auf Weiß, 5,8:1 auf Himmel hell */
-  --line: #D3DEEA;
-  --field: #7A8AA0;     /* Rahmen von Eingabefeldern, 3,5:1 auf Weiß */
-  --soft: #F1F7FD;
-  --sky: #E3F3FF;       /* Himmel hell */
-  --sky-mid: #7CC4FF;   /* Himmel */
-  --accent: #1E6BFF;    /* Blau kräftig: Markierungen */
-  --on-accent: #fff;    /* Schrift auf --accent (4,6:1) */
-  --sun: #FFC93C;       /* Sonnengelb: Haupt-Buttons, Schrift darauf Nachtblau (9,5:1) */
-  --sun-dark: #F2B01E;
-  --mint: #3CCF91;
-  --coral: #FF7A59;
-  --danger: #B3401F;    /* Koralle dunkel, 5,7:1 auf Weiß */
-  --radius: 10px;
+/* Kammzeit Dashboard - gleiche Optik wie die Website (site.css), aber als Arbeitswerkzeug:
+   gut lesbar, ruhig, schnell bedienbar am Tresen-PC und am Handy.
+   Schrift, Farben und Variablennamen wie site.css. Kontraste: Text Nachtblau auf Weiß/Himmel hell,
+   auf Blau nur Weiß, auf Gelb nur Nachtblau, Koralle/Mint nie als Textfarbe. Links auf Himmel hell
+   in --blue-deep (5,5:1), auf Weiß in --blue (4,6:1). Fokus: Nachtblau-Ring.
+
+   Inhalt
+   1  Schrift, Farben, Grundlagen        5  Hinweise: .flash .error .empty
+   2  Kopfzeile (dash.html)              6  Knöpfe: .btn .btn-secondary .btn-danger .btn-small button.link
+   3  Seitenkopf .page-head              7  Formulare: .form .field .hint .row .check .actions
+   4  Karten: .card .card-sky .grid      8  Tabellen: .table .table-wrap .table-fixed .num
+      .stats .stat-card .stat            9  Markierungen: .chip .chip-* und .badge .badge-* (alte Namen)
+      .section-title .ill-side          10  Kleinkram: .toolbar .spacer dl.kv .muted .small .nowrap .lead .vh
+
+   Seitenkopf: Das Layout (dash.html) baut aus a.dashPage() automatisch einen .page-head mit Icon
+   des Menüpunkts, <h1> = d["Heading"] und optional d["Lead"] als Erklärung. Wer Aktionen rechts
+   oder eigenen Inhalt braucht, setzt d["Heading"] = "" und schreibt als erstes Element:
+     <div class="page-head">
+       <img class="page-head-icon" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+       <div class="page-head-text"><h1>Kunden</h1><p>Kurze Erklärung.</p></div>
+       <div class="page-head-actions"><a class="btn" href="...">Neuer Kunde</a></div>
+     </div>
+   Optional davor im page-head: <a class="page-head-back" href="...">Zurück zu ...</a>
+   Der Kopf liegt auf einem hellblauen Band über die volle Breite mit Welle unten.
+   Seitenspezifisches CSS weiter als <style> im eigenen Template. */
+
+/* 1 Schrift, Farben, Grundlagen --------------------------------------------- */
+
+/* Plus Jakarta Sans (SIL OFL 1.1, fonts/OFL.txt), variabel 400-800, wie site.css */
+@font-face {
+  font-family: "Kammzeit Sans";
+  src: url("/static/fonts/display.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
 }
-* { box-sizing: border-box; }
-body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
-a { color: inherit; }
-h1 { font-size: 1.75rem; line-height: 1.15; margin: 0 0 20px; letter-spacing: -.02em; }
-h2 { font-size: 1.125rem; margin: 28px 0 10px; }
-.muted { color: var(--muted); }
-.small { font-size: .8125rem; }
-.nowrap { white-space: nowrap; }
 
-/* Kopfzeile */
-.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding: 12px 20px; background: var(--sky); border-bottom: 1px solid #C9E2F7; }
-.brand { font-weight: 800; text-decoration: none; letter-spacing: -.01em; }
-.salon-name { color: var(--muted); }
-.topbar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.topbar nav a { text-decoration: none; padding: 2px 0; border-bottom: 3px solid transparent; }
-.topbar nav a:hover { border-bottom-color: var(--sky-mid); }
-.topbar nav a[aria-current=page] { border-bottom-color: var(--accent); font-weight: 700; }
-.topbar-end { margin-left: auto; display: flex; gap: 16px; align-items: center; }
-.topbar-end form { margin: 0; }
-.dash-main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 64px; }
+:root {
+  /* identisch zu site.css */
+  --sky-50: #e3f3ff;   /* Himmel hell: Flächen */
+  --sky-100: #cbe8ff;  /* Abstufung auf Himmel hell */
+  --sky: #7cc4ff;      /* Himmel */
+  --blue: #1e6bff;     /* Blau kräftig: Überschriften, Links (4,6:1 auf Weiß) */
+  --blue-deep: #1557d6;/* Links auf Himmel hell (5,5:1) */
+  --sun: #ffc93c;      /* Sonnengelb: Haupt-Button (Nachtblau darauf 9,4:1) */
+  --coral: #ff7a59;    /* Koralle: Deko, nie Textfarbe */
+  --mint: #3ccf91;     /* Mint: Erfolg, nie Textfarbe */
+  --night: #13294b;    /* Nachtblau: Text (14,5:1 auf Weiß) */
+  --muted: #4a5b78;    /* 6,9:1 auf Weiß, 6,1:1 auf Himmel hell */
+  --line: #cfe4f7;
+  --ink: var(--night); --paper: #fff; --paper-2: var(--sky-50);
+  --font-display: "Kammzeit Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-text: var(--font-display);
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 20px;      /* Karten */
+  --radius-img: 24px;
+  --max: 1240px;
+  --pad: clamp(1.25rem, 4vw, 2.5rem);
+  --wave: clamp(18px, .75rem + 1.2vw, 30px); /* flacher als auf der Website */
+  --wave-bottom: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 64' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V38C1280 58 1120 62 960 50S640 16 480 18 160 50 0 40Z'/%3E%3C/svg%3E");
+  /* nur im Dashboard */
+  --field: #7a8aa0;    /* Rahmen von Eingabefeldern, 3,5:1 auf Weiß */
+  --danger: #b3401f;   /* Koralle dunkel, 5,7:1 auf Weiß */
+  --tint-blue: #e1ebff; --tint-sun: #fff3d1; --tint-coral: #ffe7e0; --tint-mint: #ddf7eb; --tint-grey: #eef2f6;
+  --shadow: 0 1px 2px rgb(19 41 75 / .06), 0 6px 20px rgb(19 41 75 / .07);
+  --accent: var(--blue); --on-accent: #fff; /* Vorschau der Salonfarbe überschreibt beides inline */
+  /* alte Dashboard-Namen, damit bestehende Templates passen */
+  --fg: var(--night); --bg: #fff; --soft: #f2f8fe; --sky-mid: var(--sky); --sun-dark: #f2b01e;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { margin: 0; overflow-x: clip; font: 400 1rem/1.55 var(--font-text); color: var(--night); background: #fff; }
+img, svg { max-width: 100%; }
+img { height: auto; }
+a { color: var(--blue); text-decoration-thickness: 1.5px; text-underline-offset: .18em; }
+a:hover { text-decoration-thickness: 2.5px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; }
+h1 { margin: 0 0 1.25rem; font-weight: 800; font-size: clamp(1.75rem, 1.25rem + 1.6vw, 2.5rem); line-height: 1.1; letter-spacing: -.025em; color: var(--blue); }
+h2 { margin: 2rem 0 .75rem; font-weight: 800; font-size: 1.25rem; line-height: 1.25; letter-spacing: -.01em; color: var(--night); }
+h3 { margin: 1.5rem 0 .5rem; font-weight: 800; font-size: 1.0625rem; line-height: 1.3; }
+strong, b { font-weight: 700; }
+::selection { background: var(--sun); color: var(--night); }
+/* Fokus nie hell: Nachtblau-Ring mit weißem Abstand, auf Hell und auf Gelb sichtbar */
+:focus-visible { outline: 3px solid var(--night); outline-offset: 2px; box-shadow: 0 0 0 2px #fff; }
+
+.skip { position: absolute; left: -999rem; top: .75rem; z-index: 20; padding: .6rem 1rem; border-radius: 999px; background: var(--night); color: #fff; font-weight: 700; text-decoration: none; }
+.skip:focus { left: .75rem; }
+
+.dash-main { display: flow-root; width: 100%; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: 0 var(--pad) 4.5rem; }
+.dash-main:not(:has(> .page-head)) { padding-top: 2rem; }
 .dash-main:focus { outline: none; box-shadow: none; }
-.skip { position: absolute; left: -9999px; top: 8px; z-index: 10; padding: 8px 12px; background: var(--bg); color: var(--fg);
-  border: 2px solid var(--fg); border-radius: 8px; font-weight: 700; }
-.skip:focus { left: 8px; }
 
-/* Hinweise */
-.flash { padding: 10px 14px; border-left: 4px solid var(--mint); background: #E6F8F0; border-radius: 8px; margin: 0 0 20px; }
-.error { padding: 10px 14px; border-left: 4px solid var(--danger); background: #FFEDE8; border-radius: 8px; margin: 0 0 20px; }
-.empty { padding: 32px; text-align: center; color: var(--muted); border: 1px dashed var(--field); border-radius: 14px; }
+/* 2 Kopfzeile --------------------------------------------------------------- */
+/* Wie die Website: Logo + Wortmarke, Menü mit 24px-Icons (sprite.svg), aktiver Punkt als hellblaue Pille.
+   Unter 80rem rutscht das Menü in eine eigene, waagerecht scrollbare Zeile (dash.js holt den aktiven Punkt ins Bild). */
+.topbar { position: relative; z-index: 5; background: #fff; box-shadow: 0 1px 0 var(--line); }
+.topbar-in { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1.5rem; max-width: calc(var(--max) + 2 * var(--pad)); margin: 0 auto; padding: .7rem var(--pad); }
+.brand { display: flex; align-items: center; gap: .6rem; min-width: 0; padding-block: .2rem; color: var(--night); text-decoration: none; }
+.brand img { flex: none; width: 34px; height: 34px; }
+.brand-text { display: grid; min-width: 0; line-height: 1.15; }
+.brand-word { font-weight: 800; font-size: 1.375rem; letter-spacing: -.03em; }
+.salon-name { overflow: hidden; max-width: 13rem; font-size: .8125rem; font-weight: 600; color: var(--muted); white-space: nowrap; text-overflow: ellipsis; }
+.topnav { position: relative; display: flex; gap: .2rem; }
+.topnav a, .topbar-end a, .topbar-end button.link {
+  display: inline-flex; align-items: center; gap: .45rem; min-height: 2.75rem; padding: .4rem .75rem; border-radius: 999px;
+  font-weight: 700; font-size: .9375rem; color: var(--night); text-decoration: none; white-space: nowrap;
+}
+.topnav svg, .topbar-end svg { flex: none; width: 24px; height: 24px; }
+.topnav a:hover, .topbar-end a:hover, .topbar-end button.link:hover { background: var(--sky-50); }
+.topnav a[aria-current="page"] { background: var(--sky-50); font-weight: 800; }
+.topnav a[aria-current="page"] svg { color: var(--blue); }
+.topbar-end { display: flex; align-items: center; gap: .2rem; margin-left: auto; }
+.topbar-end form { margin: 0; }
+.topbar-end svg { color: var(--blue); }
+@media (max-width: 79.99rem) {
+  .topbar-in { padding-bottom: 0; }
+  .topnav { order: 3; flex: 1 0 100%; margin-inline: calc(-1 * var(--pad)); padding: .1rem var(--pad) .55rem; overflow-x: auto; scrollbar-width: thin; }
+}
+@media (max-width: 35.99rem) {
+  .topbar-in { gap: .25rem .75rem; padding-top: .55rem; }
+  .topbar-end a, .topbar-end button.link { padding-inline: .6rem; }
+  .topbar-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } /* nur Icon, Name bleibt für Screenreader */
+  .salon-name { max-width: 9.5rem; }
+}
 
-/* Werkzeugleiste über Listen/Kalender */
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0 0 16px; }
-.toolbar .spacer { flex: 1; }
+/* 3 Seitenkopf -------------------------------------------------------------- */
+/* Hellblaues Band über die volle Breite (border-image-Trick, erzeugt keinen Scrollbalken),
+   weicher Blob rechts oben, Welle unten. Raster: Icon | Text | Aktionen. */
+.page-head {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center; gap: .85rem 1.25rem;
+  margin: 0 0 calc(var(--wave) + 1.5rem); padding: 1.75rem 0 1.4rem;
+  border-image: linear-gradient(var(--sky-50) 0 0) fill 0 / / 0 100vw;
+}
+.page-head::before {
+  content: ""; position: absolute; top: 0; bottom: 0; right: calc(50% - 50vw); width: min(30rem, 42vw);
+  border-bottom-left-radius: 100% 100%; background: var(--sky-100); pointer-events: none;
+}
+.page-head::after {
+  content: ""; position: absolute; top: 100%; left: calc(50% - 50vw); width: 100vw; height: var(--wave);
+  background: var(--sky-50); mask: var(--wave-bottom) 0 0 / 100% 100% no-repeat; pointer-events: none;
+}
+.page-head > * { position: relative; z-index: 1; min-width: 0; }
+.page-head:has(> .page-head-icon, > img) { grid-template-columns: auto minmax(0, 1fr); }
+.page-head-icon, .page-head > img { width: 64px; height: 64px; padding: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px var(--sky-100); }
+.page-head h1 { margin: 0; }
+.page-head-text > p, .page-head > div > h1 + p { max-width: 46em; margin: .35rem 0 0; color: var(--muted); }
+.page-head-text > p + p { margin-top: .2rem; }
+.page-head-back { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: -.25rem; font-weight: 700; font-size: .9375rem; }
+.page-head-back::before { content: ""; width: 1em; height: 1em; background: currentColor; mask: var(--arrow-left) center / contain no-repeat; }
+.page-head-actions, .page-head > .actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .75rem; margin: 0; }
+@media (min-width: 48rem) {
+  .page-head { grid-template-columns: minmax(0, 1fr) auto; }
+  .page-head:has(> .page-head-icon, > img) { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .page-head-actions, .page-head > .actions { grid-column: auto; justify-content: flex-end; }
+}
+@media (max-width: 47.99rem) {
+  .page-head { padding-top: 1.25rem; }
+  .page-head-icon, .page-head > img { width: 52px; height: 52px; padding: 6px; box-shadow: 0 0 0 3px var(--sky-100); }
+  .page-head::before { width: 38vw; }
+}
+:root { --arrow-left: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M14 8H4M7.5 3.5 3 8l4.5 4.5' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+/* Auf Himmel hell: Links dunkler blau, Zweit-Knöpfe weiß */
+:is(.page-head, .card-sky, .empty) a:not(.btn) { color: var(--blue-deep); }
+/* Meldung "Gespeichert." direkt über dem Seitenkopf: liegt mit auf dem Band */
+/* (ein <style> des Templates darf dazwischen stehen) */
+.dash-main > .flash:first-child:has(+ .page-head, + style + .page-head) { margin: 1.25rem 0 0; box-shadow: 0 0 0 100vmax var(--sky-50); clip-path: inset(-1.25rem -100vmax 0); }
+.dash-main > .flash:first-child + .page-head, .dash-main > .flash:first-child + style + .page-head { padding-top: 1.1rem; }
 
-/* Buttons: Haupt-Button gelb, Sekundär weiß mit blauem Rand */
-.btn { display: inline-block; padding: 9px 18px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
-  color: var(--fg); background: var(--sun); border: 1px solid var(--sun-dark); border-radius: var(--radius); }
-.btn:hover, .btn:focus-visible { color: var(--fg); background: var(--sun-dark); }
-.btn-secondary { color: var(--fg); background: var(--bg); border-color: var(--accent); }
-.btn-secondary:hover, .btn-secondary:focus-visible { background: var(--sky); }
-.btn-danger { color: #fff; background: var(--danger); border-color: var(--danger); }
-.btn-danger:hover, .btn-danger:focus-visible { color: #fff; background: #8C3016; border-color: #8C3016; }
-.btn-small { padding: 4px 12px; font-size: .8125rem; border-radius: 8px; }
-.btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
+/* 4 Karten ------------------------------------------------------------------ */
+.card { padding: clamp(1.1rem, .9rem + .8vw, 1.6rem); border: 1px solid var(--line); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+.card h2 { margin-top: 0; }
+.card-sky { border-color: transparent; background: var(--sky-50); box-shadow: none; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1.25rem; align-items: start; }
+
+/* Kennzahlen: <div class="stats"><div class="stat-card"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+   <div><p class="stat-label">Nächster Termin</p><p class="stat">12:00</p><p class="stat-sub">Stefan Meyer</p></div></div></div>
+   Das Icon ist optional. .stat allein (große Zahl) geht weiter überall. */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 1rem; }
+.stat-card { display: flex; align-items: center; gap: .9rem; padding: .9rem 1.15rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+.stat-card > img { flex: none; width: 48px; height: 48px; }
+.stat-card p { margin: 0; }
+.stat-label { font-size: .8125rem; font-weight: 700; color: var(--muted); }
+.stat { font-weight: 800; font-size: 1.75rem; line-height: 1.15; letter-spacing: -.02em; color: var(--blue); font-variant-numeric: tabular-nums; }
+.stat a { color: inherit; text-decoration: none; }
+.stat a:hover { text-decoration: underline; text-decoration-thickness: 2.5px; }
+.stat-sub { overflow: hidden; font-size: .9375rem; white-space: nowrap; text-overflow: ellipsis; }
+
+/* Abschnittskopf mit buntem 32px-Icon: <h2 class="section-title"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt="">Buchungsregeln</h2>
+   (oder <div class="section-title"><img ...><h2>..</h2></div>) */
+.section-title { display: flex; align-items: center; gap: .7rem; }
+.section-title > img { flex: none; width: 32px; height: 32px; }
+.section-title > h2 { margin: 0; }
+h2.section-title, legend.section-title { margin: 2rem 0 1rem; }
+legend.section-title { padding: 0; font-weight: 800; font-size: 1.25rem; line-height: 1.25; }
+.card > .section-title:first-child { margin-top: 0; }
+
+/* Illustration neben einem Formular, erst ab 1100px sichtbar. Steht im HTML VOR dem Formular,
+   schwimmt rechts: <img class="ill-side" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt=""> */
+.ill-side { display: none; }
+@media (min-width: 1100px) {
+  .ill-side { display: block; float: right; width: 260px; margin: 0 0 1.5rem 3rem; border-radius: 50%; background: radial-gradient(closest-side, var(--sky-50) 92%, transparent 93%); }
+}
+
+/* 5 Hinweise ---------------------------------------------------------------- */
+.flash, .error { display: flex; align-items: flex-start; gap: .7rem; margin: 0 0 1.25rem; padding: .8rem 1.1rem; border-radius: 16px; font-weight: 600; }
+.flash { background: var(--tint-mint); }
+.error { background: var(--tint-coral); }
+.flash::before, .error::before { content: ""; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; }
+.flash::before { background: var(--mint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5 6.5 11.5 12.5 4.5' fill='none' stroke='%2313294b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; }
+.error::before { background: var(--coral) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v5.5' stroke='%2313294b' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12.2' r='1.4' fill='%2313294b'/%3E%3C/svg%3E") center / 14px no-repeat; }
+
+/* Leerzustand: hellblaue Karte, mittig, optional Illustration (200-260px), Überschrift, Text, Knöpfe.
+   <div class="empty"><img src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="">
+   <h2>Noch keine Kunden</h2><p>..</p><p class="actions"><a class="btn" href="..">..</a></p></div>
+   Ein einfaches <p class="empty">Text</p> geht auch. */
+.empty { display: grid; justify-items: center; gap: .5rem; margin: 0 0 1.5rem; padding: 1.75rem clamp(1.25rem, 4vw, 2.5rem) 2rem; border-radius: var(--radius); background: var(--sky-50); color: var(--night); text-align: center; }
+.empty > img { width: clamp(180px, 46vw, 240px); margin: -.5rem 0 .25rem; }
+.empty > h2 { margin: 0; font-size: 1.375rem; }
+.empty > p { max-width: 34em; margin: 0; }
+.empty > .actions { justify-content: center; margin-top: .6rem; }
+
+/* 6 Knöpfe ------------------------------------------------------------------ */
+/* .btn = gelbe Pille (Hauptaufruf), .btn-secondary = weiß mit blauem Rand, .btn-danger = Koralle dunkel */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 2.75rem; padding: .55rem 1.3rem;
+  border: 2px solid var(--sun); border-radius: 999px; background: var(--sun); color: var(--night);
+  font: 800 .9375rem/1.2 var(--font-text); text-align: center; text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { border-color: #ffd866; background: #ffd866; color: var(--night); }
+.btn-secondary { border-color: var(--blue); background: #fff; color: var(--blue); }
+.btn-secondary:hover { border-color: var(--blue); background: var(--blue); color: #fff; }
+.btn-danger { border-color: var(--danger); background: var(--danger); color: #fff; }
+.btn-danger:hover { border-color: #8c3016; background: #8c3016; color: #fff; }
+.btn-small { min-height: 2.25rem; padding: .3rem .95rem; font-size: .875rem; }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: .4; cursor: default; pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) { .btn, .topnav a { transition: background-color .15s, color .15s, border-color .15s; } }
 summary.btn { list-style: none; }
 summary.btn::-webkit-details-marker { display: none; }
-button.link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
-/* Fokus nie in einer hellen Farbe: Nachtblau-Rahmen mit weißem Abstand, sichtbar auf Hell und Dunkel. */
-:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; box-shadow: 0 0 0 4px var(--bg); }
+button.link { padding: 0; border: 0; background: none; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+.topbar-end button.link { text-decoration: none; }
 
-/* Formulare */
-.form { max-width: 560px; }
+/* 7 Formulare --------------------------------------------------------------- */
+.form { max-width: 600px; }
 .form-wide { max-width: none; }
-.field { display: block; margin: 0 0 14px; font-size: .8125rem; font-weight: 600; }
-.field .hint { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.field { display: block; margin: 0 0 1.1rem; font-size: .9375rem; font-weight: 700; }
+.field .hint, .hint { display: block; margin-top: .2rem; font-size: .8125rem; font-weight: 400; color: var(--muted); }
 input[type=text], input[type=email], input[type=tel], input[type=url], input[type=number], input[type=date], input[type=time],
-input[type=search], select, textarea {
-  display: block; width: 100%; margin-top: 4px; padding: 8px 10px; font: inherit; font-size: 16px; font-weight: 400;
-  border: 1px solid var(--field); border-radius: 8px; background: var(--bg); color: var(--fg);
+input[type=search], input[type=password], select, textarea {
+  display: block; width: 100%; min-height: 3rem; margin-top: .35rem; padding: .65rem .9rem;
+  border: 2px solid var(--field); border-radius: 12px; background: #fff; color: var(--night);
+  font: 400 16px/1.4 var(--font-text);
 }
-[aria-invalid=true] { border: 2px solid var(--danger); }
-.field-error { display: block; margin-top: 4px; color: var(--danger); font-weight: 600; }
-input[type=color] { display: block; margin-top: 4px; width: 64px; height: 36px; padding: 2px; border: 1px solid var(--field); border-radius: 8px; background: var(--bg); }
-textarea { min-height: 90px; resize: vertical; }
-.check { display: flex; gap: 8px; align-items: baseline; font-weight: 400; margin: 6px 0; }
-.check input { accent-color: var(--accent); }
-.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0 14px; }
-.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+select { appearance: none; padding-right: 2.6rem; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2313294b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right .9rem center / 16px no-repeat; }
+input:hover, select:hover, textarea:hover { border-color: var(--muted); }
+input:focus-visible, select:focus-visible, textarea:focus-visible { border-color: var(--blue); outline: 3px solid var(--night); outline-offset: 2px; }
+input::placeholder, textarea::placeholder { color: #6b7a92; opacity: 1; }
+[aria-invalid=true] { border-color: var(--danger); background-color: #fff8f6; }
+.field-error { display: block; margin-top: .3rem; color: var(--danger); font-weight: 700; }
+input[type=color] { display: block; width: 4rem; height: 2.75rem; margin-top: .35rem; padding: 3px; border: 2px solid var(--field); border-radius: 12px; background: #fff; cursor: pointer; }
+textarea { min-height: 6.5rem; resize: vertical; }
+input[type=checkbox], input[type=radio] { accent-color: var(--blue); }
+.check { display: flex; align-items: baseline; gap: .6rem; margin: .5rem 0; font-weight: 400; }
+.check input { flex: none; width: 1.15rem; height: 1.15rem; margin: 0; transform: translateY(.15rem); }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 0 1rem; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem; margin: .9rem 0 0; }
+fieldset { min-width: 0; }
 
-/* Tabellen */
-.table { width: 100%; border-collapse: collapse; }
-.table th, .table td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.table th { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 2px solid var(--fg); }
-.table tr:hover td { background: var(--soft); }
+/* 8 Tabellen ---------------------------------------------------------------- */
+/* .table-wrap ist eine weiße Karte und scrollt waagerecht; in einer .card verliert sie den Kartenrahmen. */
+.table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: .9375rem; }
+.table th, .table td { padding: .7rem .8rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.table th { border-bottom: 0; background: var(--sky-50); font-size: .8125rem; font-weight: 800; color: var(--night); white-space: nowrap; }
+.table th:first-child { border-radius: 12px 0 0 12px; }
+.table th:last-child { border-radius: 0 12px 12px 0; }
+.table tr:last-child > td { border-bottom: 0; }
+.table tbody tr:hover > td { background: #f5faff; }
 .table .num { text-align: right; font-variant-numeric: tabular-nums; }
-.table-wrap { overflow-x: auto; }
-/* Mehrere Tabellen untereinander mit gleichen Spalten: .table-fixed plus <colgroup> mit Breiten. */
 .table-fixed { table-layout: fixed; }
+.table-wrap { overflow-x: auto; margin: 0 0 1.25rem; padding: .5rem; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+.table-wrap > .table { margin: 0; }
+.card .table-wrap { margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; }
 
-/* Karten / Raster */
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-.card { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; background: var(--bg); }
-.card h2 { margin-top: 0; }
-.stat { font-size: 1.75rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-
-/* Status-Markierungen: Nachtblau-Schrift auf heller Fläche, Rand in der Palettenfarbe */
-.badge { display: inline-block; padding: 1px 8px; font-size: .75rem; font-weight: 600; color: var(--fg); border: 1px solid var(--fg);
-  border-radius: 6px; white-space: nowrap; }
-.badge-accent { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.badge-info { background: #E1EBFF; border-color: var(--accent); }
-.badge-ok { background: #DDF7EB; border-color: var(--mint); }
-.badge-muted { color: var(--muted); background: #F1F3F6; border-color: var(--line); }
-.badge-danger { color: var(--danger); background: #FFEDE8; border-color: var(--coral); }
-
-dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 16px; }
-dl.kv dt { color: var(--muted); }
-dl.kv dd { margin: 0; }
-
-/* Handy: Marke und Abmelden in Zeile 1, Menü darunter in einer waagerecht scrollbaren Zeile. */
-@media (max-width: 700px) {
-  .topbar { padding: 8px 16px 0; gap: 4px 16px; }
-  .salon-name { display: none; }
-  .topbar nav { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 0 16px; padding-bottom: 4px; }
-  .dash-main { padding: 20px 16px 48px; }
+/* 9 Markierungen ------------------------------------------------------------ */
+/* .chip = runde Markierung, Nachtblau-Schrift auf heller Fläche, Punkt in der Palettenfarbe.
+   Varianten: .chip-blue .chip-sun .chip-coral .chip-mint .chip-grey. .chip-plain ohne Punkt. */
+.chip, .badge {
+  display: inline-flex; align-items: center; gap: .4rem; padding: .15rem .65rem; border-radius: 999px;
+  background: var(--tint-grey); color: var(--night); font-size: .8125rem; font-weight: 700; line-height: 1.5; white-space: nowrap; vertical-align: .1em;
+  --dot: var(--muted);
 }
-/* Touch: Tippflächen mindestens 44 px hoch. */
+.chip::before, .badge::before { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: var(--dot); }
+.chip-plain::before { display: none; }
+.chip-blue, .badge-info { background: var(--tint-blue); --dot: var(--blue); }
+.chip-sun { background: var(--tint-sun); --dot: #e8a500; }
+.chip-coral, .badge-danger { background: var(--tint-coral); --dot: var(--coral); }
+.chip-mint, .badge-ok { background: var(--tint-mint); --dot: #1fae72; }
+.chip-grey, .badge-muted { background: var(--tint-grey); color: var(--muted); --dot: #93a2b8; }
+.badge-accent { background: var(--blue); color: #fff; --dot: var(--sun); }
+
+/* 10 Kleinkram -------------------------------------------------------------- */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .75rem; margin: 0 0 1.25rem; }
+.toolbar .spacer { flex: 1; }
+.toolbar input[type=search], .toolbar input[type=text], .toolbar select { width: auto; margin-top: 0; }
+dl.kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .55rem 1.25rem; margin: 0 0 1.25rem; }
+dl.kv dt { font-weight: 600; color: var(--muted); }
+dl.kv dd { margin: 0; overflow-wrap: anywhere; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+.nowrap { white-space: nowrap; }
+.lead { max-width: 40em; font-size: 1.0625rem; color: var(--muted); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+details > summary { cursor: pointer; }
+
+@media (max-width: 47.99rem) {
+  .dash-main { padding-bottom: 3rem; }
+  h2 { margin-top: 1.6rem; }
+  dl.kv { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  dl.kv dd { margin-bottom: .6rem; }
+}
+/* Touch: Tippflächen mindestens 44 px */
 @media (pointer: coarse) {
-  .btn, .topbar nav a, .topbar-end a, .topbar-end button.link { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
-  .check { min-height: 44px; align-items: center; }
-  .check input { width: 20px; height: 20px; flex: none; }
+  .btn, .btn-small { min-height: 2.75rem; }
+  .check { min-height: 2.75rem; align-items: center; }
+  .check input { width: 1.35rem; height: 1.35rem; transform: none; }
 }
