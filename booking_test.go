@@ -17,8 +17,8 @@ import (
 	"unicode/utf8"
 )
 
-// testSalon: Salon "test" mit Anna (sort 0) und Ben (sort 1), beide rund um
-// die Uhr da. Anna kann nur Schnitt, Ben Schnitt und Farbe.
+// testSalon: Salon "test" (Pro, also beide buchbar) mit Anna (sort 0) und Ben
+// (sort 1), beide rund um die Uhr da. Anna kann nur Schnitt, Ben Schnitt und Farbe.
 type testSalon struct {
 	a                   *app
 	h                   http.Handler
@@ -39,6 +39,7 @@ func newTestSalon(t *testing.T) *testSalon {
 		t.Fatal(err)
 	}
 	bookLimit, slotLimit = newLimiter(10, time.Hour), newLimiter(120, time.Minute)
+	bookSalonLimit, bookMailLimit = newLimiter(30, time.Hour), newLimiter(3, time.Hour)
 	ts := &testSalon{a: &app{cfg: config{BaseDomain: "kammzeit.test", PublicURL: "https://{slug}.kammzeit.test"}, db: db, tpl: tpl}}
 	ts.h = ts.a.routes()
 	ins := func(q string, args ...any) int64 {
@@ -51,6 +52,7 @@ func newTestSalon(t *testing.T) *testSalon {
 		return id
 	}
 	ts.salon = ins(`INSERT INTO salons (slug, name, phone, address, min_notice_min) VALUES ('test', 'Salon Test', '06761 123 45', 'Hauptstr. 1' || char(10) || '55469 Simmern', 0)`)
+	ts.exec(t, `UPDATE salons SET plan = 'pro' WHERE id = ?`, ts.salon)
 	ins(`INSERT INTO salons (slug, name) VALUES ('fremd', 'Fremder Salon')`)
 	ts.anna = ins(`INSERT INTO staff (salon_id, name, sort) VALUES (?, 'Anna', 0)`, ts.salon)
 	ts.ben = ins(`INSERT INTO staff (salon_id, name, sort) VALUES (?, 'Ben', 1)`, ts.salon)

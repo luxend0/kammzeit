@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -39,10 +40,15 @@ type querier interface {
 	QueryRow(string, ...any) *sql.Row
 }
 
-// Spam-Schutz der öffentlichen Buchungsseite, pro IP.
+// Spam-Schutz der öffentlichen Buchungsseite. Pro Anschluss (clientKey) zählt
+// jeder Versuch, pro Salon und pro Empfänger-Mail nur Buchungen, die sonst
+// gespeichert und gemailt würden: wechselnde Adressen können so weder einen
+// Salon fluten noch eine fremde Mail-Adresse mit Bestätigungen zuschütten.
 var (
-	bookLimit = newLimiter(10, time.Hour)    // Buchungsversuche
-	slotLimit = newLimiter(120, time.Minute) // Abfragen freier Zeiten
+	bookLimit      = newLimiter(10, time.Hour)    // Buchungsversuche pro Anschluss
+	slotLimit      = newLimiter(120, time.Minute) // Abfragen freier Zeiten pro Anschluss
+	bookSalonLimit = newLimiter(30, time.Hour)    // Buchungen pro Salon
+	bookMailLimit  = newLimiter(3, time.Hour)     // Buchungen pro Empfänger-Mail
 )
 
 func (a *app) routes() http.Handler {
@@ -81,8 +87,9 @@ func (a *app) static(name, title string) http.HandlerFunc {
 }
 
 // tlsAllow beantwortet Caddys on_demand-"ask": 200 nur für die Basis-Domain,
-// www und Subdomains existierender Salons. Sonst könnte jeder beliebige
-// Subdomains aufrufen und Zertifikate (Let's-Encrypt-Limits) verbrennen.
+// www und Subdomains existierender Salons, deren Inhaber sich schon einmal
+// angemeldet hat. Sonst könnte jeder beliebige Subdomains aufrufen und
+// Zertifikate (Let's-Encrypt-Limits) verbrennen.
 func (a *app) tlsAllow(w http.ResponseWriter, r *http.Request) {
 	if !a.tlsAllowed(r.URL.Query().Get("domain")) {
 		http.Error(w, "nein", http.StatusForbidden)
@@ -91,6 +98,9 @@ func (a *app) tlsAllow(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Ein Salon zählt erst, wenn sein Inhaber den Login-Link einmal eingelöst hat
+// (last_login_at): sonst ließe sich über die Registrierung mit erfundenen
+// Mail-Adressen trotzdem ein Zertifikat nach dem anderen anfordern.
 func (a *app) tlsAllowed(domain string) bool {
 	domain = strings.ToLower(domain)
 	if domain == "www."+a.cfg.BaseDomain {
@@ -104,15 +114,21 @@ func (a *app) tlsAllowed(domain string) bool {
 		return false
 	}
 	var one int
-	return a.db.QueryRow(`SELECT 1 FROM salons WHERE slug = ?`, slug).Scan(&one) == nil
+	return a.db.QueryRow(`SELECT 1 FROM salons s JOIN users u ON u.salon_id = s.id
+		WHERE s.slug = ? AND u.last_login_at IS NOT NULL LIMIT 1`, slug).Scan(&one) == nil
 }
 
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
-		h.Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")
+		// Kein form-action: das Abo-Formular leitet nach dem POST zu Stripe weiter.
+		h.Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'")
+		h.Set("X-Frame-Options", "DENY") // für Browser ohne frame-ancestors
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "same-origin") // Storno-Token steht in der URL
+		if secureRequest(r) {
+			h.Set("Strict-Transport-Security", "max-age=31536000")
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -195,7 +211,7 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 	}
 	d := a.page(s, s.Name+" - Termin buchen")
 	if len(services) > 0 {
-		staff, err := bookableStaff(a.db, s.ID, services[0].ID)
+		staff, err := bookableStaff(a.db, s.ID, services[0].ID, a.staffLimit(s))
 		if err != nil {
 			a.serverError(w, s, err)
 			return
@@ -257,14 +273,26 @@ func scanStaff(rows *sql.Rows) ([]staffMember, error) {
 	return out, rows.Err()
 }
 
+// staffLimit: so viele aktive Mitarbeiter (die ersten nach sort, id) sind
+// online buchbar, -1 = alle. Gratis-Plan freeStaffLimit, etwa wenn ein Salon von
+// Pro zurück auf Gratis wechselt; gelöscht oder deaktiviert wird dabei nichts.
+// Der Einzelbetrieb hat keine Grenze.
+func (a *app) staffLimit(s *salon) int {
+	if a.cfg.SingleTenant || s.Pro() {
+		return -1
+	}
+	return freeStaffLimit
+}
+
 // bookableStaff: aktive Mitarbeiter, die die Leistung laut staff_services
-// anbieten, in Buchungsreihenfolge (sort, Name).
-func bookableStaff(q querier, salonID, serviceID int64) ([]staffMember, error) {
+// anbieten, in Buchungsreihenfolge (sort, Name). limit siehe staffLimit.
+func bookableStaff(q querier, salonID, serviceID int64, limit int) ([]staffMember, error) {
 	rows, err := q.Query(`SELECT st.id, st.name FROM staff st
 		JOIN staff_services ss ON ss.staff_id = st.id
 		JOIN services sv ON sv.id = ss.service_id
 		WHERE ss.service_id = ? AND st.salon_id = ? AND sv.salon_id = ? AND st.active = 1
-		ORDER BY st.sort, st.name`, serviceID, salonID, salonID)
+			AND st.id IN (SELECT id FROM staff WHERE salon_id = ? AND active = 1 ORDER BY sort, id LIMIT ?)
+		ORDER BY st.sort, st.name`, serviceID, salonID, salonID, salonID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +407,7 @@ func (a *app) bookStaff(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if sv != nil {
-		staff, err := bookableStaff(a.db, s.ID, sv.ID)
+		staff, err := bookableStaff(a.db, s.ID, sv.ID, a.staffLimit(s))
 		if err != nil {
 			a.serverError(w, s, err)
 			return
@@ -402,7 +430,7 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	d := map[string]any{}
-	if !slotLimit.allow(clientIP(r)) {
+	if !slotLimit.allow(clientKey(r)) {
 		d["Empty"] = "Zu viele Anfragen. Bitte warte kurz und versuch es dann noch einmal."
 		status := http.StatusTooManyRequests
 		if r.Header.Get("HX-Request") != "" {
@@ -427,7 +455,7 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 	case day.After(last):
 		d["Empty"] = "Online buchbar bis " + last.Format("2.1.2006") + ". Für spätere Termine ruf bitte im Salon an."
 	default:
-		staff, err := bookableStaff(a.db, s.ID, sv.ID)
+		staff, err := bookableStaff(a.db, s.ID, sv.ID, a.staffLimit(s))
 		if err != nil {
 			a.serverError(w, s, err)
 			return
@@ -456,7 +484,7 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	if s == nil {
 		return
 	}
-	if !bookLimit.allow(clientIP(r)) {
+	if !bookLimit.allow(clientKey(r)) {
 		a.fail(w, s, http.StatusTooManyRequests, "Zu viele Buchungen von deinem Anschluss. Bitte versuch es später noch einmal oder ruf im Salon an.")
 		return
 	}
@@ -480,6 +508,10 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	case name == "" || utf8.RuneCountInString(name) > 100:
 		a.fail(w, s, http.StatusBadRequest, "Bitte gib deinen Namen an.")
 		return
+	case hasControl(name) || hasControl(phone):
+		// Name und Telefon landen in Mails an Kunde und Salon: keine Zeilenumbrüche einschleusen.
+		a.fail(w, s, http.StatusBadRequest, "Bitte gib Name und Telefonnummer ohne Zeilenumbrüche oder Tabulatoren an.")
+		return
 	case mailErr != nil || len(addr.Address) > 200:
 		a.fail(w, s, http.StatusBadRequest, "Bitte gib eine gültige E-Mail-Adresse an.")
 		return
@@ -501,7 +533,7 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	sv, err := loadService(tx, s.ID, r.PostFormValue("service"))
 	var staff []staffMember
 	if err == nil {
-		staff, err = bookableStaff(tx, s.ID, sv.ID)
+		staff, err = bookableStaff(tx, s.ID, sv.ID, a.staffLimit(s))
 		staff = pickable(staff, r.PostFormValue("staff"))
 	}
 	if errors.Is(err, sql.ErrNoRows) || err == nil && len(staff) == 0 {
@@ -522,6 +554,15 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	}
 	if st == nil {
 		a.fail(w, s, http.StatusConflict, "Dieser Termin ist leider nicht mehr frei. Bitte wähl eine andere Uhrzeit.")
+		return
+	}
+	// Erst hier zählen: abgelehnte Formulare und vergebene Uhrzeiten kosten nichts.
+	if !bookMailLimit.allow(email) {
+		a.fail(w, s, http.StatusTooManyRequests, "Mit dieser E-Mail-Adresse wurde gerade schon mehrmals gebucht. Bitte versuch es später noch einmal oder ruf im Salon an.")
+		return
+	}
+	if !bookSalonLimit.allow(strconv.FormatInt(s.ID, 10)) {
+		a.fail(w, s, http.StatusTooManyRequests, "Gerade gehen sehr viele Buchungen ein. Bitte versuch es später noch einmal oder ruf im Salon an.")
 		return
 	}
 	// Bestehende Karteikarte behält ihren Namen: wer nur die Mail-Adresse kennt, soll ihn nicht überschreiben.
@@ -883,6 +924,9 @@ func oneLine(s string) string {
 	}
 	return strings.Join(parts, ", ")
 }
+
+// hasControl: enthält Steuerzeichen (auch CR, LF, Tab).
+func hasControl(s string) bool { return strings.IndexFunc(s, unicode.IsControl) >= 0 }
 
 func orDash(s string) string {
 	if s == "" {

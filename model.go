@@ -88,20 +88,42 @@ func migrate(db *sql.DB) error {
 }
 
 // clientIP: hinter Caddy (Verbindung von localhost) zählt X-Forwarded-For,
-// sonst die Gegenstelle. Von außen gesetzte Header werden so ignoriert.
+// sonst die Gegenstelle. Von außen gesetzte Header werden so ignoriert. Der
+// Proxy hängt die echte Gegenstelle hinten an: zählt nur der letzte Eintrag
+// der letzten Headerzeile, alles davor kann der Client selbst geschickt haben.
+// Kein gültiger Eintrag: die Gegenstelle.
 func clientIP(r *http.Request) string {
 	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		host = r.RemoteAddr
 	}
 	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			parts := strings.Split(xff, ",")
-			return strings.TrimSpace(parts[len(parts)-1])
+		if xff := r.Header.Values("X-Forwarded-For"); len(xff) > 0 {
+			parts := strings.Split(xff[len(xff)-1], ",")
+			if fwd := net.ParseIP(strings.TrimSpace(parts[len(parts)-1])); fwd != nil {
+				return fwd.String()
+			}
 		}
 	}
 	return host
 }
+
+// clientKey ist der Schlüssel für alle Rate-Limits pro Anschluss: die
+// IPv4-Adresse, bei IPv6 das /64-Netz. Ein Anschluss bekommt meist ein ganzes
+// /64 und könnte sonst für jede Anfrage eine neue Adresse nehmen.
+// Überall verwenden, wo ein Limiter nach Client fragt, nicht clientIP.
+func clientKey(r *http.Request) string {
+	host := clientIP(r)
+	ip := net.ParseIP(host)
+	if ip == nil || ip.To4() != nil {
+		return host
+	}
+	return ip.Mask(net.CIDRMask(64, 128)).String() + "/64"
+}
+
+// limiterMaxKeys begrenzt den Speicher eines Limiters. Ist er voll, werden
+// neue Schlüssel bis zum nächsten Aufräumen abgelehnt (bekannte zählen weiter).
+const limiterMaxKeys = 50000
 
 // limiter erlaubt n Vorgänge pro Schlüssel und Zeitfenster.
 // ponytail: im Speicher, ein Prozess; reicht für eine Instanz.
@@ -123,7 +145,9 @@ func (l *limiter) allow(key string) bool {
 	now := time.Now()
 	// Abgelaufene Schlüssel (IP-Adressen, Mail-Adressen) spätestens nach einem
 	// Zeitfenster wegwerfen, so steht es auch in der Datenschutzerklärung.
-	if now.Sub(l.swept) > l.per || len(l.hits) > 10000 {
+	// Nur zeitgesteuert (höchstens einmal pro Minute), damit viele frische
+	// Schlüssel nicht jeden Aufruf zu einer Schleife über alle machen.
+	if now.Sub(l.swept) > min(l.per, time.Minute) {
 		l.swept = now
 		for k, ts := range l.hits {
 			if len(ts) == 0 || now.Sub(ts[len(ts)-1]) > l.per {
@@ -131,7 +155,10 @@ func (l *limiter) allow(key string) bool {
 			}
 		}
 	}
-	ts := l.hits[key]
+	ts, known := l.hits[key]
+	if !known && len(l.hits) >= limiterMaxKeys {
+		return false
+	}
 	i := 0
 	for i < len(ts) && now.Sub(ts[i]) > l.per {
 		i++
