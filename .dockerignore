@@ -1,0 +1,11 @@
+.git
+.claude
+.dockerignore
+Dockerfile
+deploy
+docs
+README.md
+*.db
+*.db-shm
+*.db-wal
+/kammzeit
