@@ -1,0 +1,58 @@
+{{/* Login per Magic-Link. Eigenes schlichtes Layout auf Basis von style.css. */}}
+{{define "auth-top"}}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}} - Kammzeit</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+.auth-brand { display: inline-block; margin: 0 0 48px; font-weight: 800; text-decoration: none; letter-spacing: -.01em; border-bottom: 2px solid var(--fg); }
+.auth-note { margin: 20px 0; padding: 10px 14px; border-left: 4px solid var(--accent); background: #f5f5f5; }
+.auth-error { border-left-color: #b00020; background: #fdf0f2; }
+.auth-alt { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<main>
+<a class="auth-brand" href="/">Kammzeit</a>
+{{end}}
+
+{{define "auth-bottom"}}</main>
+<footer><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></footer>
+</body>
+</html>{{end}}
+
+{{define "auth-login"}}{{template "auth-top" .}}
+<h1>Anmelden</h1>
+<p class="lead">Wir schicken dir einen Login-Link per E-Mail. Ein Passwort brauchst du nicht.</p>
+{{if .LoggedOut}}<p class="auth-note" role="status">Du bist abgemeldet.</p>{{end}}
+{{if .Sent}}
+<p class="auth-note" role="status">Wenn es ein Konto mit dieser Adresse gibt, ist ein Login-Link unterwegs. Er ist 15 Minuten gültig.</p>
+<p class="muted small">Nichts angekommen? Schau im Spam-Ordner nach oder <a href="/login">fordere einen neuen Link an</a>.</p>
+{{else}}
+{{with .Error}}<p class="auth-note auth-error" role="alert">{{.}}</p>{{end}}
+<form method="post" action="/login">
+  <input type="hidden" name="weiter" value="{{.Next}}">
+  <label class="field">E-Mail<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus></label>
+  <button type="submit">Login-Link schicken</button>
+</form>
+{{end}}
+<p class="auth-alt"><a href="/registrieren">Noch kein Konto? Kostenlos registrieren</a></p>
+{{template "auth-bottom" .}}{{end}}
+
+{{define "auth-confirm"}}{{template "auth-top" .}}
+<h1>Anmelden</h1>
+<p class="lead">Ein Klick noch, dann bist du im Dashboard.</p>
+<form method="post" action="/login/{{.Token}}">
+  <input type="hidden" name="weiter" value="{{.Next}}">
+  <button type="submit">Jetzt anmelden</button>
+</form>
+{{template "auth-bottom" .}}{{end}}
+
+{{define "auth-message"}}{{template "auth-top" .}}
+<h1>{{.Heading}}</h1>
+<p>{{.Message}}</p>
+<p><a href="/login">{{.LinkText}}</a></p>
+{{template "auth-bottom" .}}{{end}}
