@@ -36,7 +36,7 @@
   <noscript><button class="btn btn-secondary" type="submit">{{t .Lang "Suchen"}}</button></noscript>
 </form>{{end}}
 <div id="kunden-tabelle">{{template "kunden-tabelle" .}}</div>
-{{if or .Customers .Q .PrevURL}}<p class="small kunden-export"><img src="/static/img/icons/export.svg" width="32" height="32" alt="">
+{{if and (not .IsStaff) (or .Customers .Q .PrevURL)}}<p class="small kunden-export"><img src="/static/img/icons/export.svg" width="32" height="32" alt="">
   <a href="/dashboard/kunden.csv">{{t .Lang "Alle Kunden als CSV-Datei herunterladen"}}</a> <span class="muted">{{t .Lang "für Excel oder LibreOffice"}}</span></p>{{end}}
 {{template "dash-bottom" .}}{{end}}
 
@@ -216,7 +216,7 @@
 <div class="section-title kunden-termine-head"><img src="/static/img/icons/uhr.svg" width="32" height="32" alt=""><h2>{{t .Lang "Vergangene Termine"}}</h2></div>
 {{if .Past.List}}{{template "kunden-termine" .Past}}{{else}}<p class="muted">{{t .Lang "Noch keine vergangenen Termine."}}</p>{{end}}
 
-<p class="small kunden-loeschen-link"><a href="/dashboard/kunden/{{.Customer.ID}}/loeschen">{{t .Lang "Kunde löschen"}}</a></p>
+{{if not .IsStaff}}<p class="small kunden-loeschen-link"><a href="/dashboard/kunden/{{.Customer.ID}}/loeschen">{{t .Lang "Kunde löschen"}}</a></p>{{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "kunden-loeschen"}}{{template "dash-top" .}}

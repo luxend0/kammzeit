@@ -47,7 +47,7 @@ func (a *app) routesQueue(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dashboard/warteschlange/qr", a.dash(a.queueQR))
 	mux.HandleFunc("GET /dashboard/warteschlange/anzeige", a.dash(a.queueDisplay))
 	mux.HandleFunc("GET /dashboard/warteschlange/anzeige/stand", a.dash(a.queueDisplay))
-	mux.HandleFunc("POST /dashboard/warteschlange/einstellungen", a.dash(a.queueSettings))
+	mux.HandleFunc("POST /dashboard/warteschlange/einstellungen", a.dashOwner(a.queueSettings)) // an/aus + Hinweis: nur Inhaber
 	mux.HandleFunc("POST /dashboard/warteschlange/neu", a.dash(a.queueDashAdd))
 	mux.HandleFunc("POST /dashboard/warteschlange/{id}/{aktion}", a.dash(a.queueAction))
 	mux.HandleFunc("GET /warteschlange", a.queueJoinPage)

@@ -18,12 +18,12 @@ import (
 )
 
 func (a *app) routesSettings(mux *http.ServeMux) {
-	mux.HandleFunc("GET /dashboard/einstellungen", a.dash(a.settingsPage))
-	mux.HandleFunc("POST /dashboard/einstellungen", a.dash(a.settingsSave))
-	mux.HandleFunc("GET /dashboard/einstellungen/export", a.dash(a.settingsExport))
-	mux.HandleFunc("GET /dashboard/einstellungen/loeschen", a.dash(a.deletePage))
-	mux.HandleFunc("POST /dashboard/einstellungen/loeschen", a.dash(a.deleteSalon))
-	mux.HandleFunc("POST /dashboard/einstellungen/news", a.dash(a.settingsNews))
+	mux.HandleFunc("GET /dashboard/einstellungen", a.dashOwner(a.settingsPage))
+	mux.HandleFunc("POST /dashboard/einstellungen", a.dashOwner(a.settingsSave))
+	mux.HandleFunc("GET /dashboard/einstellungen/export", a.dashOwner(a.settingsExport))
+	mux.HandleFunc("GET /dashboard/einstellungen/loeschen", a.dashOwner(a.deletePage))
+	mux.HandleFunc("POST /dashboard/einstellungen/loeschen", a.dashOwner(a.deleteSalon))
+	mux.HandleFunc("POST /dashboard/einstellungen/news", a.dashOwner(a.settingsNews))
 }
 
 // choice ist ein Eintrag einer Auswahlliste. Nur diese Werte werden gespeichert.

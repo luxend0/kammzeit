@@ -17,19 +17,19 @@ import (
 )
 
 func (a *app) routesCatalog(mux *http.ServeMux) {
-	mux.HandleFunc("GET /dashboard/leistungen", a.dash(a.leistList))
-	mux.HandleFunc("GET /dashboard/leistungen/neu", a.dash(a.leistEdit))
-	mux.HandleFunc("POST /dashboard/leistungen/neu", a.dash(a.leistSave))
-	mux.HandleFunc("GET /dashboard/leistungen/{id}", a.dash(a.leistEdit))
-	mux.HandleFunc("POST /dashboard/leistungen/{id}", a.dash(a.leistSave))
-	mux.HandleFunc("POST /dashboard/leistungen/{id}/verschieben", a.dash(a.leistMove))
-	mux.HandleFunc("POST /dashboard/leistungen/{id}/loeschen", a.dash(a.catalogDelete("services", "/dashboard/leistungen?gespeichert=leistung")))
-	mux.HandleFunc("GET /dashboard/team", a.dash(a.teamList))
-	mux.HandleFunc("GET /dashboard/team/neu", a.dash(a.teamEdit))
-	mux.HandleFunc("POST /dashboard/team/neu", a.dash(a.teamSave))
-	mux.HandleFunc("GET /dashboard/team/{id}", a.dash(a.teamEdit))
-	mux.HandleFunc("POST /dashboard/team/{id}", a.dash(a.teamSave))
-	mux.HandleFunc("POST /dashboard/team/{id}/loeschen", a.dash(a.catalogDelete("staff", "/dashboard/team?gespeichert=mitarbeiter")))
+	mux.HandleFunc("GET /dashboard/leistungen", a.dashOwner(a.leistList))
+	mux.HandleFunc("GET /dashboard/leistungen/neu", a.dashOwner(a.leistEdit))
+	mux.HandleFunc("POST /dashboard/leistungen/neu", a.dashOwner(a.leistSave))
+	mux.HandleFunc("GET /dashboard/leistungen/{id}", a.dashOwner(a.leistEdit))
+	mux.HandleFunc("POST /dashboard/leistungen/{id}", a.dashOwner(a.leistSave))
+	mux.HandleFunc("POST /dashboard/leistungen/{id}/verschieben", a.dashOwner(a.leistMove))
+	mux.HandleFunc("POST /dashboard/leistungen/{id}/loeschen", a.dashOwner(a.catalogDelete("services", "/dashboard/leistungen?gespeichert=leistung")))
+	mux.HandleFunc("GET /dashboard/team", a.dashOwner(a.teamList))
+	mux.HandleFunc("GET /dashboard/team/neu", a.dashOwner(a.teamEdit))
+	mux.HandleFunc("POST /dashboard/team/neu", a.dashOwner(a.teamSave))
+	mux.HandleFunc("GET /dashboard/team/{id}", a.dashOwner(a.teamEdit))
+	mux.HandleFunc("POST /dashboard/team/{id}", a.dashOwner(a.teamSave))
+	mux.HandleFunc("POST /dashboard/team/{id}/loeschen", a.dashOwner(a.catalogDelete("staff", "/dashboard/team?gespeichert=mitarbeiter")))
 }
 
 // catalogID ist die ID aus dem Pfad, 0 wenn ungültig (findet dann nichts).
@@ -97,6 +97,13 @@ func (a *app) catalogDelete(table, back string) func(http.ResponseWriter, *http.
 		q, done := `DELETE FROM `+table+` WHERE id = ? AND salon_id = ?`, "-geloescht"
 		if n > 0 {
 			q, done = `UPDATE `+table+` SET active = 0 WHERE id = ? AND salon_id = ?`, "-deaktiviert"
+		} else if table == "staff" {
+			// Ein gelöschter Mitarbeiter verliert seinen Login (mit Sessions); ein
+			// deaktivierter behält ihn, kann sich aber nicht anmelden (a.dash).
+			if _, err := tx.Exec(`DELETE FROM users WHERE role = 'staff' AND staff_id = ? AND salon_id = ?`, id, c.Salon.ID); err != nil {
+				a.dashServerError(w, r, c, err)
+				return
+			}
 		}
 		res, err := tx.Exec(q, id, c.Salon.ID)
 		if err != nil {
@@ -360,6 +367,7 @@ type teamRow struct {
 	Active   bool
 	Services int
 	Hours    []string
+	Login    int // Mitarbeiter-Login: 0 keiner, 1 eingeladen, 2 schon angemeldet (staff.go)
 }
 
 type teamService struct {
@@ -395,7 +403,8 @@ type teamForm struct {
 var teamOrder = [...]time.Weekday{time.Monday, time.Tuesday, time.Wednesday, time.Thursday, time.Friday, time.Saturday, time.Sunday}
 
 func (a *app) teamList(w http.ResponseWriter, r *http.Request, c *dctx) {
-	rows, err := a.db.Query(`SELECT id, name, active, (SELECT COUNT(*) FROM staff_services WHERE staff_id = staff.id)
+	rows, err := a.db.Query(`SELECT id, name, active, (SELECT COUNT(*) FROM staff_services WHERE staff_id = staff.id),
+		COALESCE((SELECT IIF(last_login_at IS NULL, 1, 2) FROM users WHERE role = 'staff' AND staff_id = staff.id AND salon_id = staff.salon_id LIMIT 1), 0)
 		FROM staff WHERE salon_id = ? ORDER BY sort, name, id`, c.Salon.ID)
 	if err != nil {
 		a.dashServerError(w, r, c, err)
@@ -404,7 +413,7 @@ func (a *app) teamList(w http.ResponseWriter, r *http.Request, c *dctx) {
 	var list []teamRow
 	for rows.Next() {
 		var s teamRow
-		if err := rows.Scan(&s.ID, &s.Name, &s.Active, &s.Services); err != nil {
+		if err := rows.Scan(&s.ID, &s.Name, &s.Active, &s.Services, &s.Login); err != nil {
 			rows.Close()
 			a.dashServerError(w, r, c, err)
 			return
@@ -439,6 +448,7 @@ func (a *app) teamList(w http.ResponseWriter, r *http.Request, c *dctx) {
 	d["Staff"] = list
 	d["SavedMsg"] = catalogSavedMsg(r, lang)
 	d["ShowLimit"] = !c.Salon.Pro() && !a.cfg.SingleTenant
+	d["StaffLogins"] = a.staffLogins(c.Salon)
 	d["ProHint"] = trf(lang, "Im Gratis-Plan ist höchstens %d Mitarbeiter aktiv. Mit Pro unbegrenzt viele.", freeStaffLimit)
 	a.render(w, http.StatusOK, "team-liste", d)
 }
@@ -513,21 +523,10 @@ func (a *app) teamEdit(w http.ResponseWriter, r *http.Request, c *dctx) {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		rows, err := a.db.Query(`SELECT weekday, start_min, end_min FROM working_hours WHERE staff_id = ? ORDER BY start_min`, f.ID)
-		if err != nil {
+		if hours, err = a.teamLoadHours(f.ID); err != nil {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		for rows.Next() {
-			var h WorkingHours
-			if err := rows.Scan(&h.Weekday, &h.StartMin, &h.EndMin); err != nil {
-				rows.Close()
-				a.dashServerError(w, r, c, err)
-				return
-			}
-			hours = append(hours, h)
-		}
-		rows.Close()
 	}
 	svcs, err := a.teamServices(c.Salon.ID, f.ID)
 	if err != nil {
@@ -540,8 +539,34 @@ func (a *app) teamEdit(w http.ResponseWriter, r *http.Request, c *dctx) {
 		}
 	}
 	f.Services = svcs
+	f.Days = teamDaysOf(a.langFor(r), hours)
+	a.teamRender(w, r, c, http.StatusOK, &f, "", false)
+}
+
+// teamLoadHours lädt die Arbeitszeiten eines Mitarbeiters, sortiert nach Beginn.
+// staffID muss vorher gegen den Salon geprüft sein.
+func (a *app) teamLoadHours(staffID int64) ([]WorkingHours, error) {
+	rows, err := a.db.Query(`SELECT weekday, start_min, end_min FROM working_hours WHERE staff_id = ? ORDER BY start_min`, staffID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var hours []WorkingHours
+	for rows.Next() {
+		var h WorkingHours
+		if err := rows.Scan(&h.Weekday, &h.StartMin, &h.EndMin); err != nil {
+			return nil, err
+		}
+		hours = append(hours, h)
+	}
+	return hours, rows.Err()
+}
+
+// teamDaysOf baut die Formularzeilen Mo..So aus Arbeitszeiten (nach Beginn sortiert).
+func teamDaysOf(lang string, hours []WorkingHours) []teamDay {
+	var days []teamDay
 	for _, wd := range teamOrder {
-		d := teamDay{WD: int(wd), Label: teamWeekday(a.langFor(r), wd)}
+		d := teamDay{WD: int(wd), Label: teamWeekday(lang, wd)}
 		i := 0
 		for _, h := range hours {
 			if h.Weekday == wd && i < 2 { // ponytail: mehr als zwei Blöcke am Tag kann das Formular nicht zeigen
@@ -549,9 +574,9 @@ func (a *app) teamEdit(w http.ResponseWriter, r *http.Request, c *dctx) {
 				i++
 			}
 		}
-		f.Days = append(f.Days, d)
+		days = append(days, d)
 	}
-	a.teamRender(w, r, c, http.StatusOK, &f, "", false)
+	return days
 }
 
 // teamServices lädt alle Leistungen des Salons; Checked = dem Mitarbeiter staffID zugeordnet.
@@ -606,6 +631,12 @@ func (a *app) teamRender(w http.ResponseWriter, r *http.Request, c *dctx, status
 	d := a.dashPage(c, r, "team", tr(lang, title))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["F"], d["Error"], d["LimitHit"], d["Limit"] = f, tr(lang, msg), limit, freeStaffLimit
+	if f != nil && f.ID != 0 {
+		if err := a.staffAccessData(d, r, c, f.ID); err != nil { // Karte "Login fürs Dashboard" (staff.go)
+			a.dashServerError(w, r, c, err)
+			return
+		}
+	}
 	d["ProHint"] = tr(lang, "Mit Pro sind beliebig viele Mitarbeiter aktiv, für 14,90 € im Monat oder 149 € im Jahr.")
 	a.render(w, status, "team-form", d)
 }
@@ -646,19 +677,8 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	f.Services = svcs
 	// "Zeiten übertragen" speichert nicht, sondern zeigt das Formular mit den kopierten Zeiten.
-	if src, err := strconv.Atoi(r.PostFormValue("uebertragen")); err == nil && src >= 1 && src <= 4 {
-		var from teamDay
-		for _, d := range f.Days {
-			if d.WD == src {
-				from = d
-			}
-		}
-		for i := range f.Days {
-			if f.Days[i].WD > src && f.Days[i].WD <= 5 { // bis Freitag
-				f.Days[i].From, f.Days[i].To = from.From, from.To
-			}
-		}
-		f.Notice = trf(lang, "Zeiten übertragen: %s. Noch nicht gespeichert.", teamCopyRange(lang, src))
+	if notice := teamCopyDays(lang, f.Days, r.PostFormValue("uebertragen")); notice != "" {
+		f.Notice = notice
 		a.teamRender(w, r, c, http.StatusOK, &f, "", false)
 		return
 	}
@@ -744,6 +764,28 @@ func teamCopySource(lang string, days []teamDay) (int, string) {
 		}
 	}
 	return 0, ""
+}
+
+// teamCopyDays erledigt den Knopf "... übertragen" (Formularwert src = Wochentag 1-4):
+// kopiert die Zeiten des Tages auf die Folgetage bis Freitag und liefert den
+// Hinweis dazu. "" = kein gültiger Knopf, dann normal speichern.
+func teamCopyDays(lang string, days []teamDay, srcVal string) string {
+	src, err := strconv.Atoi(srcVal)
+	if err != nil || src < 1 || src > 4 {
+		return ""
+	}
+	var from teamDay
+	for _, d := range days {
+		if d.WD == src {
+			from = d
+		}
+	}
+	for i := range days {
+		if days[i].WD > src && days[i].WD <= 5 { // bis Freitag
+			days[i].From, days[i].To = from.From, from.To
+		}
+	}
+	return trf(lang, "Zeiten übertragen: %s. Noch nicht gespeichert.", teamCopyRange(lang, src))
 }
 
 // teamCopyRange: "Dienstag auf Mittwoch bis Freitag", für Donnerstag nur "Donnerstag auf Freitag".

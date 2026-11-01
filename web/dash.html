@@ -28,14 +28,19 @@
     <nav class="topnav" aria-label="{{t .Lang "Hauptmenü"}}">
       <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>{{template "dash-icon" "kalender"}}{{t .Lang "Kalender"}}</a>
       <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>{{template "dash-icon" "kartei"}}{{t .Lang "Kunden"}}</a>
+      <a href="/dashboard/warteschlange"{{if eq .Nav "warteschlange"}} aria-current="page"{{end}}>{{template "dash-icon" "uhr"}}{{t .Lang "Warteschlange"}}</a>
+      {{if not .IsStaff}}{{/* Mitarbeiter-Logins (staff.go) sehen nur Kalender, Kunden, Warteschlange und Meine Zeiten */}}
       <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>{{template "dash-icon" "schere"}}{{t .Lang "Leistungen"}}</a>
       <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>{{template "dash-icon" "team"}}{{t .Lang "Team"}}</a>
-      <a href="/dashboard/warteschlange"{{if eq .Nav "warteschlange"}} aria-current="page"{{end}}>{{template "dash-icon" "uhr"}}{{t .Lang "Warteschlange"}}</a>
       <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>{{template "dash-icon" "farbe"}}{{t .Lang "Einstellungen"}}</a>
       <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>{{template "dash-icon" "pro"}}{{t .Lang "Abo"}}</a>
+      {{else}}
+      <a href="/dashboard/meine-zeiten"{{if eq .Nav "meine-zeiten"}} aria-current="page"{{end}}>{{template "dash-icon" "uhr"}}{{t .Lang "Meine Zeiten"}}</a>
+      {{end}}
     </nav>
     <div class="topbar-end">
       <a href="{{.BookingURL}}" target="_blank" rel="noopener">{{template "dash-icon" "link"}}<span class="topbar-label">{{t .Lang "Buchungsseite"}}</span></a>
+      {{if .IsStaff}}<span class="chip chip-grey" style="margin-inline: .4rem"><span class="topbar-label">{{.User.StaffName}} · </span>{{t .Lang "Mitarbeiter"}}</span>{{end}}
       <form method="post" action="/logout"><button class="link" type="submit">{{t .Lang "Abmelden"}}</button></form>
     </div>
   </div>

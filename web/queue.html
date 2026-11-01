@@ -12,11 +12,11 @@
     <h1>{{.PageTitle}}</h1>
     <p>{{t .Lang "Kunden ohne Termin stellen sich per QR-Code an und sehen auf dem Handy, wann sie dran sind."}}</p>
   </div>
-  <div class="page-head-actions">
+  <div class="page-head-actions">{{if not .IsStaff}}
     <form method="post" action="/dashboard/warteschlange/einstellungen">
       {{if .Q.Enabled}}<input type="hidden" name="an" value="0"><button class="btn btn-secondary" type="submit">{{t .Lang "Warteschlange ausschalten"}}</button>
       {{else}}<input type="hidden" name="an" value="1"><button class="btn" type="submit">{{t .Lang "Warteschlange einschalten"}}</button>{{end}}
-    </form>
+    </form>{{end}}
   </div>
 </div>
 <link rel="stylesheet" href="/static/queue.css">
@@ -49,11 +49,11 @@
         <a class="btn btn-secondary btn-small" href="/dashboard/warteschlange/anzeige" target="_blank" rel="noopener">{{t .Lang "Anzeige für den Laden"}}</a>
       </p>
       <p class="small queue-url">{{t .Lang "Adresse zum Anstellen:"}} <a href="{{.JoinURL}}" target="_blank" rel="noopener">{{.JoinURL}}</a></p>
-      <form method="post" action="/dashboard/warteschlange/einstellungen">
+      {{if not .IsStaff}}<form method="post" action="/dashboard/warteschlange/einstellungen">
         <label class="field">{{t .Lang "Hinweis für Kunden"}}<textarea name="hinweis" maxlength="300" rows="3">{{.Q.Note}}</textarea>
           <span class="hint">{{t .Lang "Steht über dem Formular, z. B. „Bitte bleib in der Nähe, wir rufen dich auf.“"}}</span></label>
         <button class="btn btn-secondary btn-small" type="submit">{{t .Lang "Hinweis speichern"}}</button>
-      </form>
+      </form>{{end}}
     </section>
   </div>
 </div>
