@@ -144,13 +144,19 @@ func (a *app) dash(h func(http.ResponseWriter, *http.Request, *dctx)) http.Handl
 	}
 }
 
+// dashIcons: buntes 48px-Icon (web/static/img/icons) im Seitenkopf je Menüpunkt.
+var dashIcons = map[string]string{"kalender": "kalender", "kunden": "kartei", "leistungen": "schere",
+	"team": "team", "einstellungen": "farbe", "abo": "pro", "": "hilfe"}
+
 // dashPage füllt die Felder für das Dashboard-Layout (dash-top/dash-bottom).
 // nav = aktiver Menüpunkt: kalender, kunden, leistungen, team, einstellungen, abo.
 // Nach ?gespeichert zeigt das Layout d["SavedMsg"] (vom Handler gesetzt) oder "Gespeichert.".
+// Seitenkopf: Heading + Icon, optional d["Lead"] (ein Satz Erklärung unter der Überschrift).
 func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]any {
 	return map[string]any{
 		"Title":      title + " - Kammzeit",
 		"Heading":    title,
+		"Icon":       dashIcons[nav],
 		"Nav":        nav,
 		"Salon":      c.Salon,
 		"User":       c.User,

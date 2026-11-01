@@ -1,6 +1,8 @@
 {{/* Gemeinsames Dashboard-Layout. Seiten: {{template "dash-top" .}} ... {{template "dash-bottom" .}}
-     Daten kommen aus a.dashPage(): Title, Heading, Nav, Salon, User, Accent, OnAccent, BookingURL, Saved.
-     SavedMsg setzt der Handler selbst (konkrete Erfolgsmeldung nach ?gespeichert), sonst "Gespeichert.". */}}
+     Daten kommen aus a.dashPage(): Title, Heading, Lead, Icon, Nav, Salon, User, Accent, OnAccent, BookingURL, Saved.
+     SavedMsg setzt der Handler selbst (konkrete Erfolgsmeldung nach ?gespeichert), sonst "Gespeichert.".
+     Aus Heading (+ Lead, Icon) baut das Layout den Seitenkopf .page-head. Wer einen eigenen Kopf mit
+     Aktionen braucht: d["Heading"] = "" und <div class="page-head">...</div> als erstes Element (siehe dash.css). */}}
 {{define "dash-top"}}<!doctype html>
 <html lang="de">
 <head>
@@ -8,33 +10,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>{{.Title}}</title>
+<link rel="icon" href="/static/img/kammzeit.svg" type="image/svg+xml">
+<link rel="preload" href="/static/fonts/display.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/dash.css">
 <script src="/static/htmx.min.js" defer></script>
+<script src="/static/dash.js" defer></script>
 </head>
 {{/* Bewusst ohne die Akzentfarbe des Salons: das Dashboard nutzt die Kammzeit-Palette aus dash.css.
      Accent/OnAccent stehen für Vorschauen bereit (z. B. Einstellungen). */}}
 <body class="dash">
 <a class="skip" href="#inhalt">Zum Inhalt</a>
 <header class="topbar">
-  <a class="brand" href="/dashboard">Kammzeit</a>
-  <span class="salon-name">{{.Salon.Name}}</span>
-  <nav aria-label="Hauptmenü">
-    <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>Kalender</a>
-    <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>Kunden</a>
-    <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>Leistungen</a>
-    <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>Team</a>
-    <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>Einstellungen</a>
-    <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>Abo</a>
-  </nav>
-  <div class="topbar-end">
-    <a href="{{.BookingURL}}" target="_blank" rel="noopener">Buchungsseite</a>
-    <form method="post" action="/logout"><button class="link" type="submit">Abmelden</button></form>
+  <div class="topbar-in">
+    <a class="brand" href="/dashboard"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34"><span class="brand-text"><span class="brand-word">Kammzeit</span><span class="salon-name">{{.Salon.Name}}</span></span></a>
+    <nav class="topnav" aria-label="Hauptmenü">
+      <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>{{template "dash-icon" "kalender"}}Kalender</a>
+      <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>{{template "dash-icon" "kartei"}}Kunden</a>
+      <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>{{template "dash-icon" "schere"}}Leistungen</a>
+      <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>{{template "dash-icon" "team"}}Team</a>
+      <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>{{template "dash-icon" "farbe"}}Einstellungen</a>
+      <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>{{template "dash-icon" "pro"}}Abo</a>
+    </nav>
+    <div class="topbar-end">
+      <a href="{{.BookingURL}}" target="_blank" rel="noopener">{{template "dash-icon" "link"}}<span class="topbar-label">Buchungsseite</span></a>
+      <form method="post" action="/logout"><button class="link" type="submit">Abmelden</button></form>
+    </div>
   </div>
 </header>
 <main class="dash-main" id="inhalt" tabindex="-1">
-{{if .Heading}}<h1>{{.Heading}}</h1>{{end}}
 {{if .Saved}}<p class="flash" role="status">{{or .SavedMsg "Gespeichert."}}</p>{{end}}
+{{if .Heading}}<div class="page-head">
+  {{with .Icon}}<img class="page-head-icon" src="/static/img/icons/{{.}}.svg" width="48" height="48" alt="">{{end}}
+  <div class="page-head-text"><h1>{{.Heading}}</h1>{{with .Lead}}<p>{{.}}</p>{{end}}</div>
+</div>{{end}}
 {{end}}
+
+{{/* Einfarbiges 24px-Icon aus sprite.svg, Farbe = currentColor. Aufruf: {{template "dash-icon" "kalender"}} */}}
+{{define "dash-icon"}}<svg width="24" height="24" aria-hidden="true" focusable="false"><use href="/static/img/icons/sprite.svg#i-{{.}}-24"/></svg>{{end}}
 
 {{define "dash-bottom"}}</main>
 </body>
