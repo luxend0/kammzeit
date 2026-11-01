@@ -205,10 +205,10 @@ legend.section-title { padding: 0; font-weight: 800; font-size: 1.25rem; line-he
 }
 
 /* 5 Hinweise ---------------------------------------------------------------- */
-.flash, .error { display: flex; align-items: flex-start; gap: .7rem; margin: 0 0 1.25rem; padding: .8rem 1.1rem; border-radius: 16px; font-weight: 600; }
+.flash, .error { position: relative; display: block; margin: 0 0 1.25rem; padding: .8rem 1.1rem .8rem 3.1rem; border-radius: 16px; font-weight: 600; } /* block statt flex: Links im Text bleiben im Fluss */
 .flash { background: var(--tint-mint); }
 .error { background: var(--tint-coral); }
-.flash::before, .error::before { content: ""; flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%; }
+.flash::before, .error::before { content: ""; position: absolute; left: 1.1rem; top: .8rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; }
 .flash::before { background: var(--mint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5 6.5 11.5 12.5 4.5' fill='none' stroke='%2313294b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; }
 .error::before { background: var(--coral) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 3.5v5.5' stroke='%2313294b' stroke-width='2.4' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='12.2' r='1.4' fill='%2313294b'/%3E%3C/svg%3E") center / 14px no-repeat; }
 
