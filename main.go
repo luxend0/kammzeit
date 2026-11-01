@@ -88,7 +88,7 @@ func main() {
 	go a.reminderLoop(context.Background())
 
 	srv := &http.Server{
-		Addr:              ":" + cfg.Port,
+		Addr:              env("LISTEN", ":"+cfg.Port), // hinter einem Proxy: LISTEN=127.0.0.1:8080
 		Handler:           a.routes(),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,

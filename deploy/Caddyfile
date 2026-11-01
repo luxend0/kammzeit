@@ -1,0 +1,22 @@
+# Kammzeit hinter Caddy. Salon-Subdomains bekommen ihr Zertifikat beim ersten
+# Aufruf (on_demand), aber nur wenn Kammzeit den Salon kennt (/_tls/allow).
+{
+	on_demand_tls {
+		ask http://127.0.0.1:8080/_tls/allow
+	}
+}
+
+kammzeit.de {
+	reverse_proxy 127.0.0.1:8080
+}
+
+www.kammzeit.de, kammzeit.com, www.kammzeit.com {
+	redir https://kammzeit.de{uri} permanent
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+	reverse_proxy 127.0.0.1:8080
+}

@@ -88,3 +88,31 @@ func TestTenantSlug(t *testing.T) {
 		}
 	}
 }
+
+// Caddy holt nur Zertifikate, wenn tlsAllowed zustimmt: fremde oder
+// erfundene Subdomains dürfen keine Let's-Encrypt-Limits verbrauchen.
+func TestTLSAllowed(t *testing.T) {
+	db, err := openDB(t.TempDir() + "/t.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO salons (slug, name) VALUES ('mueller', 'Salon Müller')`); err != nil {
+		t.Fatal(err)
+	}
+	a := &app{cfg: config{BaseDomain: "kammzeit.de"}, db: db}
+	for domain, want := range map[string]bool{
+		"kammzeit.de":            true,
+		"www.kammzeit.de":        true,
+		"mueller.kammzeit.de":    true,
+		"MUELLER.kammzeit.de":    true,
+		"gibtsnicht.kammzeit.de": false,
+		"a.mueller.kammzeit.de":  false,
+		"evilkammzeit.de":        false,
+		"example.com":            false,
+		"":                       false,
+	} {
+		if got := a.tlsAllowed(domain); got != want {
+			t.Errorf("tlsAllowed(%q) = %v, want %v", domain, got, want)
+		}
+	}
+}

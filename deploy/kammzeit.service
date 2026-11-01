@@ -1,0 +1,19 @@
+[Unit]
+Description=Kammzeit Terminbuchung
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=kammzeit
+EnvironmentFile=/etc/kammzeit.env
+ExecStart=/usr/local/bin/kammzeit
+Restart=on-failure
+StateDirectory=kammzeit
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ReadWritePaths=/var/lib/kammzeit
+
+[Install]
+WantedBy=multi-user.target

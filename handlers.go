@@ -50,6 +50,9 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("POST /book", a.book)
 	mux.HandleFunc("GET /storno/{token}", a.cancelPage)
 	mux.HandleFunc("POST /storno/{token}", a.cancel)
+	mux.HandleFunc("GET /impressum", a.static("impressum", "Impressum"))
+	mux.HandleFunc("GET /datenschutz", a.static("datenschutz", "Datenschutz"))
+	mux.HandleFunc("GET /_tls/allow", a.tlsAllow)
 	// ponytail: Admin (Kalender, Kundenkartei, Leistungen pflegen) kommt mit dem
 	// Login. Bis dahin bewusst gesperrt statt ungeschützt.
 	admin := func(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +61,40 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("/admin", admin)
 	mux.HandleFunc("/admin/", admin)
 	return securityHeaders(mux)
+}
+
+// static rendert eine Seite ohne Salon-Bezug (Impressum, Datenschutz).
+func (a *app) static(name, title string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		a.render(w, http.StatusOK, name, a.page(nil, title))
+	}
+}
+
+// tlsAllow beantwortet Caddys on_demand-"ask": 200 nur für die Basis-Domain,
+// www und Subdomains existierender Salons. Sonst könnte jeder beliebige
+// Subdomains aufrufen und Zertifikate (Let's-Encrypt-Limits) verbrennen.
+func (a *app) tlsAllow(w http.ResponseWriter, r *http.Request) {
+	if !a.tlsAllowed(r.URL.Query().Get("domain")) {
+		http.Error(w, "nein", http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *app) tlsAllowed(domain string) bool {
+	domain = strings.ToLower(domain)
+	if domain == "www."+a.cfg.BaseDomain {
+		return true
+	}
+	slug, root := tenantSlug(domain, a.cfg.BaseDomain)
+	if root {
+		return true
+	}
+	if slug == "" {
+		return false
+	}
+	var one int
+	return a.db.QueryRow(`SELECT 1 FROM salons WHERE slug = ?`, slug).Scan(&one) == nil
 }
 
 func securityHeaders(next http.Handler) http.Handler {
