@@ -37,14 +37,28 @@ func (a *app) routesCalendar(mux *http.ServeMux) {
 const kalHourPx = 72
 
 var kalMonths = [...]string{"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"}
+var kalMonthsEN = [...]string{"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
 
-func kalDate(t time.Time) string {
+// kalDate: "Montag, 2.11.2026" / "Monday, 2 Nov 2026"
+func kalDate(lang string, t time.Time) string {
+	if lang == "en" {
+		return fmt.Sprintf("%s, %d %s %d", weekdaysEN[t.Weekday()], t.Day(), monthsEN[t.Month()], t.Year())
+	}
 	return fmt.Sprintf("%s, %d.%d.%d", weekdaysDE[t.Weekday()], t.Day(), t.Month(), t.Year())
 }
 
-// kalShortDay: "Mo 2.11."
-func kalShortDay(t time.Time) string {
+// kalShortDay: "Mo 2.11." / "Mon 2 Nov"
+func kalShortDay(lang string, t time.Time) string {
+	if lang == "en" {
+		return fmt.Sprintf("%s %d %s", weekdaysEN[t.Weekday()][:3], t.Day(), monthsEN[t.Month()])
+	}
 	return fmt.Sprintf("%s %d.%d.", weekdaysDE[t.Weekday()][:2], t.Day(), t.Month())
+}
+
+// kalLang = Sprache aus den Layout-Daten (a.dashPage), sonst Deutsch.
+func kalLang(d map[string]any) string {
+	lang, _ := d["Lang"].(string)
+	return lang
 }
 
 // kalParseDay liest YYYY-MM-DD als Mitternacht in der Salon-Zeitzone, sonst heute.
@@ -116,8 +130,8 @@ func (a *app) kalIndex(w http.ResponseWriter, r *http.Request, c *dctx) {
 	d := a.dashPage(c, r, "kalender", "Kalender")
 	d["Heading"] = "" // eigene Überschrift unter den Kennzahlen
 	if id, _ := strconv.ParseInt(q.Get("termin"), 10, 64); id > 0 && d["Saved"] == true {
-		if t, err := a.kalLoad(s, id); err == nil { // fremde ID: keine Meldung mit Daten
-			d["SavedMsg"] = kalSavedMsg(q.Get("gespeichert"), t)
+		if t, err := a.kalLoad(s, id, kalLang(d)); err == nil { // fremde ID: keine Meldung mit Daten
+			d["SavedMsg"] = kalSavedMsg(kalLang(d), q.Get("gespeichert"), t)
 		}
 	}
 	d["Day"], d["Week"] = day.Format(time.DateOnly), week
@@ -195,7 +209,7 @@ func (a *app) kalHead(d map[string]any, s *salon, now time.Time) error {
 	t := time.Unix(start, 0).In(s.Loc)
 	n.When = t.Format("15:04")
 	if t.Format(time.DateOnly) != today.Format(time.DateOnly) {
-		n.When = kalShortDay(t) + ", " + n.When
+		n.When = kalShortDay(kalLang(d), t) + ", " + n.When
 	}
 	d["Next"] = &n
 	return nil
@@ -336,9 +350,9 @@ func (a *app) kalDay(d map[string]any, s *salon, day, now time.Time) error {
 		b.Title = ap.Time + " " + ap.Customer + ", " + ap.Service
 		switch ap.Status {
 		case "cancelled":
-			b.Title += " (abgesagt)"
+			b.Title += " (" + tr(kalLang(d), "abgesagt") + ")"
 		case "noshow":
-			b.Title += " (nicht erschienen)"
+			b.Title += " (" + tr(kalLang(d), "nicht erschienen") + ")"
 		}
 		if ap.Status != "cancelled" {
 			count++
@@ -374,8 +388,11 @@ func (a *app) kalDay(d map[string]any, s *salon, day, now time.Time) error {
 			d["NowTop"] = pct(m)
 		}
 	}
-	d["Title"] = kalDate(day) + " - Kammzeit"
+	d["Title"] = kalDate(kalLang(d), day) + " - Kammzeit"
 	d["DayTitle"] = fmt.Sprintf("%s, %d. %s %d", weekdaysDE[day.Weekday()], day.Day(), kalMonths[day.Month()-1], day.Year())
+	if kalLang(d) == "en" {
+		d["DayTitle"] = fmt.Sprintf("%s, %d %s %d", weekdaysEN[day.Weekday()], day.Day(), kalMonthsEN[day.Month()-1], day.Year())
+	}
 	d["DayCount"], d["Cols"], d["Hours"], d["Slots"] = count, cols, hours, slots
 	d["Off"] = len(work) == 0 && len(boxes) == 0 // niemand arbeitet, kein Termin: Text statt leerem Raster
 	d["HeightPx"] = (hi - lo) * kalHourPx / 60
@@ -429,7 +446,7 @@ func (a *app) kalWeek(d map[string]any, s *salon, day, now time.Time) error {
 	byDate := map[string]int{}
 	for i := range days {
 		t := mon.AddDate(0, 0, i)
-		days[i] = kalWeekDay{Label: kalDate(t), Href: "/dashboard?tag=" + t.Format(time.DateOnly), Today: t.Equal(today)}
+		days[i] = kalWeekDay{Label: kalDate(kalLang(d), t), Href: "/dashboard?tag=" + t.Format(time.DateOnly), Today: t.Equal(today)}
 		byDate[t.Format(time.DateOnly)] = i
 	}
 	for _, ap := range appts {
@@ -439,8 +456,11 @@ func (a *app) kalWeek(d map[string]any, s *salon, day, now time.Time) error {
 	}
 	sun := mon.AddDate(0, 0, 6)
 	_, kw := mon.ISOWeek()
-	d["Title"] = fmt.Sprintf("KW %d - Kammzeit", kw)
+	d["Title"] = trf(kalLang(d), "KW %d - Kammzeit", kw)
 	d["DayTitle"] = fmt.Sprintf("KW %d: %d.%d. bis %d.%d.%d", kw, mon.Day(), mon.Month(), sun.Day(), sun.Month(), sun.Year())
+	if kalLang(d) == "en" {
+		d["DayTitle"] = fmt.Sprintf("Week %d: %d %s to %d %s %d", kw, mon.Day(), monthsEN[mon.Month()], sun.Day(), monthsEN[sun.Month()], sun.Year())
+	}
 	d["Days"] = days
 	return nil
 }
@@ -457,7 +477,8 @@ type kalTermin struct {
 	Minutes                                int
 }
 
-func (a *app) kalLoad(s *salon, id int64) (*kalTermin, error) {
+// kalLoad lädt einen Termin des Salons; When und Created sind in der Sprache lang formatiert.
+func (a *app) kalLoad(s *salon, id int64, lang string) (*kalTermin, error) {
 	var t kalTermin
 	var st, en, cr int64
 	var email sql.NullString
@@ -475,8 +496,11 @@ func (a *app) kalLoad(s *salon, id int64) (*kalTermin, error) {
 	t.Email = email.String
 	t.Start, t.End = time.Unix(st, 0).In(s.Loc), time.Unix(en, 0).In(s.Loc)
 	t.Minutes = int(t.End.Sub(t.Start).Minutes())
-	t.When = kalDate(t.Start) + ", " + t.Start.Format("15:04") + "-" + t.End.Format("15:04") + " Uhr"
-	t.Created = deDate(time.Unix(cr, 0).In(s.Loc))
+	t.When = kalDate(lang, t.Start) + ", " + t.Start.Format("15:04") + "-" + t.End.Format("15:04")
+	if lang != "en" {
+		t.When += " Uhr"
+	}
+	t.Created = dateFor(lang, time.Unix(cr, 0).In(s.Loc))
 	t.Tel = telURL(t.Phone)
 	return &t, nil
 }
@@ -484,7 +508,7 @@ func (a *app) kalLoad(s *salon, id int64) (*kalTermin, error) {
 // kalFind lädt den Termin aus {id}. Fremde oder unbekannte IDs ergeben 404.
 func (a *app) kalFind(w http.ResponseWriter, r *http.Request, c *dctx) *kalTermin {
 	id, _ := strconv.ParseInt(r.PathValue("id"), 10, 64) // ungültig -> 0 -> nicht gefunden
-	t, err := a.kalLoad(c.Salon, id)
+	t, err := a.kalLoad(c.Salon, id, a.langFor(r))
 	if errors.Is(err, sql.ErrNoRows) {
 		a.dashError(w, r, c, http.StatusNotFound, "Diesen Termin gibt es nicht.")
 		return nil
@@ -497,25 +521,25 @@ func (a *app) kalFind(w http.ResponseWriter, r *http.Request, c *dctx) *kalTermi
 
 // kalSavedMsg: Erfolgsmeldung zu einem festen Code aus ?gespeichert=. Namen und
 // Zeiten kommen aus der Datenbank, nie Text aus der URL. Unbekannt -> "" (Layout: "Gespeichert.").
-func kalSavedMsg(code string, t *kalTermin) string {
-	at := kalShortDay(t.Start) + " um " + t.Start.Format("15:04")
+func kalSavedMsg(lang, code string, t *kalTermin) string {
+	day, hm := kalShortDay(lang, t.Start), t.Start.Format("15:04")
 	switch code {
 	case "abgesagt":
-		return "Termin abgesagt."
+		return tr(lang, "Termin abgesagt.")
 	case "abgesagt-mail":
-		return "Termin abgesagt. " + t.Customer + " bekommt eine Mail."
+		return trf(lang, "Termin abgesagt. %s bekommt eine Mail.", t.Customer)
 	case "nicht-erschienen":
-		return "Termin als nicht erschienen markiert."
+		return tr(lang, "Termin als nicht erschienen markiert.")
 	case "notiz":
-		return "Notiz gespeichert."
+		return tr(lang, "Notiz gespeichert.")
 	case "verschoben":
-		return "Termin verschoben auf " + at + " bei " + t.Staff + "."
+		return trf(lang, "Termin verschoben auf %s um %s bei %s.", day, hm, t.Staff)
 	case "verschoben-mail":
-		return "Termin verschoben auf " + at + " bei " + t.Staff + ". " + t.Customer + " bekommt eine Mail."
+		return trf(lang, "Termin verschoben auf %s um %s bei %s. %s bekommt eine Mail.", day, hm, t.Staff, t.Customer)
 	case "eingetragen":
-		return "Termin für " + t.Customer + " am " + at + " eingetragen."
+		return trf(lang, "Termin für %s am %s um %s eingetragen.", t.Customer, day, hm)
 	case "eingetragen-mail":
-		return "Termin für " + t.Customer + " am " + at + " eingetragen. Die Bestätigung geht per Mail raus."
+		return trf(lang, "Termin für %s am %s um %s eingetragen. Die Bestätigung geht per Mail raus.", t.Customer, day, hm)
 	}
 	return ""
 }
@@ -525,11 +549,12 @@ func (a *app) kalDetail(w http.ResponseWriter, r *http.Request, c *dctx) {
 	if t == nil {
 		return
 	}
-	d := a.dashPage(c, r, "kalender", t.Customer+", "+kalShortDay(t.Start)+", "+t.Start.Format("15:04"))
+	lang := a.langFor(r)
+	d := a.dashPage(c, r, "kalender", t.Customer+", "+kalShortDay(lang, t.Start)+", "+t.Start.Format("15:04"))
 	d["Heading"] = "" // eigener Seitenkopf mit Zurück-Link und Status
 	d["T"], d["Future"] = t, t.Start.After(time.Now())
 	d["BackHref"] = "/dashboard?tag=" + t.Start.Format(time.DateOnly)
-	d["SavedMsg"] = kalSavedMsg(r.URL.Query().Get("gespeichert"), t)
+	d["SavedMsg"] = kalSavedMsg(lang, r.URL.Query().Get("gespeichert"), t)
 	a.render(w, http.StatusOK, "kal-termin", d)
 }
 
@@ -626,17 +651,17 @@ type kalZeit struct {
 // für die Dauer dur, laut Arbeitszeiten und gebuchten Terminen (freeSlotsFor).
 // Fehlende oder fremde Angaben ergeben nur einen Hinweis.
 // ponytail: beim Verschieben zählt die bisherige Zeit des Termins als belegt.
-func (a *app) kalTimes(s *salon, staffID string, dur time.Duration, day, zeit string, now time.Time) (kalZeit, error) {
+func (a *app) kalTimes(lang string, s *salon, staffID string, dur time.Duration, day, zeit string, now time.Time) (kalZeit, error) {
 	z := kalZeit{Zeit: zeit}
 	d, err := time.ParseInLocation(time.DateOnly, day, s.Loc)
 	if dur <= 0 || err != nil {
-		z.Hint = "Wähl Leistung und Datum, dann stehen hier die freien Zeiten."
+		z.Hint = tr(lang, "Wähl Leistung und Datum, dann stehen hier die freien Zeiten.")
 		return z, nil
 	}
 	var id int64
 	err = a.db.QueryRow(`SELECT id, name FROM staff WHERE id = ? AND salon_id = ?`, staffID, s.ID).Scan(&id, &z.Staff)
 	if errors.Is(err, sql.ErrNoRows) {
-		z.Hint = "Wähl einen Mitarbeiter, dann stehen hier die freien Zeiten."
+		z.Hint = tr(lang, "Wähl einen Mitarbeiter, dann stehen hier die freien Zeiten.")
 		return z, nil
 	} else if err != nil {
 		return z, err
@@ -650,7 +675,7 @@ func (a *app) kalTimes(s *salon, staffID string, dur time.Duration, day, zeit st
 		z.Slots = append(z.Slots, kalSlot{Time: hm, ID: hm[:2] + hm[3:], Selected: hm == zeit})
 	}
 	if len(z.Slots) == 0 {
-		z.Hint = z.Staff + " hat an diesem Tag laut Arbeitszeiten keine freie Zeit."
+		z.Hint = trf(lang, "%s hat an diesem Tag laut Arbeitszeiten keine freie Zeit.", z.Staff)
 	}
 	return z, nil
 }
@@ -659,12 +684,12 @@ func (a *app) kalTimes(s *salon, staffID string, dur time.Duration, day, zeit st
 // oder Datum wechseln oder ein Vorschlag angeklickt wird. Die Dauer kommt aus
 // der Leistung (neuer Termin) oder dem Termin selbst (?termin=, verschieben).
 func (a *app) kalTimesFrag(w http.ResponseWriter, r *http.Request, c *dctx) {
-	q := r.URL.Query()
+	q, lang := r.URL.Query(), a.langFor(r)
 	var dur time.Duration
 	var err error
 	if id, _ := strconv.ParseInt(q.Get("termin"), 10, 64); id > 0 {
 		var t *kalTermin
-		if t, err = a.kalLoad(c.Salon, id); err == nil {
+		if t, err = a.kalLoad(c.Salon, id, lang); err == nil {
 			dur = t.End.Sub(t.Start)
 		}
 	} else if q.Get("leistung") != "" {
@@ -679,26 +704,26 @@ func (a *app) kalTimesFrag(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	var z kalZeit
 	if err == nil || errors.Is(err, sql.ErrNoRows) { // fremde oder unbekannte ID: nur der Hinweis
-		z, err = a.kalTimes(c.Salon, q.Get("mitarbeiter"), dur, q.Get("tag"), zeit, time.Now())
+		z, err = a.kalTimes(lang, c.Salon, q.Get("mitarbeiter"), dur, q.Get("tag"), zeit, time.Now())
 	}
 	if err != nil {
 		log.Print(err)
-		http.Error(w, "Fehler beim Laden der freien Zeiten.", http.StatusInternalServerError)
+		http.Error(w, tr(lang, "Fehler beim Laden der freien Zeiten."), http.StatusInternalServerError)
 		return
 	}
-	a.render(w, http.StatusOK, "kal-zeit", map[string]any{"Z": z})
+	a.render(w, http.StatusOK, "kal-zeit", map[string]any{"Z": z, "Lang": lang})
 }
 
 // --- Termin verschieben ---
 
 // kalMoveStaff: aktive Mitarbeiter, dazu der bisherige, falls er inaktiv ist.
-func (a *app) kalMoveStaff(s *salon, t *kalTermin) ([]staffMember, error) {
+func (a *app) kalMoveStaff(lang string, s *salon, t *kalTermin) ([]staffMember, error) {
 	staff, err := a.staff(s.ID)
 	if err != nil {
 		return nil, err
 	}
 	if !slices.ContainsFunc(staff, func(m staffMember) bool { return m.ID == t.StaffID }) {
-		staff = append(staff, staffMember{ID: t.StaffID, Name: t.Staff + " (inaktiv)"})
+		staff = append(staff, staffMember{ID: t.StaffID, Name: t.Staff + " (" + tr(lang, "inaktiv") + ")"})
 	}
 	return staff, nil
 }
@@ -718,12 +743,13 @@ func (a *app) kalMovePage(w http.ResponseWriter, r *http.Request, c *dctx, t *ka
 		a.dashError(w, r, c, http.StatusConflict, "Nur gebuchte Termine lassen sich verschieben.")
 		return
 	}
-	staff, err := a.kalMoveStaff(c.Salon, t)
+	lang := a.langFor(r)
+	staff, err := a.kalMoveStaff(lang, c.Salon, t)
 	if err != nil {
 		a.dashServerError(w, r, c, err)
 		return
 	}
-	z, err := a.kalTimes(c.Salon, f.Staff, t.End.Sub(t.Start), f.Date, f.Time, time.Now())
+	z, err := a.kalTimes(lang, c.Salon, f.Staff, t.End.Sub(t.Start), f.Date, f.Time, time.Now())
 	if err != nil {
 		a.dashServerError(w, r, c, err)
 		return
@@ -731,7 +757,7 @@ func (a *app) kalMovePage(w http.ResponseWriter, r *http.Request, c *dctx, t *ka
 	z.Invalid = field == "zeit"
 	d := a.dashPage(c, r, "kalender", "Termin verschieben")
 	d["Lead"] = "Neue Zeit oder anderer Mitarbeiter. Die freien Zeiten stehen unter dem Uhrzeit-Feld."
-	d["T"], d["F"], d["Staff"], d["Z"], d["Inform"], d["Error"] = t, f, staff, z, inform, msg
+	d["T"], d["F"], d["Staff"], d["Z"], d["Inform"], d["Error"] = t, f, staff, z, inform, tr(lang, msg)
 	d["Invalid"] = map[string]bool{field: true}
 	a.render(w, status, "kal-verschieben", d)
 }
@@ -767,7 +793,7 @@ func (a *app) kalMove(w http.ResponseWriter, r *http.Request, c *dctx, t *kalTer
 		a.dashError(w, r, c, ke.status, ke.msg)
 		return
 	case errors.As(err, &ke):
-		bad(ke.status, "zeit", ke.msg) // Überschneidung
+		bad(ke.status, "zeit", ke.text(a.langFor(r))) // Überschneidung
 		return
 	case err != nil:
 		a.dashServerError(w, r, c, err)
@@ -803,7 +829,7 @@ func (a *app) kalUpdate(s *salon, t *kalTermin, staffID string, start, now time.
 	err = tx.QueryRow(`SELECT id, name FROM staff WHERE id = ? AND salon_id = ? AND (active = 1 OR id = ?)`, staffID, s.ID, t.StaffID).
 		Scan(&st.ID, &st.Name)
 	if errors.Is(err, sql.ErrNoRows) {
-		return "", &kalErr{http.StatusNotFound, "Diesen Mitarbeiter gibt es nicht."}
+		return "", &kalErr{status: http.StatusNotFound, msg: "Diesen Mitarbeiter gibt es nicht."}
 	} else if err != nil {
 		return "", err
 	}
@@ -821,7 +847,7 @@ func (a *app) kalUpdate(s *salon, t *kalTermin, staffID string, start, now time.
 	var token string
 	err = tx.QueryRow(q+` WHERE id = ? AND salon_id = ? AND status = 'booked' RETURNING cancel_token`, append(args, t.ID, s.ID)...).Scan(&token)
 	if errors.Is(err, sql.ErrNoRows) {
-		return "", &kalErr{http.StatusConflict, "Dieser Termin ist nicht mehr gebucht."}
+		return "", &kalErr{status: http.StatusConflict, msg: "Dieser Termin ist nicht mehr gebucht."}
 	} else if err != nil {
 		return "", err
 	}
@@ -840,8 +866,8 @@ func kalOverlap(tx *sql.Tx, s *salon, st *staffMember, start, end time.Time, exc
 		return err
 	}
 	hhmm := func(u int64) string { return time.Unix(u, 0).In(s.Loc).Format("15:04") }
-	return &kalErr{http.StatusConflict, fmt.Sprintf("%s hat von %s bis %s Uhr schon einen Termin. Bitte eine andere Uhrzeit wählen.",
-		st.Name, hhmm(bs), hhmm(be))}
+	return &kalErr{http.StatusConflict, "%s hat von %s bis %s Uhr schon einen Termin. Bitte eine andere Uhrzeit wählen.",
+		[]any{st.Name, hhmm(bs), hhmm(be)}}
 }
 
 // --- Neuer Termin ---
@@ -901,11 +927,11 @@ func (a *app) kalSearch(w http.ResponseWriter, r *http.Request, c *dctx) {
 		var err error
 		if hits, err = a.kalCustomers(c.Salon.ID, 0, q); err != nil {
 			log.Print(err)
-			http.Error(w, "Fehler bei der Suche.", http.StatusInternalServerError)
+			http.Error(w, tr(a.langFor(r), "Fehler bei der Suche."), http.StatusInternalServerError)
 			return
 		}
 	}
-	a.render(w, http.StatusOK, "kal-treffer", map[string]any{"Hits": hits, "Q": q})
+	a.render(w, http.StatusOK, "kal-treffer", map[string]any{"Hits": hits, "Q": q, "Lang": a.langFor(r)})
 }
 
 func (a *app) kalNew(w http.ResponseWriter, r *http.Request, c *dctx) {
@@ -963,7 +989,8 @@ func (a *app) kalFormPage(w http.ResponseWriter, r *http.Request, c *dctx, f kal
 	if staffID == "" && len(staff) > 0 {
 		staffID = strconv.FormatInt(staff[0].ID, 10)
 	}
-	z, err := a.kalTimes(c.Salon, staffID, dur, f.Date, f.Time, time.Now())
+	lang := a.langFor(r)
+	z, err := a.kalTimes(lang, c.Salon, staffID, dur, f.Date, f.Time, time.Now())
 	if err != nil {
 		a.dashServerError(w, r, c, err)
 		return
@@ -971,7 +998,7 @@ func (a *app) kalFormPage(w http.ResponseWriter, r *http.Request, c *dctx, f kal
 	z.Invalid = field == "zeit"
 	d := a.dashPage(c, r, "kalender", "Neuer Termin")
 	d["Lead"] = "Für Anrufe und Laufkundschaft. Online-Buchungen landen von selbst im Kalender."
-	d["F"], d["Q"], d["Hits"], d["Error"], d["Z"] = f, q, hits, msg, z
+	d["F"], d["Q"], d["Hits"], d["Error"], d["Z"] = f, q, hits, tr(lang, msg), z
 	d["Invalid"] = map[string]bool{field: true}
 	d["Services"], d["Staff"] = services, staff
 	d["HasStaff"], d["HasServices"] = len(staff) > 0, len(services) > 0
@@ -979,12 +1006,16 @@ func (a *app) kalFormPage(w http.ResponseWriter, r *http.Request, c *dctx, f kal
 }
 
 // kalErr ist ein Eingabefehler mit HTTP-Status (404 fremde ID, 409 Überschneidung).
+// msg ist der deutsche Text bzw. das Format (Schlüssel der Übersetzung), args setzt text ein.
 type kalErr struct {
 	status int
 	msg    string
+	args   []any
 }
 
-func (e *kalErr) Error() string { return e.msg }
+func (e *kalErr) Error() string { return fmt.Sprintf(e.msg, e.args...) }
+
+func (e *kalErr) text(lang string) string { return trf(lang, e.msg, e.args...) }
 
 func (a *app) kalCreate(w http.ResponseWriter, r *http.Request, c *dctx) {
 	s := c.Salon
@@ -1043,7 +1074,7 @@ func (a *app) kalCreate(w http.ResponseWriter, r *http.Request, c *dctx) {
 		a.dashError(w, r, c, ke.status, ke.msg)
 		return
 	case errors.As(err, &ke):
-		a.kalFormPage(w, r, c, f, "", ke.status, "zeit", ke.msg) // Überschneidung
+		a.kalFormPage(w, r, c, f, "", ke.status, "zeit", ke.text(a.langFor(r))) // Überschneidung
 		return
 	case err != nil:
 		a.dashServerError(w, r, c, err)
@@ -1084,7 +1115,7 @@ func (a *app) kalInsert(s *salon, f kalForm, start time.Time, email string, now 
 	// lookup prüft salon_id und active; Arbeitszeiten werden bewusst nicht geprüft.
 	sv, st, err := lookup(tx, s.ID, f.Service, f.Staff)
 	if errors.Is(err, sql.ErrNoRows) {
-		return nil, &kalErr{http.StatusNotFound, "Leistung oder Mitarbeiter gibt es nicht."}
+		return nil, &kalErr{status: http.StatusNotFound, msg: "Leistung oder Mitarbeiter gibt es nicht."}
 	} else if err != nil {
 		return nil, err
 	}
@@ -1113,7 +1144,7 @@ func (a *app) kalInsert(s *salon, f kalForm, start time.Time, email string, now 
 		err = tx.QueryRow(`SELECT id, name, email FROM customers WHERE id = ? AND salon_id = ?`, f.Customer, s.ID).
 			Scan(&custID, &n.customer, &custEmail)
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, &kalErr{http.StatusNotFound, "Diesen Kunden gibt es nicht."}
+			return nil, &kalErr{status: http.StatusNotFound, msg: "Diesen Kunden gibt es nicht."}
 		}
 	} else {
 		// Ohne E-Mail (und ohne bekannte Nummer): NULL, also ein neuer Kunde. Mit E-Mail:

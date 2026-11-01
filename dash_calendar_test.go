@@ -565,3 +565,78 @@ func TestKalLeererTag(t *testing.T) {
 		t.Errorf("Termin-Detail: Überschrift fehlt")
 	}
 }
+
+// Kalender auf der englischen Domain: Menü, Tages-/Wochenansicht, Termin-Detail,
+// Meldungen und Fehler auf Englisch, Datum im englischen Format, 24-Stunden-Uhr.
+func TestKalEnglish(t *testing.T) {
+	a := kalTestApp(t)
+	a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
+	f := kalSeed(t, a, "eins", "Europe/Berlin")
+	a.db.Exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, 1, 540, 1080)`, f.staff) // Mo 9-18
+	id := f.appt(t, a, time.Date(2030, 3, 4, 10, 0, 0, 0, f.loc), "booked")
+	do := func(method, path string, form url.Values) *httptest.ResponseRecorder {
+		t.Helper()
+		var body *strings.Reader
+		if form != nil {
+			body = strings.NewReader(form.Encode())
+		} else {
+			body = strings.NewReader("")
+		}
+		req := httptest.NewRequest(method, "http://kammzeit-en.test"+path, body)
+		if form != nil {
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
+		req.Header.Set("Origin", "http://kammzeit-en.test")
+		req.AddCookie(&http.Cookie{Name: sessionCookie, Value: f.cookie})
+		rec := httptest.NewRecorder()
+		a.routes().ServeHTTP(rec, req)
+		return rec
+	}
+	check := func(path string, want, notWant []string) {
+		t.Helper()
+		rec := do("GET", path, nil)
+		body := rec.Body.String()
+		if rec.Code != 200 {
+			t.Fatalf("%s: %d", path, rec.Code)
+		}
+		for _, w := range want {
+			if !strings.Contains(body, w) {
+				t.Errorf("%s: %q fehlt", path, w)
+			}
+		}
+		for _, w := range notWant {
+			if strings.Contains(body, w) {
+				t.Errorf("%s: deutscher Text %q", path, w)
+			}
+		}
+	}
+	check("/dashboard?tag=2030-03-04", []string{`<html lang="en">`, ">Calendar</a>", ">Customers</a>", ">Settings</a>", ">Plan</a>",
+		"New appointment", "Monday, 4 March 2030", "Appointments today", "Next appointment", "1 appointment.", "Log out",
+		"http://eins.kammzeit.test/"},
+		[]string{"Neuer Termin", "Termine heute", "Abmelden", "Erste Schritte", "Uhr"})
+	check("/dashboard?ansicht=woche&tag=2030-03-06", []string{"Week 10: 4 Mar to 10 Mar 2030", "Monday, 4 Mar 2030", "Previous week"},
+		[]string{"KW ", "Vorwoche", "Montag"})
+	check(fmt.Sprintf("/dashboard/termine/%d", id), []string{"Schnitt with Anna-eins, Monday, 4 Mar 2030, 10:00-11:00", "(60 min)",
+		"booked", "Cancel appointment", "Back to calendar"}, []string{"gebucht", " Uhr", "Termin absagen"})
+	check("/dashboard/termine/neu?tag=2030-03-04", []string{"New appointment", "What and when", "New customer", "Choose a service and a date"},
+		[]string{"Neuer Kunde", "Was und wann"})
+
+	// Verschieben mit Erfolgsmeldung, Überschneidung mit englischem Fehler.
+	f.appt(t, a, time.Date(2030, 3, 4, 12, 0, 0, 0, f.loc), "booked")
+	move := url.Values{"mitarbeiter": {fmt.Sprint(f.staff)}, "tag": {"2030-03-04"}, "zeit": {"11:30"}}
+	if rec := do("POST", fmt.Sprintf("/dashboard/termine/%d/verschieben", id), move); rec.Code != http.StatusConflict ||
+		!strings.Contains(rec.Body.String(), "Anna-eins already has an appointment from 12:00 to 13:00.") {
+		t.Errorf("Überschneidung: %d", rec.Code)
+	}
+	move.Set("zeit", "15:00")
+	if rec := do("POST", fmt.Sprintf("/dashboard/termine/%d/verschieben", id), move); rec.Code != http.StatusSeeOther {
+		t.Fatalf("verschieben: %d", rec.Code)
+	}
+	check(fmt.Sprintf("/dashboard/termine/%d?gespeichert=verschoben", id), []string{"Appointment rescheduled to Mon 4 Mar at 15:00 with Anna-eins."}, nil)
+	if rec := do("GET", "/dashboard/termine/999999", nil); rec.Code != http.StatusNotFound || !strings.Contains(rec.Body.String(), "This appointment does not exist.") {
+		t.Errorf("unbekannter Termin: %d", rec.Code)
+	}
+	// Salon mit englischer Buchungsseite: Link oben auf die .com-Domain.
+	a.db.Exec(`UPDATE salons SET lang = 'en' WHERE id = ?`, f.salon)
+	check("/dashboard?tag=2030-03-04", []string{"https://eins.kammzeit-en.test/"}, nil)
+}
