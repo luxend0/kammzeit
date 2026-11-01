@@ -1,0 +1,523 @@
+{{/* Mails (Versand: a.mailT(to, lang, name, data), Daten: mail.go).
+     Je Mail drei Templates: mail-<name>-subject, -text (vollständig, Klartext), -html.
+     Sprache über .Lang ("de"/"en"), kurze Texte mit {{mt .Lang "deutsch" "english"}}.
+     HTML: Tabellen-Layout, Inline-CSS, max. 600px, keine externen Fonts/Skripte,
+     kein Tracking-Pixel, keine Klick-Tracking-Links. Bilder absolut von .Img.
+     Kunden-Mails (Daten mit .S = Salon) tragen den Salon im Kopf und seine Akzentfarbe,
+     alle anderen tragen Kammzeit.
+     Im Textteil keine spitzen Klammern und kein "&" im festen Text: html/template
+     maskiert, renderMail wandelt Entities zurück. */}}
+
+{{/* ===== Gemeinsames Layout ===== */}}
+
+{{define "mail-head"}}<!DOCTYPE html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+<meta name="color-scheme" content="light dark">
+<meta name="supported-color-schemes" content="light dark">
+<title>{{.Subject}}</title>
+<style>
+:root { color-scheme: light dark; supported-color-schemes: light dark; }
+body { margin: 0; padding: 0; width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+body, table, td, p, a, h1 { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+table { border-collapse: separate; mso-table-lspace: 0; mso-table-rspace: 0; }
+img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; }
+a { color: #1E6BFF; }
+@media (max-width: 600px) {
+  .kz-pad { padding: 16px 10px 28px !important; }
+  .kz-card { padding: 26px 20px 26px !important; }
+  .kz-h1 { font-size: 24px !important; line-height: 30px !important; }
+  .kz-kammi { width: 72px !important; height: 72px !important; }
+}
+@media (prefers-color-scheme: dark) {
+  .kz-bg { background: #0B1830 !important; }
+  .kz-card { background: #13294B !important; }
+  .kz-box { background: #1D3A66 !important; }
+  .kz-t { color: #EAF4FF !important; }
+  .kz-m { color: #AFC4E0 !important; }
+  .kz-a { color: #8FCBFF !important; }
+  .kz-hr { border-color: #2A4A78 !important; }
+  .kz-bn { background: #1E6BFF !important; border-color: #1E6BFF !important; }
+}
+[data-ogsb] .kz-bg { background: #0B1830 !important; }
+[data-ogsb] .kz-card { background: #13294B !important; }
+[data-ogsb] .kz-box { background: #1D3A66 !important; }
+[data-ogsc] .kz-t { color: #EAF4FF !important; }
+[data-ogsc] .kz-m { color: #AFC4E0 !important; }
+[data-ogsc] .kz-a { color: #8FCBFF !important; }
+</style>
+</head>
+<body class="kz-bg" style="margin:0;padding:0;background:#E3F3FF;">
+{{end}}
+
+{{/* Vorschautext im Postfach (unsichtbar), danach Füllzeichen, damit kein Seitentext nachrutscht. */}}
+{{define "mail-pre"}}<div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;mso-hide:all;font-size:1px;line-height:1px;color:#E3F3FF;">{{.}}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+{{end}}
+
+{{/* Kopf (Salon oder Kammzeit) und Beginn der weißen Karte. */}}
+{{define "mail-frame"}}<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-bg" bgcolor="#E3F3FF" style="background:#E3F3FF;">
+<tr><td align="center" class="kz-pad" style="padding:28px 16px 40px;">
+{{mso true}}
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;">
+<tr><td style="padding:0 4px 16px;">
+{{- if .S}}
+<table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
+<td width="40" height="40" align="center" valign="middle" bgcolor="{{.Accent}}" style="width:40px;height:40px;border-radius:12px;background:{{.Accent}};font-size:19px;line-height:40px;font-weight:800;color:{{.OnAccent}};">{{.Initial}}</td>
+<td class="kz-t" style="padding-left:12px;font-size:20px;line-height:26px;font-weight:800;letter-spacing:-0.3px;color:#13294B;"><a href="{{.Book}}" target="_blank" class="kz-t" style="color:#13294B;text-decoration:none;">{{.S.Name}}</a></td>
+</tr></table>
+{{- else}}
+<table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
+<td width="40" valign="middle"><a href="{{.Site}}" target="_blank"><img src="{{.Img}}logo.png" width="40" height="40" alt="" style="display:block;width:40px;height:40px;border:0;"></a></td>
+<td class="kz-t" style="padding-left:10px;font-size:22px;line-height:28px;font-weight:800;letter-spacing:-0.5px;color:#13294B;"><a href="{{.Site}}" target="_blank" class="kz-t" style="color:#13294B;text-decoration:none;">Kammzeit</a></td>
+</tr></table>
+{{- end}}
+</td></tr>
+<tr><td class="kz-card kz-t" bgcolor="#ffffff" style="background:#ffffff;border-radius:20px;border-top:6px solid {{if .S}}{{.Accent}}{{else}}#FFC93C{{end}};padding:34px 36px 32px;font-size:16px;line-height:25px;color:#13294B;">
+{{end}}
+
+{{/* Ende der Karte, Fuß, Ende der Seite. */}}
+{{define "mail-end"}}
+</td></tr>
+<tr><td class="kz-m" align="center" style="padding:22px 16px 0;font-size:13px;line-height:20px;color:#4B5E7E;">
+{{- if .S}}
+{{if eq .Lang "en"}}This email is from {{.S.Name}} about your appointment.{{else}}Diese Mail kommt von {{.S.Name}} zu deinem Termin.{{end}}{{with .SalonImprint}} <a href="{{.}}" target="_blank" class="kz-m" style="color:#4B5E7E;">{{mt $.Lang "Impressum" "Imprint"}}</a>{{end}}
+{{- if .Branding}}<br>{{mt .Lang "Online-Termine mit" "Online booking with"}} <a href="{{.Site}}" target="_blank" class="kz-m" style="color:#4B5E7E;">Kammzeit</a>{{end}}
+{{- else}}
+<a href="{{.Site}}" target="_blank" class="kz-m" style="color:#4B5E7E;font-weight:700;text-decoration:none;">Kammzeit</a> &middot; {{mt .Lang "Online-Terminbuchung für Salons" "Online booking for salons"}}
+{{- if .Legal}}<br><a href="{{.Imprint}}" target="_blank" class="kz-m" style="color:#4B5E7E;">{{mt .Lang "Impressum" "Imprint"}}</a> &middot; <a href="{{.Privacy}}" target="_blank" class="kz-m" style="color:#4B5E7E;">{{mt .Lang "Datenschutz" "Privacy"}}</a>{{end}}
+{{- end}}
+</td></tr>
+</table>
+{{mso false}}
+</td></tr>
+</table>
+</body>
+</html>
+{{end}}
+
+{{/* Überschrift, optional mit Kammi rechts. Args: Lang, Text, Img (leer = ohne Kammi). */}}
+{{define "mail-h1"}}<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr>
+<td valign="middle"><h1 class="kz-t kz-h1" style="margin:0;font-size:28px;line-height:34px;font-weight:800;letter-spacing:-0.5px;color:#13294B;">{{.Text}}</h1></td>
+{{- with .Img}}
+<td width="96" valign="bottom" align="right" style="padding-left:16px;"><img src="{{.}}kammi.png" width="96" height="96" alt="{{mt $.Lang "Kammi, das Kammzeit-Maskottchen, winkt" "Kammi, the Kammzeit mascot, waving"}}" class="kz-kammi" style="display:block;width:96px;height:96px;border:0;"></td>
+{{- end}}
+</tr></table>
+{{end}}
+
+{{/* Pill-Button als Tabelle (bulletproof). Args: URL, Label, C (mailColors). */}}
+{{define "mail-btn"}}<table role="presentation" border="0" cellspacing="0" cellpadding="0" align="left" style="margin:0 12px 12px 0;"><tr>
+<td align="center" bgcolor="{{.C.BG}}" class="{{.C.Class}}" style="background:{{.C.BG}};border:2px solid {{.C.Line}};border-radius:999px;mso-padding-alt:12px 24px;"><a href="{{.URL}}" target="_blank" style="display:inline-block;padding:12px 24px;font-size:16px;line-height:20px;font-weight:700;color:{{.C.FG}};text-decoration:none;border-radius:999px;">{{.Label}}</a></td>
+</tr></table>
+{{end}}
+
+{{/* Zeile im Terminkasten. Args: K, V, Strike. */}}
+{{define "mail-row"}}<tr>
+<td class="kz-m" width="96" valign="top" style="width:96px;padding:5px 12px 5px 0;font-size:14px;line-height:22px;color:#4B5E7E;">{{.K}}</td>
+<td class="kz-t" valign="top" style="padding:5px 0;font-size:16px;line-height:22px;color:#13294B;{{if .Strike}}text-decoration:line-through;{{else}}font-weight:700;{{end}}">{{.V}}</td>
+</tr>
+{{end}}
+
+{{/* Terminkasten. Daten: Lang, B, Min, optional Old (bisherige Zeit), ForSalon (mit Kundendaten). */}}
+{{define "mail-termin"}}<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-box" bgcolor="#E3F3FF" style="background:#E3F3FF;border-radius:16px;">
+<tr><td style="padding:14px 20px;">
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
+{{- with .Old}}{{template "mail-row" (mailArgs "K" (mt $.Lang "Bisher" "Previously") "V" (date $.Lang .) "Strike" true)}}{{end}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "Wann" "When") "V" (date .Lang .B.Start))}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "Leistung" "Service") "V" (printf "%s (%d %s)" .B.Service .Min (mt .Lang "Min." "min")))}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "Bei" "With") "V" .B.Staff)}}
+{{- if .ForSalon}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "Kunde" "Customer") "V" .B.Customer)}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "E-Mail" "Email") "V" (or .B.Email "-"))}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "Telefon" "Phone") "V" (or .B.Phone "-"))}}
+{{- end}}
+</table>
+</td></tr></table>
+{{end}}
+
+{{/* Kalender + Absagen (Kunden-Mails zu einem gebuchten Termin). */}}
+{{define "mail-cust-actions"}}<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
+{{template "mail-btn" (mailArgs "URL" .ICS "Label" (mt .Lang "In Kalender eintragen" "Add to calendar") "C" .Pri)}}
+{{- if .CanCancel}}{{template "mail-btn" (mailArgs "URL" .Cancel "Label" (mt .Lang "Termin absagen" "Cancel appointment") "C" .Sec)}}{{end}}
+</td></tr></table>
+<p class="kz-m" style="margin:4px 0 0;font-size:14px;line-height:22px;color:#4B5E7E;">
+{{- if .CanCancel}}
+{{- if eq .Lang "en"}}Can't make it? Please cancel so someone else can have the slot.{{with .Deadline}} You can cancel online until {{date $.Lang .}}; after that, please call the salon.{{end}}
+{{- else}}Du kannst doch nicht? Bitte sag ab, dann wird der Termin für andere frei.{{with .Deadline}} Online absagen geht bis {{date $.Lang .}}, danach ruf bitte im Salon an.{{end}}{{end}}
+{{- else}}{{mt .Lang "Für eine Absage ruf bitte im Salon an." "To cancel, please call the salon."}}{{end -}}
+</p>
+{{end}}
+
+{{/* Gruß und Adresse des Salons. */}}
+{{define "mail-cust-sign"}}<p class="kz-t" style="margin:26px 0 0;color:#13294B;">{{.Greeting}}<br><strong>{{.S.Name}}</strong></p>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td class="kz-hr" style="border-top:1px solid #CFE3F5;padding:20px 0 0;font-size:15px;line-height:23px;">
+<p class="kz-t" style="margin:26px 0 4px;font-weight:700;color:#13294B;">{{mt .Lang "So findest du uns" "Where to find us"}}</p>
+<p class="kz-t" style="margin:0;color:#13294B;">{{.S.Name}}{{range .Address}}<br>{{.}}{{end}}
+{{- with .S.Phone}}<br>{{mt $.Lang "Telefon" "Phone"}}: {{if $.Tel}}<a href="{{$.Tel}}" class="kz-a" style="color:#1E6BFF;">{{.}}</a>{{else}}{{.}}{{end}}{{end}}</p>
+</td></tr></table>
+{{end}}
+
+{{/* Link zum Kopieren unter einem Button. Args: Lang, URL. */}}
+{{define "mail-fallback"}}<p class="kz-m" style="margin:22px 0 0;font-size:13px;line-height:20px;color:#4B5E7E;word-break:break-all;">{{mt .Lang "Der Button funktioniert nicht? Kopiere diesen Link in deinen Browser:" "Button not working? Copy this link into your browser:"}}<br><a href="{{.URL}}" target="_blank" class="kz-a" style="color:#1E6BFF;">{{.URL}}</a></p>
+{{end}}
+
+{{/* ===== Bausteine für den Textteil ===== */}}
+
+{{define "mail-termin-text"}}{{if eq .Lang "en"}}{{with .Old}}Previously: {{date $.Lang .}}
+{{end}}When:     {{date .Lang .B.Start}}
+Service:  {{.B.Service}} ({{.Min}} min)
+With:     {{.B.Staff}}
+{{if .ForSalon}}Customer: {{.B.Customer}}
+Email:    {{or .B.Email "-"}}
+Phone:    {{or .B.Phone "-"}}
+{{end}}{{else}}{{with .Old}}Bisher:   {{date $.Lang .}}
+{{end}}Wann:     {{date .Lang .B.Start}}
+Leistung: {{.B.Service}} ({{.Min}} Min.)
+Bei:      {{.B.Staff}}
+{{if .ForSalon}}Kunde:    {{.B.Customer}}
+E-Mail:   {{or .B.Email "-"}}
+Telefon:  {{or .B.Phone "-"}}
+{{end}}{{end}}{{end}}
+
+{{define "mail-cust-actions-text"}}{{if eq .Lang "en"}}Add to your calendar:
+{{.ICS}}
+
+{{if .CanCancel}}Can't make it? Please cancel so someone else can have the slot:
+{{.Cancel}}
+{{with .Deadline}}You can cancel online until {{date $.Lang .}}. After that, please call the salon.
+{{end}}{{else}}To cancel, please call the salon{{with .S.Phone}}: {{.}}{{end}}.
+{{end}}{{else}}In deinen Kalender eintragen:
+{{.ICS}}
+
+{{if .CanCancel}}Du kannst doch nicht? Bitte sag ab, dann wird der Termin für andere frei:
+{{.Cancel}}
+{{with .Deadline}}Online absagen geht bis {{date $.Lang .}}, danach ruf bitte im Salon an.
+{{end}}{{else}}Für eine Absage ruf bitte im Salon an{{with .S.Phone}}: {{.}}{{end}}.
+{{end}}{{end}}{{end}}
+
+{{define "mail-cust-address-text"}}{{mt .Lang "So findest du uns:" "Where to find us:"}}
+{{.S.Name}}
+{{range .Address}}{{.}}
+{{end}}{{with .S.Phone}}{{mt $.Lang "Telefon" "Phone"}}: {{.}}
+{{end}}{{end}}
+
+{{/* ===== Login (Daten: Link; Sprache users.lang) ===== */}}
+
+{{define "mail-login-subject"}}{{mt .Lang "Dein Login für Kammzeit" "Your login link for Kammzeit"}}{{end}}
+
+{{define "mail-login-text"}}{{if eq .Lang "en"}}Hello,
+
+here is your login link for Kammzeit:
+
+{{.Link}}
+
+It is valid for 15 minutes and works only once.
+Open the link on the device you want to be logged in on.
+
+Didn't ask to log in? Then simply ignore this email. Nothing happens without a click.
+
+Kammzeit
+{{else}}Hallo,
+
+hier ist dein Login-Link für Kammzeit:
+
+{{.Link}}
+
+Er ist 15 Minuten gültig und funktioniert nur einmal.
+Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.
+
+Du hast keinen Login angefordert? Dann kannst du diese Mail einfach ignorieren. Ohne Klick passiert nichts.
+
+Kammzeit
+{{end}}{{end}}
+
+{{define "mail-login-html"}}{{template "mail-head" .}}{{template "mail-pre" (mt .Lang "Ein Klick, und du bist angemeldet. Der Link gilt 15 Minuten." "One click and you're logged in. The link is valid for 15 minutes.")}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Img" .Img "Text" (mt .Lang "Dein Login-Link" "Your login link"))}}
+<p class="kz-t" style="margin:16px 0 0;color:#13294B;">{{if eq .Lang "en"}}Hello, here is your link to log in to Kammzeit. It is valid for 15&nbsp;minutes and works only once.{{else}}Hallo, hier ist dein Link zum Anmelden bei Kammzeit. Er ist 15&nbsp;Minuten gültig und funktioniert nur einmal.{{end}}</p>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 10px;">
+{{template "mail-btn" (mailArgs "URL" .Link "Label" (mt .Lang "Jetzt anmelden →" "Log in now →") "C" .Pri)}}
+</td></tr></table>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-box" bgcolor="#E3F3FF" style="background:#E3F3FF;border-radius:16px;"><tr><td class="kz-t" style="padding:14px 20px;font-size:15px;line-height:23px;color:#13294B;">
+<strong>{{mt .Lang "Gut zu wissen:" "Good to know:"}}</strong> {{mt .Lang "Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst, also zum Beispiel am Handy oder am Rechner im Salon." "Open the link on the device you want to be logged in on, for example your phone or the computer in your salon."}}
+</td></tr></table>
+{{template "mail-fallback" (mailArgs "Lang" .Lang "URL" .Link)}}
+<p class="kz-m" style="margin:16px 0 0;font-size:13px;line-height:20px;color:#4B5E7E;">{{mt .Lang "Du hast keinen Login angefordert? Dann kannst du diese Mail einfach ignorieren. Ohne Klick passiert nichts." "Didn't ask to log in? Then simply ignore this email. Nothing happens without a click."}}</p>
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Buchung bestätigt, an den Kunden (customerMailData, optional BySalon = vom Salon eingetragen) ===== */}}
+
+{{define "mail-booking-confirm-subject"}}{{mt .Lang "Termin bestätigt:" "Appointment confirmed:"}} {{.S.Name}}{{end}}
+
+{{define "mail-booking-confirm-text"}}{{if eq .Lang "en"}}Hello {{.B.Customer}},
+
+{{if .BySalon}}your appointment at {{.S.Name}} is booked:{{else}}thank you for booking! Your appointment at {{.S.Name}} is confirmed:{{end}}
+
+{{template "mail-termin-text" .}}
+{{template "mail-cust-address-text" .}}
+{{template "mail-cust-actions-text" .}}
+See you soon!
+{{.S.Name}}
+{{else}}Hallo {{.B.Customer}},
+
+{{if .BySalon}}dein Termin bei {{.S.Name}} ist eingetragen:{{else}}danke für deine Buchung! Dein Termin bei {{.S.Name}} steht:{{end}}
+
+{{template "mail-termin-text" .}}
+{{template "mail-cust-address-text" .}}
+{{template "mail-cust-actions-text" .}}
+Bis bald!
+{{.S.Name}}
+{{end}}{{end}}
+
+{{define "mail-booking-confirm-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s" (date .Lang .B.Start) .B.Service)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Dein Termin steht" "You're booked in"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, {{if .BySalon}}your appointment at {{.S.Name}} is booked.{{else}}thank you for booking! We look forward to seeing you.{{end}}{{else}}Hallo {{.B.Customer}}, {{if .BySalon}}dein Termin bei {{.S.Name}} ist eingetragen.{{else}}danke für deine Buchung! Wir freuen uns auf dich.{{end}}{{end}}</p>
+{{template "mail-termin" .}}
+{{template "mail-cust-actions" .}}
+{{template "mail-cust-sign" (mailArgs "Lang" .Lang "S" .S "Address" .Address "Tel" .Tel "Greeting" (mt .Lang "Bis bald!" "See you soon!"))}}
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Erinnerung 24 h vorher, an den Kunden (customerMailData) ===== */}}
+
+{{define "mail-reminder-subject"}}{{mt .Lang "Erinnerung: dein Termin bei" "Reminder: your appointment at"}} {{.S.Name}}{{end}}
+
+{{define "mail-reminder-text"}}{{if eq .Lang "en"}}Hello {{.B.Customer}},
+
+this is a reminder of your appointment at {{.S.Name}}:
+
+{{template "mail-termin-text" .}}
+{{template "mail-cust-address-text" .}}
+{{template "mail-cust-actions-text" .}}
+See you soon!
+{{.S.Name}}
+{{else}}Hallo {{.B.Customer}},
+
+wir erinnern dich an deinen Termin bei {{.S.Name}}:
+
+{{template "mail-termin-text" .}}
+{{template "mail-cust-address-text" .}}
+{{template "mail-cust-actions-text" .}}
+Bis bald!
+{{.S.Name}}
+{{end}}{{end}}
+
+{{define "mail-reminder-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s" (date .Lang .B.Start) .B.Service)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Dein Termin rückt näher" "Your appointment is coming up"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, this is a reminder of your appointment at {{.S.Name}}.{{else}}Hallo {{.B.Customer}}, wir erinnern dich an deinen Termin bei {{.S.Name}}.{{end}}</p>
+{{template "mail-termin" .}}
+{{template "mail-cust-actions" .}}
+{{template "mail-cust-sign" (mailArgs "Lang" .Lang "S" .S "Address" .Address "Tel" .Tel "Greeting" (mt .Lang "Bis bald!" "See you soon!"))}}
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Vom Salon verschoben, an den Kunden (customerMailData + Old = bisheriger Beginn) ===== */}}
+
+{{define "mail-moved-subject"}}{{mt .Lang "Termin verschoben:" "Appointment rescheduled:"}} {{.S.Name}}{{end}}
+
+{{define "mail-moved-text"}}{{if eq .Lang "en"}}Hello {{.B.Customer}},
+
+{{.S.Name}} has moved your appointment. The new details:
+
+{{template "mail-termin-text" .}}
+Doesn't the new time suit you? Please cancel or call the salon.
+
+{{template "mail-cust-address-text" .}}
+{{template "mail-cust-actions-text" .}}
+See you soon!
+{{.S.Name}}
+{{else}}Hallo {{.B.Customer}},
+
+dein Termin bei {{.S.Name}} wurde verschoben. So sieht er jetzt aus:
+
+{{template "mail-termin-text" .}}
+Die neue Zeit passt dir nicht? Dann sag bitte ab oder ruf im Salon an.
+
+{{template "mail-cust-address-text" .}}
+{{template "mail-cust-actions-text" .}}
+Bis bald!
+{{.S.Name}}
+{{end}}{{end}}
+
+{{define "mail-moved-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s: %s" (mt .Lang "Neu" "New") (date .Lang .B.Start))}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Dein Termin wurde verschoben" "Your appointment has been moved"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, {{.S.Name}} has moved your appointment. Here are the new details:{{else}}Hallo {{.B.Customer}}, dein Termin bei {{.S.Name}} wurde verschoben. So sieht er jetzt aus:{{end}}</p>
+{{template "mail-termin" .}}
+<p class="kz-t" style="margin:18px 0 0;color:#13294B;">{{mt .Lang "Die neue Zeit passt dir nicht? Dann sag bitte ab oder ruf im Salon an." "Doesn't the new time suit you? Please cancel or call the salon."}}</p>
+{{template "mail-cust-actions" .}}
+{{template "mail-cust-sign" (mailArgs "Lang" .Lang "S" .S "Address" .Address "Tel" .Tel "Greeting" (mt .Lang "Bis bald!" "See you soon!"))}}
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Vom Salon abgesagt, an den Kunden (customerMailData) ===== */}}
+
+{{define "mail-cancelled-by-salon-subject"}}{{mt .Lang "Termin abgesagt:" "Appointment cancelled:"}} {{.S.Name}}{{end}}
+
+{{define "mail-cancelled-by-salon-text"}}{{if eq .Lang "en"}}Hello {{.B.Customer}},
+
+unfortunately we have to cancel your appointment at {{.S.Name}}. We are sorry about that.
+
+{{template "mail-termin-text" .}}
+Book a new appointment:
+{{.Book}}
+{{with .S.Phone}}
+Questions? Give us a call: {{.}}
+{{end}}
+Best wishes
+{{.S.Name}}
+{{else}}Hallo {{.B.Customer}},
+
+leider müssen wir deinen Termin bei {{.S.Name}} absagen. Das tut uns leid.
+
+{{template "mail-termin-text" .}}
+Neuen Termin buchen:
+{{.Book}}
+{{with .S.Phone}}
+Fragen? Ruf uns an: {{.}}
+{{end}}
+Viele Grüße
+{{.S.Name}}
+{{end}}{{end}}
+
+{{define "mail-cancelled-by-salon-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s" (date .Lang .B.Start) .B.Service)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Dein Termin wurde abgesagt" "Your appointment has been cancelled"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, unfortunately we have to cancel this appointment. We are sorry about that.{{else}}Hallo {{.B.Customer}}, leider müssen wir diesen Termin absagen. Das tut uns leid.{{end}}</p>
+{{template "mail-termin" .}}
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
+{{template "mail-btn" (mailArgs "URL" .Book "Label" (mt .Lang "Neuen Termin buchen" "Book a new appointment") "C" .Pri)}}
+</td></tr></table>
+{{- with .S.Phone}}
+<p class="kz-m" style="margin:4px 0 0;font-size:14px;line-height:22px;color:#4B5E7E;">{{mt $.Lang "Fragen? Ruf uns an:" "Questions? Give us a call:"}} {{if $.Tel}}<a href="{{$.Tel}}" class="kz-a" style="color:#1E6BFF;">{{.}}</a>{{else}}{{.}}{{end}}</p>
+{{- end}}
+{{template "mail-cust-sign" (mailArgs "Lang" .Lang "S" .S "Address" .Address "Tel" .Tel "Greeting" (mt .Lang "Viele Grüße" "Best wishes"))}}
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Kunde hat online abgesagt: Bestätigung an den Kunden (customerMailData) ===== */}}
+
+{{define "mail-cancel-customer-subject"}}{{mt .Lang "Termin abgesagt:" "Appointment cancelled:"}} {{.S.Name}}{{end}}
+
+{{define "mail-cancel-customer-text"}}{{if eq .Lang "en"}}Hello {{.B.Customer}},
+
+thanks for letting us know. This appointment is now cancelled:
+
+{{template "mail-termin-text" .}}
+Book a new appointment:
+{{.Book}}
+
+Best wishes
+{{.S.Name}}
+{{else}}Hallo {{.B.Customer}},
+
+deine Absage ist angekommen, danke für Bescheid. Dieser Termin ist storniert:
+
+{{template "mail-termin-text" .}}
+Neuen Termin buchen:
+{{.Book}}
+
+Viele Grüße
+{{.S.Name}}
+{{end}}{{end}}
+
+{{define "mail-cancel-customer-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s" (date .Lang .B.Start) .B.Service)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Deine Absage ist angekommen" "Your cancellation is confirmed"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, thanks for letting us know. This appointment is now cancelled:{{else}}Hallo {{.B.Customer}}, danke für Bescheid. Dieser Termin ist storniert:{{end}}</p>
+{{template "mail-termin" .}}
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
+{{template "mail-btn" (mailArgs "URL" .Book "Label" (mt .Lang "Neuen Termin buchen" "Book a new appointment") "C" .Pri)}}
+</td></tr></table>
+{{template "mail-cust-sign" (mailArgs "Lang" .Lang "S" .S "Address" .Address "Tel" .Tel "Greeting" (mt .Lang "Viele Grüße" "Best wishes"))}}
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Neue Online-Buchung, an den Salon (salonMailData; Sprache users.lang) ===== */}}
+
+{{define "mail-booking-salon-subject"}}{{mt .Lang "Neue Buchung:" "New booking:"}} {{date .Lang .B.Start}}{{end}}
+
+{{define "mail-booking-salon-text"}}{{if eq .Lang "en"}}New online booking for {{.Salon.Name}}:
+
+{{template "mail-termin-text" .}}
+It is already in your calendar:
+{{.Dash}}
+{{else}}Neue Online-Buchung für {{.Salon.Name}}:
+
+{{template "mail-termin-text" .}}
+Der Termin steht schon in deinem Kalender:
+{{.Dash}}
+{{end}}{{end}}
+
+{{define "mail-booking-salon-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s · %s" .B.Customer (date .Lang .B.Start) .B.Service)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Img" .Img "Text" (mt .Lang "Neue Online-Buchung" "New online booking"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}{{.B.Customer}} has booked an appointment at {{.Salon.Name}} online. It is already in your calendar.{{else}}{{.B.Customer}} hat online einen Termin bei {{.Salon.Name}} gebucht. Er steht schon in deinem Kalender.{{end}}</p>
+{{template "mail-termin" .}}
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
+{{template "mail-btn" (mailArgs "URL" .Dash "Label" (mt .Lang "Termin ansehen →" "View appointment →") "C" .Pri)}}
+</td></tr></table>
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Kunde hat online abgesagt: Info an den Salon (salonMailData) ===== */}}
+
+{{define "mail-cancel-salon-subject"}}{{mt .Lang "Termin abgesagt:" "Appointment cancelled:"}} {{date .Lang .B.Start}}{{end}}
+
+{{define "mail-cancel-salon-text"}}{{if eq .Lang "en"}}{{.B.Customer}} has cancelled online:
+
+{{template "mail-termin-text" .}}
+The slot is free again in your calendar:
+{{.Day}}
+{{else}}{{.B.Customer}} hat online abgesagt:
+
+{{template "mail-termin-text" .}}
+Der Termin ist im Kalender wieder frei:
+{{.Day}}
+{{end}}{{end}}
+
+{{define "mail-cancel-salon-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s" .B.Customer (date .Lang .B.Start))}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Img" .Img "Text" (mt .Lang "Online abgesagt" "Cancelled online"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}{{.B.Customer}} has cancelled this appointment at {{.Salon.Name}} online. The slot is free again in your calendar.{{else}}{{.B.Customer}} hat diesen Termin bei {{.Salon.Name}} online abgesagt. Die Zeit ist im Kalender wieder frei.{{end}}</p>
+{{template "mail-termin" .}}
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
+{{template "mail-btn" (mailArgs "URL" .Day "Label" (mt .Lang "Kalender öffnen →" "Open calendar →") "C" .Pri)}}
+</td></tr></table>
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Double-Opt-in für Kammzeit-News (Daten: ConfirmURL, absolut, Domain von users.lang; Link 7 Tage gültig) ===== */}}
+
+{{define "mail-marketing-confirm-subject"}}{{mt .Lang "Bitte bestätigen: Kammzeit-News per E-Mail" "Please confirm: Kammzeit news by email"}}{{end}}
+
+{{define "mail-marketing-confirm-text"}}{{if eq .Lang "en"}}Hello,
+
+you would like to receive Kammzeit news by email: updates about Kammzeit, new features and tips for your salon.
+
+Please confirm with this link. Only then will we add you:
+
+{{.ConfirmURL}}
+
+The link is valid for 7 days. You can unsubscribe at any time in your settings or via the link in every news email.
+
+If this wasn't you, please ignore this email. Without confirmation you will not receive any news.
+
+Kammzeit
+{{else}}Hallo,
+
+du möchtest Kammzeit-News per E-Mail bekommen: Neuigkeiten zu Kammzeit, neue Funktionen und Tipps für deinen Salon.
+
+Bitte bestätige das mit diesem Link. Erst dann tragen wir dich ein:
+
+{{.ConfirmURL}}
+
+Der Link ist 7 Tage gültig. Abmelden kannst du dich jederzeit in den Einstellungen oder über den Link in jeder News-Mail.
+
+Wenn du das nicht warst, ignoriere diese Mail. Ohne Bestätigung bekommst du keine News.
+
+Kammzeit
+{{end}}{{end}}
+
+{{define "mail-marketing-confirm-html"}}{{template "mail-head" .}}{{template "mail-pre" (mt .Lang "Ein Klick, dann bekommst du Kammzeit-News. Ohne Klick passiert nichts." "One click and you'll get Kammzeit news. Nothing happens without a click.")}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Img" .Img "Text" (mt .Lang "Noch ein Klick" "Just one more click"))}}
+<p class="kz-t" style="margin:16px 0 0;color:#13294B;">{{if eq .Lang "en"}}Hello, you would like to receive Kammzeit news by email: updates about Kammzeit, new features and tips for your salon. Please confirm with one click. Only then will we add you.{{else}}Hallo, du möchtest Kammzeit-News per E-Mail bekommen: Neuigkeiten zu Kammzeit, neue Funktionen und Tipps für deinen Salon. Bitte bestätige das mit einem Klick. Erst dann tragen wir dich ein.{{end}}</p>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 10px;">
+{{template "mail-btn" (mailArgs "URL" .ConfirmURL "Label" (mt .Lang "Ja, News bestätigen →" "Yes, confirm news →") "C" .Pri)}}
+</td></tr></table>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-box" bgcolor="#E3F3FF" style="background:#E3F3FF;border-radius:16px;"><tr><td class="kz-t" style="padding:14px 20px;font-size:15px;line-height:23px;color:#13294B;">
+<strong>{{mt .Lang "Wenn du das nicht warst," "If this wasn't you,"}}</strong> {{mt .Lang "ignoriere diese Mail. Ohne Bestätigung bekommst du keine News." "please ignore this email. Without confirmation you will not receive any news."}}
+</td></tr></table>
+<p class="kz-m" style="margin:16px 0 0;font-size:14px;line-height:22px;color:#4B5E7E;">{{mt .Lang "Der Link ist 7 Tage gültig. Abmelden kannst du dich jederzeit in den Einstellungen oder über den Link in jeder News-Mail." "The link is valid for 7 days. You can unsubscribe at any time in your settings or via the link in every news email."}}</p>
+{{template "mail-fallback" (mailArgs "Lang" .Lang "URL" .ConfirmURL)}}
+{{template "mail-end" .}}{{end}}

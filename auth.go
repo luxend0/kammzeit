@@ -240,15 +240,14 @@ func (a *app) mailLoginLink(email, token, next string) error {
 	// Link auf die Domain der Sprache des Kontos (users.lang: de -> kammzeit.de, en -> kammzeit.com).
 	var lang string
 	a.db.QueryRow(`SELECT lang FROM users WHERE email = ?`, email).Scan(&lang)
+	if lang != "en" {
+		lang = "de"
+	}
 	link := a.siteURLLang(lang) + "/login/" + token
 	if next != "" {
 		link += "?weiter=" + url.QueryEscape(next)
 	}
-	body := "Hallo,\n\nhier ist dein Login-Link für Kammzeit:\n\n" + link + "\n\n" +
-		"Er ist 15 Minuten gültig und funktioniert nur einmal.\n" +
-		"Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.\n\n" +
-		"Du hast keinen Login angefordert? Dann kannst du diese Mail einfach ignorieren.\n"
-	return a.mail.send(email, "Dein Login für Kammzeit", body)
+	return a.mailT(email, lang, "login", map[string]any{"Link": link}) // web/mail.html
 }
 
 // sendLoginLink mailt einen Einmal-Link (15 Minuten gültig) an das Konto.
