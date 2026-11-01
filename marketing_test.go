@@ -14,20 +14,12 @@ import (
 	"time"
 )
 
-// marketingApp: App mit deutscher und englischer Domain. Fehlt das
-// Mail-Template der Bestätigung (baut der Mail-Bereich), kommt ein minimales
-// dazu, das nur den Link enthält.
+// marketingApp: App mit deutscher und englischer Domain. Die Bestätigungsmail
+// landet ohne SMTP_HOST im Log (Template mail-marketing-confirm-* oder Textmail).
 func marketingApp(t *testing.T) *app {
 	t.Helper()
 	a := newSignupApp(t, false)
 	a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
-	if a.tpl.Lookup("mail-marketing-confirm-text") == nil {
-		template := `{{define "mail-marketing-confirm-subject"}}Kammzeit-News bestätigen{{end}}` +
-			`{{define "mail-marketing-confirm-text"}}{{.ConfirmURL}}{{end}}`
-		if _, err := a.tpl.New("marketing-test").Parse(template); err != nil {
-			t.Fatal(err)
-		}
-	}
 	marketingDOILimit = newLimiter(3, 24*time.Hour)
 	return a
 }

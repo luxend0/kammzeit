@@ -457,8 +457,8 @@ func TestBookingEnglish(t *testing.T) {
 		}
 	}
 	body := ts.do("GET", host, "/", nil).Body.String()
-	contains("Buchungsseite", body, `<html lang="en">`, "<title>Salon Test - Book an appointment</title>", "1. Service", "30 min",
-		"25.00 €", "4. Your details", "Confirm booking", "You can cancel online up to 1 day before the appointment.",
+	contains("Buchungsseite", body, `<html lang="en">`, "<title>Salon Test - Book appointment</title>", "1. Service", "30 min",
+		"€25.00", "4. Your details", "Confirm booking", "You can cancel online up to 1 day before the appointment.",
 		`Online booking by <a href="https://kammzeit.com">Kammzeit</a>`)
 	if strings.Contains(body, "Leistung") || strings.Contains(body, "Verbindlich") {
 		t.Error("deutsche Reste auf der englischen Buchungsseite")

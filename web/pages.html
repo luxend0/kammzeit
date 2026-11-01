@@ -41,7 +41,7 @@
     {{range $i, $s := .Services}}
     <label class="opt"><input type="radio" name="service" value="{{$s.ID}}" required{{if eq $i 0}} checked{{end}}>
       <span class="opt-text"><span class="opt-name">{{$s.Name}}</span>{{with $s.Description}}<span class="opt-desc">{{.}}</span>{{end}}</span>
-      <span class="opt-meta">{{tf $.Lang "%d Min." $s.Duration}}<strong>{{pubEuro $.Lang $s.PriceCents}}</strong></span></label>
+      <span class="opt-meta">{{tf $.Lang "%d Min." $s.Duration}}<strong>{{money $.Lang $s.PriceCents}}</strong></span></label>
     {{end}}
   </fieldset>
   <fieldset>

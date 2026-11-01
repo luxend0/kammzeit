@@ -37,6 +37,10 @@ import (
 // Gespeichert wird er in der Sprache des Kontos.
 const marketingConsentDE = "Ich möchte gelegentlich Neuigkeiten zu Kammzeit per E-Mail erhalten. Abmelden geht jederzeit."
 
+// marketingMailDE: Bestätigungsmail als Text, falls das HTML-Template fehlt.
+const marketingMailDE = "Hallo,\n\ndu möchtest gelegentlich Neuigkeiten zu Kammzeit per E-Mail bekommen. Bitte bestätige das mit diesem Link (7 Tage gültig):\n\n%s\n\n" +
+	"Du hast das nicht angefordert? Dann ignoriere diese Mail einfach, wir schicken dir keine News.\n"
+
 // marketingTTL: so lange gilt der Bestätigungslink.
 const marketingTTL = 7 * 24 * time.Hour
 
@@ -83,12 +87,17 @@ func (a *app) startMarketingDOI(userID int64, source string) error {
 		hashToken(token), time.Now().Unix(), tr(lang, marketingConsentDE), userID); err != nil {
 		return err
 	}
-	err = a.mailT(email, lang, "marketing-confirm", map[string]any{
-		"ConfirmURL": a.siteURLLang(lang) + "/newsletter/bestaetigen/" + token,
-		"Salon":      salonName,
-		"Email":      email,
-		"Days":       int(marketingTTL / (24 * time.Hour)),
-	})
+	link := a.siteURLLang(lang) + "/newsletter/bestaetigen/" + token
+	if a.tpl.Lookup("mail-marketing-confirm-text") != nil {
+		err = a.mailT(email, lang, "marketing-confirm", map[string]any{
+			"ConfirmURL": link,
+			"Salon":      salonName,
+			"Email":      email,
+			"Days":       int(marketingTTL / (24 * time.Hour)),
+		})
+	} else { // ponytail: Textmail, bis es das Template mail-marketing-confirm-* gibt
+		err = a.mail.send(email, tr(lang, "Bitte bestätigen: Kammzeit-News per E-Mail"), trf(lang, marketingMailDE, link))
+	}
 	if err != nil { // keine Mail, kein "ausstehend" (sonst wartet die Anzeige auf eine Mail, die nie kam)
 		a.db.Exec(`UPDATE users SET marketing_pending_hash = '', marketing_pending_at = NULL WHERE id = ? AND marketing_pending_hash = ?`,
 			userID, hashToken(token))

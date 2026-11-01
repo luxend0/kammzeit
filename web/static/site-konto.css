@@ -123,6 +123,10 @@ body.site:has(> .konto-foot) { background: var(--sky-50); }
 .signup-check a { font-weight: 700; color: var(--blue); }
 @media (pointer: coarse) { .signup-check { min-height: 44px; } }
 
+/* Kammzeit-News: freiwillig, mit Abstand zum AGB-Häkchen (bzw. dessen Fehler) */
+.signup-check + .signup-news, .field-error + .signup-news { margin-top: 1rem; }
+.signup-optional { color: var(--muted); }
+
 /* Honeypot: für Menschen unsichtbar, für Screenreader ausgeblendet */
 .signup-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 

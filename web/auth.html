@@ -14,8 +14,7 @@
 <meta property="og:description" content="{{.}}">{{end}}
 {{with .Canonical}}<link rel="canonical" href="{{.}}">
 <meta property="og:url" content="{{.}}">{{end}}
-{{range .Alternates}}<link rel="alternate" hreflang="{{.Lang}}" href="{{.URL}}">
-{{end}}<meta property="og:title" content="{{.Title}}">
+{{template "site-hreflang" .}}<meta property="og:title" content="{{.Title}}">
 {{else}}<meta name="robots" content="noindex">
 {{end}}{{template "site-assets" .}}
 <link rel="stylesheet" href="/static/site-konto.css">

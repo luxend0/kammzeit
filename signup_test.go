@@ -328,9 +328,9 @@ func TestSignupEnglish(t *testing.T) {
 	h := a.routes()
 	newsBox := regexp.MustCompile(`<input type="checkbox" name="marketing" value="1"[^>]*>`)
 	for host, want := range map[string][]string{
-		"kammzeit.test": {`<html lang="de">`, "Salon anlegen", `<span>.kammzeit.test</span>`, marketingConsentDE, `href="/agb"`},
+		"kammzeit.test": {`<html lang="de">`, `og:locale" content="de_DE"`, "Salon anlegen", `<span>.kammzeit.test</span>`, marketingConsentDE, `href="/agb"`},
 		"kammzeit-en.test": {`<html lang="en">`, "Create salon", `<span>.kammzeit-en.test</span>`, template.HTMLEscapeString(tr("en", marketingConsentDE)),
-			`href="/terms"`, `href="/dpa"`, "at yoursalon.kammzeit-en.test", `hreflang="de" href="https://kammzeit.test/registrieren"`},
+			`href="/terms"`, `href="/dpa"`, "at yoursalon.kammzeit-en.test", `og:locale" content="en_GB"`, `hreflang="de" href="https://kammzeit.test/registrieren"`},
 	} {
 		req := httptest.NewRequest("GET", "/registrieren", nil)
 		req.Host = host

@@ -41,13 +41,6 @@ func noticeFor(lang string, m int) string {
 }
 
 func init() {
-	// pubEuro: Preis aus Cent, "45,00 €" / "45.00 €" (EU-Schreibweise wie auf kammzeit.com).
-	templateFuncs["pubEuro"] = func(lang any, cents int64) string {
-		if fmt.Sprint(lang) == "en" {
-			return fmt.Sprintf("%d.%02d €", cents/100, cents%100)
-		}
-		return fmt.Sprintf("%d,%02d €", cents/100, cents%100)
-	}
 	// pubHTML übersetzt einen festen Katalogtext mit HTML (Links, <strong>) und
 	// setzt Werte maskiert ein. NUR für Text-Literale aus den Templates, nie für
 	// Eingaben: der Text selbst wird nicht maskiert.
@@ -140,6 +133,9 @@ func init() {
 
 		// Kammzeit-News (marketing.go)
 		"Dieser Bestätigungslink ist abgelaufen, wurde schon benutzt oder ist unvollständig. Ein Link gilt 7 Tage. In den Einstellungen kannst du einen neuen anfordern.": "This confirmation link has expired, has already been used or is incomplete. A link is valid for 7 days. You can request a new one in Settings.",
+		"Bitte bestätigen: Kammzeit-News per E-Mail": "Please confirm: Kammzeit news by email",
+		marketingMailDE: "Hello,\n\nyou'd like to receive occasional news about Kammzeit by email. Please confirm with this link (valid for 7 days):\n\n%s\n\n" +
+			"Didn't ask for this? Just ignore this email and we won't send you any news.\n",
 		"Zu den Einstellungen":     "Go to Settings",
 		"Kammzeit-News bestätigen": "Confirm Kammzeit news",
 		"Bestätige, dass du gelegentlich Neuigkeiten zu Kammzeit per E-Mail bekommen möchtest. Abbestellen geht jederzeit mit einem Klick.": "Please confirm that you'd like to receive occasional news about Kammzeit by email. You can unsubscribe at any time with one click.",
@@ -159,16 +155,16 @@ func init() {
 		"Hinweis":                     "Notice",
 		"Zurück zur Buchung":          "Back to booking",
 		"Diesen Salon gibt es nicht.": "This salon does not exist.",
-		"Termin buchen":               "Book an appointment",
-		"Online-Termine mit":          "Online booking by",
-		"AGB":                         "Terms",
-		"AVV":                         "DPA",
-		"1. Leistung":                 "1. Service",
-		"%d Min.":                     "%d min",
-		"2. Bei wem?":                 "2. With whom?",
-		"3. Tag und Uhrzeit":          "3. Date and time",
-		"Tag":                         "Day",
-		"Freie Uhrzeiten":             "Available times",
+		// "Termin buchen" steht in i18n_dash1.go ("Book appointment")
+		"Online-Termine mit": "Online booking by",
+		"AGB":                "Terms",
+		"AVV":                "DPA",
+		"1. Leistung":        "1. Service",
+		"%d Min.":            "%d min",
+		"2. Bei wem?":        "2. With whom?",
+		"3. Tag und Uhrzeit": "3. Date and time",
+		"Tag":                "Day",
+		"Freie Uhrzeiten":    "Available times",
 		"Für die Uhrzeitauswahl bitte JavaScript aktivieren oder im Salon anrufen.": "To choose a time, please enable JavaScript or call the salon.",
 		"4. Deine Daten":           "4. Your details",
 		"Telefon":                  "Phone",
@@ -220,8 +216,9 @@ func init() {
 		"Diesen Termin gibt es nicht.":                 "This appointment does not exist.",
 		"Diesen Termin gibt es nicht (mehr).":          "This appointment does not exist (any more).",
 		// Kalendereintrag (.ics)
-		"Bei %s":    "With %s",
-		"Absagen":   "Cancel",
-		"%s bei %s": "%s at %s",
+		"Bei %s":  "With %s",
+		"Absagen": "Cancel",
+		// eigener Schlüssel (gleiche deutsche Ausgabe), "%s bei %s" ist im Dashboard "Leistung bei Mitarbeiter"
+		"%[1]s bei %[2]s": "%[1]s at %[2]s",
 	})
 }

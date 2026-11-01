@@ -769,7 +769,7 @@ func (a *app) bookingICS(w http.ResponseWriter, r *http.Request) {
 	desc += tr(s.Lang, "Absagen") + ": " + a.bookingURL(s, "/storno/"+token)
 	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
 	w.Header().Set("Content-Disposition", `attachment; filename="termin.ics"`)
-	io.WriteString(w, buildICS(hashToken(token)[:32]+"@kammzeit", trf(s.Lang, "%s bei %s", b.Service, s.Name), where, desc, b.Start, b.End, time.Now()))
+	io.WriteString(w, buildICS(hashToken(token)[:32]+"@kammzeit", trf(s.Lang, "%[1]s bei %[2]s", b.Service, s.Name), where, desc, b.Start, b.End, time.Now()))
 }
 
 // buildICS baut ein iCalendar-Dokument (RFC 5545) mit einem Termin, Zeiten in UTC.
