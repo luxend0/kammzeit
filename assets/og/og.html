@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Vorlage fuer web/static/img/og.png (1200x630). Neu bauen:
+     1. szene.png = Ausschnitt aus der Hero-Illustration (PNG, 2000x1500):
+        magick hero.png -crop 1150x1010+838+318 +repage szene.png
+     2. display.woff2 (web/static/fonts/display.woff2, Plus Jakarta Sans) neben diese Datei legen.
+     3. brave --headless=new --disable-gpu --hide-scrollbars --window-size=1200,630 --screenshot=og.png file://.../og.html
+        danach: magick og.png -alpha off -strip web/static/img/og.png -->
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>og</title>
+<style>
+@font-face { font-family: "Display"; src: url("display.woff2") format("woff2"); font-weight: 200 800; }
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #E3F3FF; }
+body { position: relative; font-family: "Display", system-ui, sans-serif; color: #13294B; }
+.blob { position: absolute; left: 520px; top: -40px; width: 760px; height: 720px; }
+.card { position: absolute; left: 574px; top: 46px; width: 582px; height: 538px; border-radius: 28px; overflow: hidden;
+        background: #FFFFFF; border: 2px solid #13294B; }
+.card img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; display: block; }
+.wm { position: absolute; left: 62px; top: 158px; font-weight: 800; font-size: 106px; letter-spacing: -0.035em;
+      line-height: 1; color: #1E6BFF; }
+.tag { position: absolute; left: 66px; top: 296px; width: 450px; font-weight: 700; font-size: 38px; line-height: 1.18;
+       letter-spacing: -0.01em; color: #13294B; }
+.pill { position: absolute; left: 64px; top: 446px; background: #FFC93C; color: #13294B; font-weight: 800; font-size: 24px;
+        padding: 14px 28px 15px; border-radius: 999px; border: 2px solid #13294B; }
+.deco { position: absolute; }
+</style>
+</head>
+<body>
+<svg class="blob" viewBox="0 0 760 720" aria-hidden="true">
+  <path fill="#7CC4FF" d="M402 40c118-18 262 34 318 150 52 108 14 238-58 330-74 94-196 168-318 150-118-18-196-120-250-222C40 344 18 228 78 150 136 74 286 58 402 40z"/>
+</svg>
+<div class="card"><img src="szene.png" alt=""></div>
+<div class="wm">Kammzeit</div>
+<div class="tag">Online-Terminbuchung für Salons</div>
+<div class="pill">kammzeit.de</div>
+<svg class="deco" style="left:430px;top:92px" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="12" fill="none" stroke="#FF7A59" stroke-width="5"/></svg>
+<svg class="deco" style="left:470px;top:520px" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M5 5l16 16M21 5L5 21" stroke="#3CCF91" stroke-width="5" stroke-linecap="round"/></svg>
+<svg class="deco" style="left:70px;top:84px" width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9" fill="#FFC93C"/></svg>
+</body>
+</html>
