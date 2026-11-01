@@ -1,96 +1,120 @@
-{{/* Einstellungen, Datenexport, Konto löschen (dash_settings.go). Präfix "einst-". */}}
-{{define "einst-err"}}{{with .}}<span class="einst-err">{{.}}</span>{{end}}{{end}}
-
+{{/* Einstellungen, Datenexport, Konto löschen (dash_settings.go). Präfix "einst-".
+     Fehler am Feld: aria-invalid + aria-describedby auf span.field-error (Stil aus dash.css). */}}
 {{define "einst-seite"}}{{template "dash-top" .}}
 <style>
-.einst-err { display: block; margin-top: 4px; font-weight: 400; color: var(--danger); }
 .einst-section { max-width: 560px; margin: 0 0 36px; }
 .einst-section h2 { border-bottom: 2px solid var(--fg); padding-bottom: 6px; }
+.einst-section [hidden] { display: none; }
 .einst-color { display: flex; align-items: center; gap: 16px; margin-top: 4px; }
 .einst-color input { margin-top: 0; }
-.einst-preview { display: inline-block; padding: 9px 16px; font-weight: 700; color: #fff; background: var(--accent); }
+.einst-preview { display: inline-block; padding: 9px 16px; font-weight: 700; color: var(--on-accent); background: var(--accent); }
 #einst-url { font-family: ui-monospace, monospace; }
+#einst-copy-status { font-weight: 600; }
+.field-error { color: var(--danger); }
+/* Breit: Überschrift links, Felder rechts */
+@media (min-width: 1100px) {
+  .einst-wide .form { max-width: none; }
+  .einst-section { max-width: 840px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 0 48px;
+    border-top: 2px solid var(--fg); padding-top: 16px; }
+  .einst-section > h2 { grid-row: span 30; margin: 0; border: 0; padding: 0; }
+  .einst-wide > .error { max-width: 840px; }
+  .einst-wide .form > .actions { margin-left: 268px; }
+}
 </style>
 <script src="/static/einstellungen.js" defer></script>
+<div class="einst-wide">
 
-<section class="einst-section">
+<section class="einst-section" id="teilen">
   <h2>Deine Buchungsseite</h2>
-  <label class="field">Adresse (fest, nicht änderbar)
-    <input type="text" id="einst-url" value="{{.BookingURL}}" readonly>
-    <span class="hint">Anklicken, mit Strg+C (Mac: Cmd+C) kopieren und z. B. bei Google, Instagram oder auf deiner Website verlinken.</span>
-  </label>
+  <div class="field">
+    <label>Adresse<input type="text" id="einst-url" value="{{.BookingURL}}" readonly aria-describedby="einst-hint-url"></label>
+    <span class="hint" id="einst-hint-url">Die Adresse ist fest. Verlinke sie bei Google, Instagram oder auf deiner Website.</span>
+  </div>
+  <div class="actions">
+    <button class="btn btn-secondary" type="button" id="einst-copy" hidden>Link kopieren</button>
+    <a href="{{.BookingURL}}" target="_blank" rel="noopener">Buchungsseite ansehen</a>
+    <span id="einst-copy-status" role="status"></span>
+  </div>
 </section>
 
 {{if .Errors}}<p class="error" role="alert">Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert.</p>{{end}}
 <form method="post" action="/dashboard/einstellungen" class="form" novalidate>
   <section class="einst-section">
     <h2>Salon</h2>
-    <label class="field">Name
-      <input type="text" name="name" value="{{.Form.Name}}" maxlength="80" required{{if .Errors.name}} aria-invalid="true"{{end}}>
-      {{template "einst-err" .Errors.name}}
-    </label>
-    <label class="field">E-Mail für Buchungsinfos
-      <input type="email" name="email" value="{{.Form.Email}}" maxlength="200"{{if .Errors.email}} aria-invalid="true"{{end}}>
-      <span class="hint">Hierhin schicken wir neue Buchungen und Absagen. Leer lassen = keine Mails.</span>
-      {{template "einst-err" .Errors.email}}
-    </label>
-    <label class="field">Telefon
-      <input type="tel" name="phone" value="{{.Form.Phone}}" maxlength="40"{{if .Errors.phone}} aria-invalid="true"{{end}}>
-      {{template "einst-err" .Errors.phone}}
-    </label>
-    <label class="field">Adresse
-      <textarea name="address" rows="3" maxlength="300"{{if .Errors.address}} aria-invalid="true"{{end}}>{{.Form.Address}}</textarea>
-      {{template "einst-err" .Errors.address}}
-    </label>
-    <label class="field">Website
-      <input type="url" name="website" value="{{.Form.Website}}" maxlength="200" placeholder="https://"{{if .Errors.website}} aria-invalid="true"{{end}}>
-      {{template "einst-err" .Errors.website}}
-    </label>
-    <label class="field">Impressum deines Salons
-      <input type="url" name="imprint_url" value="{{.Form.ImprintURL}}" maxlength="200" placeholder="https://"{{if .Errors.imprint_url}} aria-invalid="true"{{end}}>
-      <span class="hint">Link zu deinem Impressum, nur https://. Steht auf deiner Buchungsseite.</span>
-      {{template "einst-err" .Errors.imprint_url}}
-    </label>
-    <label class="field">Über uns
-      <textarea name="about" rows="4" maxlength="500"{{if .Errors.about}} aria-invalid="true"{{end}}>{{.Form.About}}</textarea>
-      <span class="hint">Kurzer Text auf der Buchungsseite, höchstens 500 Zeichen.</span>
-      {{template "einst-err" .Errors.about}}
-    </label>
+    <div class="field">
+      <label>Name<input type="text" name="name" value="{{.Form.Name}}" maxlength="80" required{{if .Errors.name}} aria-invalid="true" aria-describedby="einst-err-name"{{end}}></label>
+      {{with .Errors.name}}<span class="field-error" id="einst-err-name">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>E-Mail für Buchungsinfos<input type="email" name="email" value="{{.Form.Email}}" maxlength="200"
+        aria-describedby="einst-hint-email{{if .Errors.email}} einst-err-email{{end}}"{{if .Errors.email}} aria-invalid="true"{{end}}></label>
+      <span class="hint" id="einst-hint-email">Hierhin schicken wir neue Buchungen und Absagen. Leer lassen = keine Mails.</span>
+      {{with .Errors.email}}<span class="field-error" id="einst-err-email">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Telefon<input type="tel" name="phone" value="{{.Form.Phone}}" maxlength="40"{{if .Errors.phone}} aria-invalid="true" aria-describedby="einst-err-phone"{{end}}></label>
+      {{with .Errors.phone}}<span class="field-error" id="einst-err-phone">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Adresse<textarea name="address" rows="3" maxlength="300"{{if .Errors.address}} aria-invalid="true" aria-describedby="einst-err-address"{{end}}>{{.Form.Address}}</textarea></label>
+      {{with .Errors.address}}<span class="field-error" id="einst-err-address">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Website<input type="url" name="website" value="{{.Form.Website}}" maxlength="200" placeholder="www.dein-salon.de" autocapitalize="off" spellcheck="false"{{if .Errors.website}} aria-invalid="true" aria-describedby="einst-err-website"{{end}}></label>
+      {{with .Errors.website}}<span class="field-error" id="einst-err-website">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Impressum deines Salons<input type="url" name="imprint_url" value="{{.Form.ImprintURL}}" maxlength="200" placeholder="www.dein-salon.de/impressum" autocapitalize="off" spellcheck="false"
+        aria-describedby="einst-hint-imprint{{if .Errors.imprint_url}} einst-err-imprint{{end}}"{{if .Errors.imprint_url}} aria-invalid="true"{{end}}></label>
+      <span class="hint" id="einst-hint-imprint">Link zu deinem Impressum. Steht auf deiner Buchungsseite.</span>
+      {{with .Errors.imprint_url}}<span class="field-error" id="einst-err-imprint">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Über uns<textarea name="about" rows="4" maxlength="500"
+        aria-describedby="einst-hint-about{{if .Errors.about}} einst-err-about{{end}}"{{if .Errors.about}} aria-invalid="true"{{end}}>{{.Form.About}}</textarea></label>
+      <span class="hint" id="einst-hint-about">Kurzer Text auf der Buchungsseite, höchstens 500 Zeichen.</span>
+      {{with .Errors.about}}<span class="field-error" id="einst-err-about">{{.}}</span>{{end}}
+    </div>
   </section>
 
   <section class="einst-section">
     <h2>Aussehen</h2>
-    <label class="field">Akzentfarbe
-      <span class="einst-color" id="einst-preview-box" style="--accent: {{.Form.Accent}}">
-        <input type="color" name="accent" id="einst-accent" value="{{.Form.Accent}}"{{if .Errors.accent}} aria-invalid="true"{{end}}>
+    <div class="field">
+      <label for="einst-accent">Akzentfarbe</label>
+      <span class="einst-color" id="einst-preview-box" style="--accent: {{.Form.Accent}}; --on-accent: {{.PreviewOn}}">
+        <input type="color" name="accent" id="einst-accent" value="{{.Form.Accent}}"
+          aria-describedby="einst-hint-accent{{if .Errors.accent}} einst-err-accent{{end}}"{{if .Errors.accent}} aria-invalid="true"{{end}}>
         <span class="einst-preview" aria-hidden="true">Termin buchen</span>
       </span>
-      <span class="hint">Für Buttons und Markierungen auf deiner Buchungsseite und hier im Dashboard.</span>
-      {{template "einst-err" .Errors.accent}}
-    </label>
+      <span class="hint" id="einst-hint-accent">Für Buttons und Markierungen auf deiner Buchungsseite und hier im Dashboard. Die Schrift darauf wird automatisch schwarz oder weiß.</span>
+      {{with .Errors.accent}}<span class="field-error" id="einst-err-accent">{{.}}</span>{{end}}
+    </div>
   </section>
 
   <section class="einst-section">
     <h2>Buchungsregeln</h2>
-    <label class="field">Zeitzone
-      <select name="timezone">{{range .Timezones}}<option value="{{.Value}}"{{if eq .Value $.Form.TZ}} selected{{end}}>{{.Label}}</option>{{end}}</select>
-      {{template "einst-err" .Errors.timezone}}
-    </label>
-    <label class="field">Online buchbar frühestens
-      <select name="min_notice">{{range .MinNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.MinNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select>
-      <span class="hint">So kurzfristig dürfen Kunden vor Terminbeginn noch online buchen.</span>
-      {{template "einst-err" .Errors.min_notice}}
-    </label>
-    <label class="field">Online absagen
-      <select name="cancel_notice">{{range .CancelNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.CancelNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select>
-      <span class="hint">Bis wann Kunden über den Link in ihrer Mail selbst absagen können.</span>
-      {{template "einst-err" .Errors.cancel_notice}}
-    </label>
-    <label class="field">Im Voraus buchbar
-      <select name="horizon">{{range .Horizon}}<option value="{{.Value}}"{{if eq .Value $.Form.HorizonDays}} selected{{end}}>{{.Label}}</option>{{end}}</select>
-      <span class="hint">So weit in die Zukunft zeigt die Buchungsseite freie Termine.</span>
-      {{template "einst-err" .Errors.horizon}}
-    </label>
+    <div class="field">
+      <label>Zeitzone<select name="timezone"{{if .Errors.timezone}} aria-invalid="true" aria-describedby="einst-err-timezone"{{end}}>{{range .Timezones}}<option value="{{.Value}}"{{if eq .Value $.Form.TZ}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+      {{with .Errors.timezone}}<span class="field-error" id="einst-err-timezone">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Online buchbar frühestens<select name="min_notice"
+        aria-describedby="einst-hint-min{{if .Errors.min_notice}} einst-err-min{{end}}"{{if .Errors.min_notice}} aria-invalid="true"{{end}}>{{range .MinNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.MinNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-min">So kurzfristig dürfen Kunden vor Terminbeginn noch online buchen.</span>
+      {{with .Errors.min_notice}}<span class="field-error" id="einst-err-min">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Online absagen<select name="cancel_notice"
+        aria-describedby="einst-hint-cancel{{if .Errors.cancel_notice}} einst-err-cancel{{end}}"{{if .Errors.cancel_notice}} aria-invalid="true"{{end}}>{{range .CancelNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.CancelNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-cancel">Bis wann Kunden über den Link in ihrer Mail selbst absagen können.</span>
+      {{with .Errors.cancel_notice}}<span class="field-error" id="einst-err-cancel">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label>Im Voraus buchbar<select name="horizon"
+        aria-describedby="einst-hint-horizon{{if .Errors.horizon}} einst-err-horizon{{end}}"{{if .Errors.horizon}} aria-invalid="true"{{end}}>{{range .Horizon}}<option value="{{.Value}}"{{if eq .Value $.Form.HorizonDays}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+      <span class="hint" id="einst-hint-horizon">So weit in die Zukunft zeigt die Buchungsseite freie Termine.</span>
+      {{with .Errors.horizon}}<span class="field-error" id="einst-err-horizon">{{.}}</span>{{end}}
+    </div>
   </section>
 
   <div class="actions"><button class="btn" type="submit">Speichern</button></div>
@@ -108,6 +132,7 @@
   <p><a class="btn btn-secondary" href="/dashboard/einstellungen/export">Daten exportieren</a></p>
   <p class="muted small" style="margin-top: 24px">Salon und Konto endgültig entfernen: <a href="/dashboard/einstellungen/loeschen">Konto löschen</a></p>
 </section>
+</div>
 {{template "dash-bottom" .}}{{end}}
 
 {{define "einst-loeschen"}}{{template "dash-top" .}}
@@ -121,9 +146,10 @@
   <p>Kunden mit offenen Terminen bekommen keine Nachricht. Sag ihnen vorher Bescheid.</p>
   <p>Willst du die Daten behalten? Lade vorher den <a href="/dashboard/einstellungen/export">Datenexport</a> herunter.</p>
   <form method="post" action="/dashboard/einstellungen/loeschen">
-    <label class="field">Zum Bestätigen die Adresse deines Salons eintippen: {{.Salon.Slug}}
-      <input type="text" name="slug" autocomplete="off" autocapitalize="off" spellcheck="false" required>
-    </label>
+    <div class="field">
+      <label>Adresse deines Salons<input type="text" name="slug" autocomplete="off" autocapitalize="off" spellcheck="false" required aria-describedby="einst-hint-slug"></label>
+      <span class="hint" id="einst-hint-slug">Zum Bestätigen eintippen: <strong>{{.Salon.Slug}}</strong></span>
+    </div>
     <div class="actions">
       <button class="btn btn-danger" type="submit">Endgültig löschen</button>
       <a href="/dashboard/einstellungen">Abbrechen</a>

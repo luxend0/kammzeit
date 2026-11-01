@@ -38,6 +38,7 @@ func TestParseSettings(t *testing.T) {
 		{"name", strings.Repeat("ä", 80), false},
 		{"name", strings.Repeat("ä", 81), true},
 		{"name", "Salon\nMüller", true},
+		{"name", "Salon\tMüller", true},
 		{"email", "", false},
 		{"email", "keine-mail", true},
 		{"phone", strings.Repeat("1", 41), true},
@@ -50,10 +51,13 @@ func TestParseSettings(t *testing.T) {
 		{"website", "javascript:alert(1)", true},
 		{"website", "javascript://x.de/%0aalert(1)", true},
 		{"website", "ftp://mueller.de", true},
-		{"website", "mueller.de", true},
+		{"website", "mueller.de", false}, // bekommt https:// vorangestellt
+		{"website", "https://bank.de@betrug.de", true},
+		{"website", "javascript:alert(1)", true},
 		{"website", "https://" + strings.Repeat("a", 190) + ".de", true},
 		{"imprint_url", "", false},
 		{"imprint_url", "http://mueller.de/impressum", true},
+		{"imprint_url", "mueller.de/impressum", false},
 		{"imprint_url", "data:text/html,hallo", true},
 		{"accent", "red", true},
 		{"accent", "#12345", true},
@@ -70,6 +74,14 @@ func TestParseSettings(t *testing.T) {
 		{"horizon", "14", false},
 		{"horizon", "365", true},
 	}
+	// Ohne Schema: https:// davor, auch beim Impressum.
+	f := maps.Clone(base)
+	f.Set("website", "salon-demo.de")
+	f.Set("imprint_url", "salon-demo.de/impressum")
+	if s, errs := parseSettings(f); len(errs) != 0 || s.Website != "https://salon-demo.de" || s.ImprintURL != "https://salon-demo.de/impressum" {
+		t.Errorf("ohne Schema: %q %q %v", s.Website, s.ImprintURL, errs)
+	}
+
 	for _, c := range cases {
 		f := maps.Clone(base)
 		f.Set(c.field, c.value)
@@ -175,7 +187,7 @@ func TestSettingsSaveExportDelete(t *testing.T) {
 	bID, bCookie := einstSeed(t, a.db, "beta")
 
 	valid := url.Values{
-		"name": {"Alpha Neu"}, "email": {""}, "phone": {"0123"}, "address": {"Weg 1"}, "website": {"https://alpha.de"},
+		"name": {"Alpha Neu"}, "email": {""}, "phone": {"0123"}, "address": {"Weg 1"}, "website": {"alpha.de"},
 		"imprint_url": {""}, "about": {""}, "accent": {"#112233"}, "timezone": {"Europe/Vienna"},
 		"min_notice": {"30"}, "cancel_notice": {"1440"}, "horizon": {"90"},
 	}
@@ -185,7 +197,9 @@ func TestSettingsSaveExportDelete(t *testing.T) {
 	bad.Set("website", "javascript:alert(1)")
 	bad.Set("name", "Mein <Salon>")
 	w := einstDo(a, "POST", "/dashboard/einstellungen", aCookie, bad)
-	if w.Code != http.StatusUnprocessableEntity || !strings.Contains(w.Body.String(), "http:// oder https://") ||
+	if w.Code != http.StatusUnprocessableEntity || !strings.Contains(w.Body.String(), "gültige Web-Adresse") ||
+		!strings.Contains(w.Body.String(), `aria-invalid="true" aria-describedby="einst-err-website"`) ||
+		!strings.Contains(w.Body.String(), `<span class="field-error" id="einst-err-website">`) ||
 		!strings.Contains(w.Body.String(), `value="Mein &lt;Salon&gt;"`) {
 		t.Fatalf("ungültiges Formular: Status %d\n%s", w.Code, w.Body.String())
 	}
@@ -197,20 +211,24 @@ func TestSettingsSaveExportDelete(t *testing.T) {
 
 	// Gültig: speichert nur den eigenen Salon.
 	w = einstDo(a, "POST", "/dashboard/einstellungen", aCookie, valid)
-	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/dashboard/einstellungen?gespeichert" {
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/dashboard/einstellungen?gespeichert=einstellungen" || einstGespeichert["einstellungen"] == "" {
 		t.Fatalf("Speichern: Status %d, Location %q", w.Code, w.Header().Get("Location"))
 	}
 	sa, _ := a.loadSalon(aID)
 	sb, _ := a.loadSalon(bID)
-	if sa.Name != "Alpha Neu" || sa.Accent != "#112233" || sa.TZ != "Europe/Vienna" || sa.HorizonDays != 90 {
+	if sa.Name != "Alpha Neu" || sa.Accent != "#112233" || sa.TZ != "Europe/Vienna" || sa.HorizonDays != 90 || sa.Website != "https://alpha.de" {
 		t.Fatalf("nicht gespeichert: %+v", sa)
 	}
 	if sb.Name != "Salon beta" || sb.TZ != "Europe/Berlin" {
 		t.Fatalf("fremder Salon verändert: %+v", sb)
 	}
-	if w := einstDo(a, "GET", "/dashboard/einstellungen?gespeichert", aCookie, nil); w.Code != 200 ||
-		!strings.Contains(w.Body.String(), "Gespeichert.") || !strings.Contains(w.Body.String(), "https://alpha.kammzeit.test/") {
-		t.Fatalf("Seite: Status %d", w.Code)
+	// Meldung: "Gespeichert." aus dem Layout, nach Umstellung auf .SavedMsg der feste Text.
+	w = einstDo(a, "GET", "/dashboard/einstellungen?gespeichert=einstellungen", aCookie, nil)
+	body := w.Body.String()
+	if w.Code != 200 || !(strings.Contains(body, "Gespeichert.") || strings.Contains(body, einstGespeichert["einstellungen"])) ||
+		!strings.Contains(body, "https://alpha.kammzeit.test/") || !strings.Contains(body, `id="teilen"`) ||
+		!strings.Contains(body, `id="einst-copy"`) || !strings.Contains(body, "--on-accent: #fff") {
+		t.Fatalf("Seite: Status %d\n%s", w.Code, body)
 	}
 
 	// Export: nur eigene Daten, ohne Storno-Token und Stripe-IDs, Zeiten in Salon-Zeitzone.

@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -186,11 +187,18 @@ func (a *app) kundenCSV(w http.ResponseWriter, r *http.Request, c *dctx) {
 
 const kundeEmailVergebenText = "Diese E-Mail-Adresse gehört schon zu einem anderen Kunden. Bitte eine andere angeben oder das Feld leer lassen."
 
-// kundeAusFormular liest und prüft das Kundenformular. Fehlertext != "" = ungültig.
-func kundeAusFormular(w http.ResponseWriter, r *http.Request) (kunde, string) {
+// kundenGespeichert: Erfolgsmeldung je ?gespeichert=<code>. Nur feste Texte, nie Text aus der URL.
+var kundenGespeichert = map[string]string{
+	"neu":   "Kunde angelegt.",
+	"karte": "Kontakt und Notizen gespeichert.",
+}
+
+// kundeAusFormular liest und prüft das Kundenformular. Fehler je Feldname
+// (name, email, phone, notes); "form" = Formular nicht lesbar. Leer = gültig.
+func kundeAusFormular(w http.ResponseWriter, r *http.Request) (kunde, map[string]string) {
 	r.Body = http.MaxBytesReader(w, r.Body, 32<<10)
 	if err := r.ParseForm(); err != nil {
-		return kunde{}, "Das Formular war zu groß oder unvollständig."
+		return kunde{}, map[string]string{"form": "Das Formular war zu groß oder unvollständig."}
 	}
 	k := kunde{
 		Name:  strings.TrimSpace(r.PostFormValue("name")),
@@ -198,24 +206,29 @@ func kundeAusFormular(w http.ResponseWriter, r *http.Request) (kunde, string) {
 		Phone: strings.TrimSpace(r.PostFormValue("phone")),
 		Notes: strings.TrimSpace(strings.ReplaceAll(r.PostFormValue("notes"), "\r\n", "\n")),
 	}
+	errs := map[string]string{}
 	switch {
 	case k.Name == "":
-		return k, "Bitte einen Namen angeben."
+		errs["name"] = "Bitte einen Namen angeben."
 	case utf8.RuneCountInString(k.Name) > 100:
-		return k, "Der Name ist zu lang (höchstens 100 Zeichen)."
-	case utf8.RuneCountInString(k.Phone) > 40:
-		return k, "Die Telefonnummer ist zu lang (höchstens 40 Zeichen)."
-	case utf8.RuneCountInString(k.Notes) > 2000:
-		return k, "Die Notizen sind zu lang (höchstens 2000 Zeichen)."
+		errs["name"] = "Der Name ist zu lang (höchstens 100 Zeichen)."
+	case strings.ContainsFunc(k.Name, unicode.IsControl):
+		errs["name"] = "Der Name darf keine Zeilenumbrüche oder Steuerzeichen enthalten."
+	}
+	if utf8.RuneCountInString(k.Phone) > 40 {
+		errs["phone"] = "Die Telefonnummer ist zu lang (höchstens 40 Zeichen)."
+	}
+	if utf8.RuneCountInString(k.Notes) > 2000 {
+		errs["notes"] = "Die Notizen sind zu lang (höchstens 2000 Zeichen)."
 	}
 	if k.Email != "" {
-		addr, err := mail.ParseAddress(k.Email)
-		if err != nil || len(addr.Address) > 200 {
-			return k, "Bitte eine gültige E-Mail-Adresse angeben oder das Feld leer lassen."
+		if addr, err := mail.ParseAddress(k.Email); err != nil || len(addr.Address) > 200 {
+			errs["email"] = "Bitte eine gültige E-Mail-Adresse angeben oder das Feld leer lassen."
+		} else {
+			k.Email = strings.ToLower(addr.Address) // wie bei der Online-Buchung
 		}
-		k.Email = strings.ToLower(addr.Address) // wie bei der Online-Buchung
 	}
-	return k, ""
+	return k, errs
 }
 
 // kundeNullEmail: leere Adresse als NULL speichern (mehrere NULL sind erlaubt).
@@ -233,29 +246,29 @@ func kundeEmailVergeben(err error) bool {
 }
 
 func (a *app) kundeNeu(w http.ResponseWriter, r *http.Request, c *dctx) {
-	d := a.dashPage(c, r, "kunden", "Kunde anlegen")
-	d["Form"] = kunde{}
+	d := a.dashPage(c, r, "kunden", "Neuer Kunde")
+	d["Form"], d["Errors"] = kunde{}, map[string]string{}
 	a.render(w, http.StatusOK, "kunden-neu", d)
 }
 
 func (a *app) kundeAnlegen(w http.ResponseWriter, r *http.Request, c *dctx) {
-	k, msg := kundeAusFormular(w, r)
-	if msg == "" {
+	k, errs := kundeAusFormular(w, r)
+	if len(errs) == 0 {
 		var id int64
 		err := a.db.QueryRow(`INSERT INTO customers (salon_id, name, email, phone, notes) VALUES (?, ?, ?, ?, ?) RETURNING id`,
 			c.Salon.ID, k.Name, kundeNullEmail(k.Email), k.Phone, k.Notes).Scan(&id)
 		if err == nil {
-			http.Redirect(w, r, fmt.Sprintf("/dashboard/kunden/%d?gespeichert", id), http.StatusSeeOther)
+			http.Redirect(w, r, fmt.Sprintf("/dashboard/kunden/%d?gespeichert=neu", id), http.StatusSeeOther)
 			return
 		}
 		if !kundeEmailVergeben(err) {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		msg = kundeEmailVergebenText
+		errs["email"] = kundeEmailVergebenText
 	}
-	d := a.dashPage(c, r, "kunden", "Kunde anlegen")
-	d["Form"], d["Error"] = k, msg
+	d := a.dashPage(c, r, "kunden", "Neuer Kunde")
+	d["Form"], d["Errors"] = k, errs
 	a.render(w, http.StatusBadRequest, "kunden-neu", d)
 }
 
@@ -284,7 +297,7 @@ func (a *app) eigenerKunde(w http.ResponseWriter, r *http.Request, c *dctx) *kun
 
 func (a *app) kundeKarte(w http.ResponseWriter, r *http.Request, c *dctx) {
 	if k := a.eigenerKunde(w, r, c); k != nil {
-		a.kundeKarteZeigen(w, r, c, k, *k, "")
+		a.kundeKarteZeigen(w, r, c, k, *k, nil)
 	}
 }
 
@@ -293,21 +306,21 @@ func (a *app) kundeSpeichern(w http.ResponseWriter, r *http.Request, c *dctx) {
 	if k == nil {
 		return
 	}
-	f, msg := kundeAusFormular(w, r)
-	if msg == "" {
+	f, errs := kundeAusFormular(w, r)
+	if len(errs) == 0 {
 		_, err := a.db.Exec(`UPDATE customers SET name = ?, email = ?, phone = ?, notes = ? WHERE id = ? AND salon_id = ?`,
 			f.Name, kundeNullEmail(f.Email), f.Phone, f.Notes, k.ID, c.Salon.ID)
 		if err == nil {
-			http.Redirect(w, r, fmt.Sprintf("/dashboard/kunden/%d?gespeichert", k.ID), http.StatusSeeOther)
+			http.Redirect(w, r, fmt.Sprintf("/dashboard/kunden/%d?gespeichert=karte", k.ID), http.StatusSeeOther)
 			return
 		}
 		if !kundeEmailVergeben(err) {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		msg = kundeEmailVergebenText
+		errs["email"] = kundeEmailVergebenText
 	}
-	a.kundeKarteZeigen(w, r, c, k, f, msg)
+	a.kundeKarteZeigen(w, r, c, k, f, errs)
 }
 
 // --- Karteikarte ---
@@ -319,9 +332,9 @@ type kundenTermin struct {
 }
 
 // kundeKarteZeigen rendert die Karteikarte mit Terminhistorie. form = Werte im
-// Bearbeiten-Formular (nach einem Fehler die eingegebenen), msg = Fehlertext.
+// Bearbeiten-Formular (nach einem Fehler die eingegebenen), errs = Fehler je Feld.
 // ponytail: Historie ohne Seitenumbruch; auch Stammkunden haben selten mehr als ein paar hundert Termine.
-func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, k *kunde, form kunde, msg string) {
+func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, k *kunde, form kunde, errs map[string]string) {
 	rows, err := a.db.Query(`SELECT a.id, a.starts_at, a.status, sv.name, sv.price_cents, st.name FROM appointments a
 		JOIN services sv ON sv.id = a.service_id JOIN staff st ON st.id = a.staff_id
 		WHERE a.customer_id = ? AND a.salon_id = ? ORDER BY a.starts_at, a.id`, k.ID, c.Salon.ID)
@@ -375,10 +388,11 @@ func (a *app) kundeKarteZeigen(w http.ResponseWriter, r *http.Request, c *dctx, 
 		}
 	}
 	d := a.dashPage(c, r, "kunden", k.Name)
-	d["Customer"], d["Form"], d["Error"] = k, form, msg
+	d["Customer"], d["Form"], d["Errors"] = k, form, errs
 	d["Upcoming"], d["Past"], d["Visits"], d["Revenue"], d["Next"] = upcoming, past, visits, revenue, next
+	d["SavedMsg"] = kundenGespeichert[r.URL.Query().Get("gespeichert")]
 	status := http.StatusOK
-	if msg != "" {
+	if len(errs) > 0 {
 		status = http.StatusBadRequest
 	}
 	a.render(w, status, "kunden-karte", d)
