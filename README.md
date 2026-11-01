@@ -67,7 +67,7 @@ Buchungsseite zum Ausprobieren: [demo.kammzeit.de](https://demo.kammzeit.de) auf
   </tr>
   <tr>
     <td valign="top"><img src="docs/readme/icons/export.svg" width="56" height="56" alt=""><br><b>Eigene Daten</b><br>Export aller Salondaten als JSON, Konto jederzeit selbst löschen.</td>
-    <td valign="top"><img src="docs/readme/icons/offen.svg" width="56" height="56" alt=""><br><b>Open Source</b><br>AGPL-3.0. Selbst gehostet im Einzelbetrieb ohne Grenze bei den Mitarbeitern, mit Warteschlange und Mitarbeiter-Logins und ohne Kammzeit-Hinweis.</td>
+    <td valign="top"><img src="docs/readme/icons/offen.svg" width="56" height="56" alt=""><br><b>Open Source</b><br>AGPL-3.0. Selbst gehostet im Einzelbetrieb ohne Plan-Grenzen: beliebig viele Mitarbeiter, Warteschlange, Mitarbeiter-Logins, Titelbild, Design und Galerie, ohne Kammzeit-Hinweis.</td>
     <td valign="top"><img src="docs/readme/icons/gratis.svg" width="56" height="56" alt=""><br><b>Gratis starten</b><br>Gehostet gratis mit einem Mitarbeiter. Pro mit beliebig vielen Mitarbeitern, Mitarbeiter-Logins, Warteschlange und mehr Gestaltung: 14,90 € im Monat oder 149 € im Jahr.</td>
   </tr>
 </table>
@@ -152,14 +152,14 @@ docker run -d --name kammzeit -p 127.0.0.1:8080:8080 -v kammzeit-data:/data \
   -e PUBLIC_URL=https://termine.example.de kammzeit
 ```
 
-Das Image startet im Einzelbetrieb, die Datenbank liegt im Volume unter `/data/kammzeit.db`. Im Einzelbetrieb gibt es keine Plan-Grenzen: beliebig viele Mitarbeiter, Warteschlange und Mitarbeiter-Logins ohne Pro-Abo und ohne Kammzeit-Hinweis.
+Das Image startet im Einzelbetrieb, die Datenbank liegt im Volume unter `/data/kammzeit.db`. Im Einzelbetrieb gibt es keine Plan-Grenzen: beliebig viele Mitarbeiter, Warteschlange, Mitarbeiter-Logins, Titelbild, Design und Galerie ohne Pro-Abo und ohne Kammzeit-Hinweis.
 
 ## Technik
 
 - **Go** mit der Standardbibliothek: `net/http` (Routing mit Go-1.22-Mustern), `html/template`, `embed`. Templates und statische Dateien unter `web/` stecken in der Binary.
 - **SQLite** über [modernc.org/sqlite](https://modernc.org/sqlite), reines Go, kein CGO. Schema in [schema.sql](schema.sql).
 - **htmx 2** für die wenigen dynamischen Stellen, kein JS-Framework. Schriften und Skripte kommen vom eigenen Server, keine Tracker.
-- Ein einziges Go-Paket, eine direkte Abhängigkeit in [go.mod](go.mod).
+- Ein einziges Go-Paket, zwei direkte Abhängigkeiten in [go.mod](go.mod) (SQLite-Treiber, `golang.org/x/image` für Bild-Uploads).
 
 ## Entwicklung
 

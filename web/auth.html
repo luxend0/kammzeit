@@ -59,7 +59,7 @@
       <button class="btn" type="submit">{{t .Lang "Login-Link schicken"}}</button>
     </form>
 {{end}}
-    {{if not .Single}}<p class="konto-alt">{{t .Lang "Noch kein Konto?"}} <a href="/registrieren">{{t .Lang "Kostenlos registrieren"}}</a></p>{{end}}
+    {{if not .Single}}<p class="konto-alt">{{t .Lang "Noch kein Konto?"}} <a href="{{if eq .Lang "en"}}/signup{{else}}/registrieren{{end}}">{{t .Lang "Kostenlos registrieren"}}</a></p>{{end}}
   </div>
 </div>
 {{template "auth-bottom" .}}{{end}}

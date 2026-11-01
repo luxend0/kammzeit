@@ -60,7 +60,7 @@
     <div class="site-head-end">
       {{template "site-lang" .}}
       <a href="/login">{{t .Lang "Anmelden"}}</a>
-      <a class="btn" href="/registrieren">{{t .Lang "Kostenlos starten"}}</a>
+      <a class="btn" href="{{if eq .Lang "en"}}/signup{{else}}/registrieren{{end}}">{{t .Lang "Kostenlos starten"}}</a>
     </div>
   </div>
 </header>{{end}}

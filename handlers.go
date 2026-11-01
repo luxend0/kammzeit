@@ -149,9 +149,12 @@ func (a *app) render(w http.ResponseWriter, status int, name string, data map[st
 
 // page füllt die Felder, die jedes Layout braucht.
 func (a *app) page(s *salon, title string) map[string]any {
-	d := map[string]any{"Title": title, "Lang": "de"}
+	d := map[string]any{"Title": title, "Lang": "de", "PrivacyURL": "/datenschutz"}
 	if s != nil {
 		d["Lang"] = s.Lang
+		if s.Lang == "en" && !a.cfg.SingleTenant {
+			d["PrivacyURL"] = a.siteURLLang("en") + "/privacy" // englische Fassung liegt nur auf der Hauptdomain
+		}
 		d["Salon"] = s
 		d["Accent"] = s.Accent
 		d["OnAccent"] = onAccent(s.Accent)
