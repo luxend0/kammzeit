@@ -1,0 +1,63 @@
+{{/* Registrierung neuer Salons (signup.go). Im Einzelbetrieb (.Single) ohne Adresse und ohne AGB-Häkchen. */}}
+{{define "signup"}}{{template "top" .}}
+<style>
+.signup-error { margin: 20px 0 0; padding: 10px 14px; border-left: 4px solid #b00020; background: #fdf0f2; }
+.signup-slug { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.signup-slug input { margin-top: 0; }
+.signup-slug span { font-weight: 400; white-space: nowrap; }
+.signup-status { display: block; min-height: 1.5em; margin-top: -4px; font-size: .875rem; font-weight: 600; }
+.signup-free { color: var(--accent); }
+.signup-taken { color: #b00020; }
+.signup-check { display: flex; gap: 10px; align-items: baseline; margin: 16px 0 0; font-size: .875rem; cursor: pointer; }
+.signup-check input { accent-color: var(--accent); }
+.signup-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+</style>
+<h1>{{.Heading}}</h1>
+<p class="lead">{{if .Single}}Lege deinen Salon an. Danach kommst du per Link aus einer E-Mail in dein Dashboard.{{else}}Gratis starten, ohne Zahlungsdaten.{{end}}</p>
+{{with .Error}}<p class="signup-error" role="alert">{{.}}</p>{{end}}
+<form method="post" action="/registrieren">
+  <fieldset>
+    <legend>Dein Salon</legend>
+    <label class="field">Salonname
+      <input type="text" name="name" value="{{.Name}}" minlength="2" maxlength="80" required autocomplete="organization"{{if not .Single}}
+        hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-include="#signup-slug-box" hx-target="#signup-slug-box" hx-swap="outerHTML"{{end}}>
+    </label>
+    {{if not .Single}}{{template "signup-slug" .}}{{end}}
+  </fieldset>
+  <fieldset>
+    <legend>Dein Zugang</legend>
+    <label class="field">E-Mail
+      <input type="email" name="email" value="{{.Email}}" maxlength="200" required autocomplete="email">
+    </label>
+    <p class="muted small">Kein Passwort: Du meldest dich immer über einen Link per E-Mail an.</p>
+    {{if not .Single}}<label class="signup-check"><input type="checkbox" name="agb" value="1" required{{if .AGB}} checked{{end}}>
+      <span>Ich akzeptiere die <a href="/agb" target="_blank" rel="noopener">AGB</a> und den <a href="/avv" target="_blank" rel="noopener">Vertrag zur Auftragsverarbeitung</a>.</span></label>{{end}}
+  </fieldset>
+  <div class="signup-hp" aria-hidden="true">
+    <label>Homepage (bitte leer lassen)<input type="text" name="homepage" tabindex="-1" autocomplete="off"></label>
+  </div>
+  <button type="submit">Salon anlegen</button>
+  {{if not .Single}}<p class="muted small">Schon registriert? <a href="/login">Anmelden</a></p>{{end}}
+</form>
+{{template "bottom" .}}{{end}}
+
+{{/* Wunsch-Adresse. Wird bei Eingabe im Namensfeld komplett ersetzt (neuer Vorschlag),
+     bei Eingabe in der Adresse nur der Status. */}}
+{{define "signup-slug"}}<div id="signup-slug-box">
+  <label class="field">Wunsch-Adresse deiner Buchungsseite
+    <span class="signup-slug"><input id="signup-slug" type="text" name="slug" value="{{.Slug}}" minlength="3" maxlength="40" required
+      autocapitalize="off" autocomplete="off" spellcheck="false" aria-describedby="signup-status"
+      hx-get="/registrieren/adresse" hx-trigger="input changed delay:300ms" hx-target="#signup-status"><span>.{{.Domain}}</span></span>
+  </label>
+  <input type="hidden" name="slug_auto" value="{{.SlugAuto}}">
+  <span id="signup-status" class="signup-status" aria-live="polite">{{template "signup-status" .}}</span>
+</div>{{end}}
+
+{{define "signup-status"}}{{with .Status}}<span class="{{if eq . "frei"}}signup-free{{else}}signup-taken{{end}}">{{.}}</span>{{end}}{{end}}
+
+{{define "signup-done"}}{{template "top" .}}
+<h1>Fast geschafft</h1>
+<p>Wir haben dir einen Link an <strong>{{.Email}}</strong> geschickt. Damit kommst du in dein Dashboard.</p>
+<p class="muted small">Der Link ist 15 Minuten gültig. Schau auch im Spam-Ordner nach.</p>
+{{if .MailFailed}}<p>Kein Link angekommen? <a href="/login">Hier neu anfordern</a></p>{{end}}
+{{template "bottom" .}}{{end}}
