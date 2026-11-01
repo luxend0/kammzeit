@@ -80,7 +80,7 @@ func TestTeamParseHours(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, ok := teamParseHours(c.days)
+			got, ok := teamParseHours("de", c.days)
 			d := c.days[0]
 			if c.err == "" {
 				if !ok || d.Err != "" || len(got) != c.blocks {
@@ -104,7 +104,7 @@ func TestTeamParseHours(t *testing.T) {
 		{WD: 2, Label: "Dienstag", From: [2]string{"09:00"}, To: [2]string{"18:00"}},
 		{WD: 3, Label: "Mittwoch", From: [2]string{"", "09:00"}, To: [2]string{"", ""}},
 	}
-	if _, ok := teamParseHours(days); ok || days[0].Err == "" || days[1].Err != "" || !strings.HasPrefix(days[2].Err, "Mittwoch Block 2") {
+	if _, ok := teamParseHours("de", days); ok || days[0].Err == "" || days[1].Err != "" || !strings.HasPrefix(days[2].Err, "Mittwoch Block 2") {
 		t.Fatalf("per-day errors: %q / %q / %q", days[0].Err, days[1].Err, days[2].Err)
 	}
 }
@@ -133,18 +133,20 @@ func TestTeamCopySource(t *testing.T) {
 		{nil, 0, ""},
 	}
 	for _, c := range cases {
-		if src, label := teamCopySource(week(c.filled...)); src != c.src || label != c.label {
+		if src, label := teamCopySource("de", week(c.filled...)); src != c.src || label != c.label {
 			t.Errorf("filled %v: %d %q, want %d %q", c.filled, src, label, c.src, c.label)
 		}
 	}
 }
 
 // catalogEnv: Dashboard-Routen dieses Bereichs mit temporärer DB und angemeldetem Salon.
+// host = Hauptdomain der Anfragen: kammzeit.test (Deutsch) oder kammzeit-en.test (Englisch).
 type catalogEnv struct {
 	db     *sql.DB
 	h      http.Handler
 	salon  int64
 	cookie string
+	host   string
 }
 
 func newCatalogEnv(t *testing.T, plan string) *catalogEnv {
@@ -158,10 +160,11 @@ func newCatalogEnv(t *testing.T, plan string) *catalogEnv {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a := &app{db: db, tpl: tpl, cfg: config{BaseDomain: "kammzeit.test", SiteURL: "https://kammzeit.test", PublicURL: "https://{slug}.kammzeit.test"}}
+	a := &app{db: db, tpl: tpl, cfg: config{BaseDomain: "kammzeit.test", SiteURL: "https://kammzeit.test", PublicURL: "https://{slug}.kammzeit.test",
+		Domains: parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")}}
 	mux := http.NewServeMux()
 	a.routesCatalog(mux)
-	e := &catalogEnv{db: db, h: mux}
+	e := &catalogEnv{db: db, h: mux, host: "kammzeit.test"}
 	e.salon, e.cookie = catalogSalon(t, db, "mueller", plan)
 	return e
 }
@@ -206,9 +209,9 @@ func (e *catalogEnv) rec(method, path string, form url.Values) *httptest.Respons
 	if form != nil {
 		body = strings.NewReader(form.Encode())
 	}
-	req := httptest.NewRequest(method, "http://kammzeit.test"+path, body)
+	req := httptest.NewRequest(method, "http://"+e.host+path, body)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Origin", "http://kammzeit.test")
+	req.Header.Set("Origin", "http://"+e.host)
 	req.Header.Set("Cookie", e.cookie)
 	rec := httptest.NewRecorder()
 	e.h.ServeHTTP(rec, req)
@@ -450,5 +453,71 @@ func TestCatalogDelete(t *testing.T) {
 	rec := e.rec("POST", "/dashboard/leistungen/"+id(used)+"/verschieben", url.Values{"richtung": {"hoch"}})
 	if loc := rec.Header().Get("Location"); loc != "/dashboard/leistungen?gespeichert=reihenfolge#leist-"+id(used) {
 		t.Errorf("verschieben: Location %q", loc)
+	}
+}
+
+func TestTeamHoursSummary(t *testing.T) {
+	var hours []WorkingHours
+	for wd := time.Tuesday; wd <= time.Friday; wd++ {
+		hours = append(hours, WorkingHours{wd, 9 * 60, 18 * 60})
+	}
+	hours = append(hours, WorkingHours{time.Saturday, 9 * 60, 14 * 60})
+	for lang, want := range map[string]string{"de": "Di-Fr 9:00-18:00|Sa 9:00-14:00", "en": "Tue-Fri 9:00-18:00|Sat 9:00-14:00"} {
+		if got := strings.Join(teamHoursSummary(lang, hours), "|"); got != want {
+			t.Errorf("%s: %q, want %q", lang, got, want)
+		}
+	}
+}
+
+// Englisch auf der .com-Domain: Texte, Wochentage, Preise, Meldungen und Feldfehler.
+func TestCatalogEnglish(t *testing.T) {
+	e := newCatalogEnv(t, "free")
+	e.host = "kammzeit-en.test"
+	has := func(name, body string, want ...string) {
+		t.Helper()
+		for _, s := range want {
+			if !strings.Contains(body, s) {
+				t.Errorf("%s: missing %q", name, s)
+			}
+		}
+	}
+	svc := strconv.FormatInt(catalogInsert(t, e.db, `INSERT INTO services (salon_id, name, duration_min, price_cents) VALUES (?, 'Cut', 30, 2550)`, e.salon), 10)
+	anna := strconv.FormatInt(catalogInsert(t, e.db, `INSERT INTO staff (salon_id, name) VALUES (?, 'Anna')`, e.salon), 10)
+	catalogInsert(t, e.db, `INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, 2, 540, 1080), (?, 3, 540, 1080)`, anna, anna)
+
+	_, body := e.do("GET", "/dashboard/leistungen?gespeichert=reihenfolge", nil)
+	has("services", body, "<h1>Services</h1>", "New service", "€25.50", "30 min", `aria-label="Move Cut up"`,
+		"Order changed. Services appear in this order on your booking page too.")
+	_, body = e.do("GET", "/dashboard/leistungen/"+svc, nil)
+	has("service form", body, "<h1>Edit service</h1>", `value="25.50"`, `placeholder="25.00"`, "Price in euros", "Delete service", "Yes, delete</button>")
+	code, body := e.do("POST", "/dashboard/leistungen/neu", url.Values{"name": {""}, "dauer": {"7"}, "preis": {"abc"}})
+	if code != http.StatusUnprocessableEntity {
+		t.Fatalf("service errors: %d", code)
+	}
+	has("service errors", body, "Please check the highlighted fields. Nothing has been saved yet.",
+		"The duration must be between 5 and 480 minutes, in 5-minute steps.", "Please enter a valid price, e.g. 25 or 25.50.")
+	if rec := e.rec("POST", "/dashboard/leistungen/neu", url.Values{"name": {"Colour"}, "dauer": {"60"}, "preis": {"54.90"}, "aktiv": {"1"}}); rec.Code != http.StatusSeeOther ||
+		e.count(t, `SELECT COUNT(*) FROM services WHERE name = 'Colour' AND price_cents = 5490`) != 1 {
+		t.Fatalf("service with English price: %d", rec.Code)
+	}
+
+	_, body = e.do("GET", "/dashboard/team?gespeichert=mitarbeiter", nil)
+	has("team", body, "<h1>Team</h1>", "New staff member", "Working hours", "Tue-Wed 9:00-18:00", "Staff member saved.",
+		"The Free plan allows 1 active staff member. Pro allows unlimited staff.", "See Pro")
+	_, body = e.do("GET", "/dashboard/team/"+anna, nil)
+	has("team form", body, "<h1>Edit staff member</h1>", ">Monday</th>", ">Sunday</th>", `aria-label="Tuesday, block 1, start"`,
+		"Copy Tuesday to Wednesday-Friday</button>", "Empty means day off.")
+	code, body = e.do("POST", "/dashboard/team/"+anna, url.Values{"name": {"Anna"}, "aktiv": {"1"}, "von-1-0": {"18:00"}, "bis-1-0": {"09:00"},
+		"von-2-0": {"09:00"}, "bis-2-0": {"13:00"}, "von-2-1": {"12:00"}, "bis-2-1": {"18:00"}})
+	if code != http.StatusUnprocessableEntity {
+		t.Fatalf("team errors: %d", code)
+	}
+	has("team errors", body, ">Monday block 1: The end must be after the start.</span>", ">Tuesday: The two blocks overlap.</span>")
+	_, body = e.do("POST", "/dashboard/team/"+anna, url.Values{"name": {"Anna"}, "aktiv": {"1"}, "uebertragen": {"2"}, "von-2-0": {"09:00"}, "bis-2-0": {"18:00"}})
+	has("copy", body, "Hours copied: Tuesday to Wednesday-Friday. Not saved yet.")
+	code, body = e.do("GET", "/dashboard/team/neu", nil)
+	has("limit", body, "See Pro", "With Pro you can have as many active staff as you like, for 14.90 € per month or 149 € per year.")
+	if code != http.StatusOK {
+		t.Errorf("limit: %d", code)
 	}
 }

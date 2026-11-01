@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -352,5 +353,92 @@ func TestKundenLeer(t *testing.T) {
 	// Eigener Seitenkopf mit Aktion: das Layout darf keine zweite Überschrift setzen.
 	if strings.Count(body, "<h1") != 1 || !strings.Contains(body, `class="page-head"`) {
 		t.Error("Seitenkopf: nicht genau ein h1")
+	}
+}
+
+// kundenHas prüft, dass body alle want enthält und keins von not.
+func kundenHas(t *testing.T, name, body string, want []string, not ...string) {
+	t.Helper()
+	for _, s := range want {
+		if !strings.Contains(body, s) {
+			t.Errorf("%s: %q fehlt", name, s)
+		}
+	}
+	for _, s := range not {
+		if strings.Contains(body, s) {
+			t.Errorf("%s: %q sollte fehlen", name, s)
+		}
+	}
+}
+
+// Englisch auf der .com-Domain: Texte, Datum, Preise, CSV-Kopf und Fehlermeldungen.
+func TestKundenEnglisch(t *testing.T) {
+	a, h := kundenTestApp(t)
+	a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
+	mine, salonID := kundenTestSalon(t, a, "mueller")
+	en := func(path string, form url.Values) *httptest.ResponseRecorder {
+		method, body := http.MethodGet, io.Reader(nil)
+		if form != nil {
+			method, body = http.MethodPost, strings.NewReader(form.Encode())
+		}
+		r := httptest.NewRequest(method, "http://kammzeit-en.test"+path, body)
+		r.AddCookie(&http.Cookie{Name: sessionCookie, Value: mine})
+		if form != nil {
+			r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+			r.Header.Set("Origin", "http://kammzeit-en.test")
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+
+	kundenHas(t, "leere Liste", en("/dashboard/kunden", nil).Body.String(),
+		[]string{"<h1>Customers</h1>", "New customer", "No customers yet", "Customers appear here automatically"}, "Neuer Kunde", "Noch keine Kunden")
+
+	id := kundenTestKunde(t, a, salonID, "Anna Alt", "anna@alt.example", "0176 111", "7/1")
+	kundenTestTermin(t, a, salonID, id, time.Now().Add(-48*time.Hour), "booked")
+	kundenTestTermin(t, a, salonID, id, time.Now().Add(48*time.Hour), "booked")
+	day := regexp.MustCompile(`\d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}`)
+	list := en("/dashboard/kunden", nil).Body.String()
+	kundenHas(t, "Liste", list, []string{"Search customers", "Last visit", "Next appointment", "Download all customers as a CSV file"}, "Letzter Besuch")
+	if !day.MatchString(list) {
+		t.Error("Liste: kein englisches Datum")
+	}
+
+	card := en(fmt.Sprintf("/dashboard/kunden/%d", id), nil).Body.String()
+	kundenHas(t, "Karteikarte", card, []string{"Customer since ", "New appointment", "Upcoming appointments", "Past appointments",
+		"completed", "booked", "€79.00", "Revenue so far", "Edit contact details and notes", "Delete customer"}, "79,00 €", "Kunde seit", "erledigt")
+	if !day.MatchString(card) || !regexp.MustCompile(`(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), \d`).MatchString(card) {
+		t.Error("Karteikarte: Datum nicht englisch")
+	}
+	// Deutsch bleibt Deutsch.
+	kundenHas(t, "Karteikarte de", kundenReq(h, mine, fmt.Sprintf("/dashboard/kunden/%d", id), nil).Body.String(),
+		[]string{"Kunde seit ", "79,00 €", "erledigt", "gebucht"}, "€79.00", "Customer since")
+
+	w := en(fmt.Sprintf("/dashboard/kunden/%d", id), url.Values{"name": {""}, "email": {"kaputt"}})
+	kundenHas(t, "Fehler", w.Body.String(), []string{"Please check the highlighted fields. Nothing has been saved yet.",
+		"Please enter a name.", "Please enter a valid email address or leave the field empty."}, "Bitte")
+	if w.Code != http.StatusBadRequest {
+		t.Errorf("Fehler: Status %d", w.Code)
+	}
+	w = en(fmt.Sprintf("/dashboard/kunden/%d", id), url.Values{"name": {"Anna Alt"}})
+	if loc := w.Header().Get("Location"); w.Code != http.StatusSeeOther || !strings.HasSuffix(loc, "?gespeichert=karte") {
+		t.Fatalf("Speichern: %d %q", w.Code, loc)
+	}
+	kundenHas(t, "Meldung", en(w.Header().Get("Location"), nil).Body.String(), []string{"Contact details and notes saved."})
+
+	kundenHas(t, "Löschen", en(fmt.Sprintf("/dashboard/kunden/%d/loeschen", id), nil).Body.String(),
+		[]string{"will be permanently deleted, along with contact details, notes and 2 appointments.",
+			"This includes one upcoming appointment.", "Delete permanently", "Back to customer card"})
+
+	w = en("/dashboard/kunden.csv", nil)
+	cr := csv.NewReader(bytes.NewReader(w.Body.Bytes()[3:]))
+	cr.Comma = ';'
+	recs, err := cr.ReadAll()
+	if err != nil || strings.Join(recs[0], "|") != "Name|Email|Phone|Notes|Created|Visits" {
+		t.Fatalf("CSV-Kopf %v (%v)", recs, err)
+	}
+	if !regexp.MustCompile(`^\d{4}-\d{2}-\d{2}$`).MatchString(recs[1][4]) || !strings.Contains(w.Header().Get("Content-Disposition"), `filename="customers-mueller-`) {
+		t.Errorf("CSV: Datum %q, %q", recs[1][4], w.Header().Get("Content-Disposition"))
 	}
 }

@@ -1,0 +1,795 @@
+{{/* English industry pages, About, Contact for kammzeit.com (routesSiteENBranchen in site_en_branchen.go).
+     Same markup and CSS as the German pages (site_branchen.html, static/site-branchen.css);
+     "branchen-css" and "branchen-deco" come from there because they contain no text.
+     Content rule: only claim what Kammzeit really does; name what is missing. Prices are examples in EUR. */}}
+
+{{define "enbr-actions"}}<p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="https://demo.kammzeit.de">See the demo salon</a></p>{{end}}
+
+{{/* Links to the other industry pages. Data: current path. */}}
+{{define "enbr-also"}}<nav class="br-also" aria-label="Kammzeit for other salons"><span>Kammzeit also works for</span>
+  {{if ne . "/for/hairdressers"}}<a href="/for/hairdressers">Hairdressers</a>{{end}}
+  {{if ne . "/for/barbershops"}}<a href="/for/barbershops">Barbershops</a>{{end}}
+  {{if ne . "/for/beauty-salons"}}<a href="/for/beauty-salons">Beauty salons</a>{{end}}
+  {{if ne . "/for/nail-salons"}}<a href="/for/nail-salons">Nail salons</a>{{end}}
+</nav>{{end}}
+
+{{/* ===================================================================== Hairdressers */}}
+{{define "enbr-hairdressers"}}{{template "site-top" .}}{{template "branchen-css"}}
+<section class="page-head br-head" aria-labelledby="h-top">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">For hairdressers</li></ol></nav>
+      <h1 id="h-top">A colour takes two hours. Your booking page knows that.</h1>
+      <p class="lead">With Kammzeit, your customers book their appointments online. Every service has its real duration, and everyone on your team has their own working hours, breaks included. Customers only see start times where the whole appointment fits, and they book while you're cutting.</p>
+      {{template "enbr-actions"}}
+      <p class="note">Free for one person. 14.90&nbsp;€ a month for the whole team.</p>
+    </div>
+    <figure class="page-head-media br-head-media">
+      {{template "branchen-deco"}}
+      <img class="ill" src="/static/img/ill/branche-friseur.webp" width="1200" height="900" alt="" fetchpriority="high">
+      <p class="br-medal"><b>120</b><span>min for colour and cut</span></p>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-prices">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Example price list</p>
+      <h2 id="h-prices">Your services, the way you plan them</h2>
+      <p class="lead">This is how a hair salon might set up its services in Kammzeit. You choose the names, durations and prices, and your customers see them exactly like this on your booking page. The prices are only examples.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-menu">
+        <p class="br-menu-head"><b>Price list</b><span>Example</span></p>
+        <ul>
+          <li><p class="br-item"><b>Women's wash, cut and blow-dry</b><i></i><span>60&nbsp;min</span><span>52.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Men's wash and cut</b><i></i><span>30&nbsp;min</span><span>29.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Children up to 12</b><i></i><span>30&nbsp;min</span><span>19.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Root colour with blow-dry</b><i></i><span>90&nbsp;min</span><span>69.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Colour, cut and blow-dry</b><i></i><span>120&nbsp;min</span><span>89.00&nbsp;€</span></p>
+            <small>Description: price for shoulder-length hair, more for longer hair.</small></li>
+          <li><p class="br-item"><b>Balayage with cut</b><i></i><span>180&nbsp;min</span><span>149.00&nbsp;€</span></p>
+            <small class="br-pill">only bookable with Anna</small></li>
+          <li><p class="br-item"><b>Updo</b><i></i><span>60&nbsp;min</span><span>65.00&nbsp;€</span></p>
+            <small>Description: please come with hair washed the day before.</small></li>
+        </ul>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/schere.svg" width="48" height="48" alt="">
+        <p><b>A fixed price, described honestly.</b> Kammzeit shows one fixed price per service. If it depends on hair length, say so in the service description.</p>
+        <p><b>One service per booking.</b> Things you often do together become a service of their own, with the total duration.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-day">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / A day on the grid</p>
+      <h2 id="h-day">A break is a break</h2>
+      <p class="lead">On Tuesdays, Anna works from 9:00 to 13:00 and from 14:00 to 18:00. In Kammzeit, that's two blocks on the same day. The booking page offers start times every 15 minutes, but only those where the whole appointment fits into one block.</p>
+    </div>
+    <figure class="br-day">
+      <div class="br-day-in" role="img" aria-label="Anna's Tuesday: working hours from 9:00 to 13:00 and from 14:00 to 18:00, with a break in between. A 120-minute colour can start between 9:00 and 11:00 or between 14:00 and 16:00.">
+        <div class="br-hours" aria-hidden="true"><span style="--h:0">9</span><span style="--h:1">10</span><span style="--h:2">11</span><span style="--h:3">12</span><span style="--h:4">13</span><span style="--h:5">14</span><span style="--h:6">15</span><span style="--h:7">16</span><span style="--h:8">17</span><span style="--h:9">18</span></div>
+        <svg class="br-ticks" viewBox="0 0 36 12" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0H36M0 0V12M1 0V6M2 0V6M3 0V6M4 0V12M5 0V6M6 0V6M7 0V6M8 0V12M9 0V6M10 0V6M11 0V6M12 0V12M13 0V6M14 0V6M15 0V6M16 0V12M17 0V6M18 0V6M19 0V6M20 0V12M21 0V6M22 0V6M23 0V6M24 0V12M25 0V6M26 0V6M27 0V6M28 0V12M29 0V6M30 0V6M31 0V6M32 0V12M33 0V6M34 0V6M35 0V6M36 0V12"/></svg>
+        <p class="br-row-label" aria-hidden="true">Anna's working hours, break in between</p>
+        <div class="br-bars" aria-hidden="true">
+          <span class="br-blk" style="--s:1;--e:17"><b>9:00-13:00</b><i>9-13</i></span>
+          <span class="br-gap" style="--s:17;--e:21"><b>Break</b></span>
+          <span class="br-blk" style="--s:21;--e:37"><b>14:00-18:00</b><i>14-18</i></span>
+        </div>
+        <p class="br-row-label" aria-hidden="true">Colour, 120 min, can start</p>
+        <div class="br-bars" aria-hidden="true">
+          <span class="br-ok" style="--s:1;--e:9"><b>9:00-11:00</b><i>9-11</i></span>
+          <span class="br-ok" style="--s:21;--e:29"><b>14:00-16:00</b><i>14-16</i></span>
+        </div>
+      </div>
+      <figcaption>Nobody can book a colour at 11:15: it would end at 13:15, right in the middle of Anna's break. In the afternoon, 16:00 is the last start time.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-daily">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Salon life</p>
+      <h2 id="h-daily">Situations you know</h2>
+    </div>
+    <div class="br-scenes">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Only Anna does balayage.</h3>
+        <p>You decide who offers which service. When someone books balayage, they can only choose Anna or “Anyone available”, and they only see Anna's free times. Apprentices can be left out of services they don't do yet.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/kalender.svg" width="48" height="48" alt="">
+        <h3>Your apprentice is at college on Tuesdays.</h3>
+        <p>Working hours are set per weekday. If you enter nothing for your apprentice on Tuesdays, they can't be booked that day. They only work until 14:00 on Mondays? You set that for the weekday, too.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt="">
+        <h3>What colour did she have last time?</h3>
+        <p>Every customer has a customer card with your notes and all their appointments. If it says “7/1 + 7/0, 6%, 1:1, 35 min”, you don't have to guess at the next root touch-up.</p>
+        <p class="br-sens">An allergy to hair dye or a scalp condition is health data, a special category of personal data under the GDPR. Only note something like this if the customer explicitly agrees, and keep it as brief as possible.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/telefon.svg" width="48" height="48" alt="">
+        <h3>Your regular still phones.</h3>
+        <p>You add phone bookings to the calendar yourself. If the time is already taken, Kammzeit tells you. If you like, the customer gets a confirmation email with a link to cancel.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt="">
+        <h3>Saturday, 9:00, and the chair stays empty.</h3>
+        <p>Customers with an email address get a reminder 24 hours before, with a link to cancel. Anyone who can't make it cancels there, and the time can be booked again straight away. You decide how late customers can cancel online, from “until the appointment starts” to “two days before”.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+        <h3>Someone books for ten minutes from now.</h3>
+        <p>With the minimum notice, you decide how close to the appointment customers can still book online, from “immediately” to one day before. That way nothing lands in your calendar while you're in the middle of a colour.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-not">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / To be honest</p>
+      <h2 id="h-not">What Kammzeit can't do for hairdressers yet</h2>
+    </div>
+    <div class="br-not">
+      <div><h3>Using processing time</h3><p>An appointment blocks the person for its whole duration. You can't fit a men's cut into the processing time of a colour, neither online nor in the calendar.</p></div>
+      <div><h3>Several services in one booking</h3><p>Customers choose one service per booking. Set up combinations like “colour and cut” as a service of their own.</p></div>
+      <div><h3>Deposit when booking <span class="br-tag">planned</span></h3><p>Coming later. Until then, reminders, the cancellation deadline and the no-show mark on the customer card help.</p></div>
+      <div><h3>Separate logins for the team</h3><p>There is one login per salon. Staff members can't log in individually.</p></div>
+      <div><h3>Text messages</h3><p>Confirmations and reminders are sent by email. Kammzeit doesn't send text messages (SMS).</p></div>
+    </div>
+    {{template "enbr-also" .Path}}
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-cta">Try it with your own services.</h2>
+      <p>Free, with no time limit. All you need is an email address.</p>
+      {{template "enbr-actions"}}
+    </div>
+    <img class="cta-band-ill" src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="" loading="lazy">
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ===================================================================== Barbershops */}}
+{{define "enbr-barbershops"}}{{template "site-top" .}}{{template "branchen-css"}}
+<section class="page-head br-head" aria-labelledby="h-top">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">For barbershops</li></ol></nav>
+      <h1 id="h-top">Appointments and walk-ins in one calendar.</h1>
+      <p class="lead">With Kammzeit, your regulars book their cut online, even at one in the morning. When someone just walks in, you add them to the calendar in a few taps, and that time is gone online. So nobody gets double-booked.</p>
+      {{template "enbr-actions"}}
+      <p class="note">Free for one barber. 14.90&nbsp;€ a month for the whole team.</p>
+    </div>
+    <figure class="page-head-media br-head-media">
+      {{template "branchen-deco"}}
+      <img class="ill" src="/static/img/ill/branche-barbershop.webp" width="1200" height="900" alt="" fetchpriority="high">
+      <p class="br-medal"><b>15</b><span>min steps for free start times</span></p>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-prices">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Example price list</p>
+      <h2 id="h-prices">Short services, clear times</h2>
+      <p class="lead">This is how a barbershop might set up its services. Each one gets its own duration, and Kammzeit plans exactly as much time as you enter. The prices are only examples.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-menu">
+        <p class="br-menu-head"><b>Price list</b><span>Example</span></p>
+        <ul>
+          <li><p class="br-item"><b>Haircut</b><i></i><span>30&nbsp;min</span><span>28.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Haircut + beard</b><i></i><span>45&nbsp;min</span><span>40.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Beard trim and line-up</b><i></i><span>15&nbsp;min</span><span>15.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Skin fade</b><i></i><span>45&nbsp;min</span><span>34.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Hot towel shave</b><i></i><span>30&nbsp;min</span><span>25.00&nbsp;€</span></p>
+            <small class="br-pill">only bookable with Murat</small></li>
+          <li><p class="br-item"><b>Kids' cut up to 12</b><i></i><span>30&nbsp;min</span><span>18.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Ear and nose wax</b><i></i><span>15&nbsp;min</span><span>10.00&nbsp;€</span></p></li>
+        </ul>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+        <p><b>Combos are services of their own.</b> Customers choose one service per booking, so you set up “Haircut + beard” as its own service with 45 minutes.</p>
+        <p><b>Short services fill gaps.</b> Free start times come in 15-minute steps, so a 15-minute beard trim fits between two cuts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-saturday">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / A Saturday</p>
+      <h2 id="h-saturday">Booked online or walked in: all in one place</h2>
+      <p class="lead">Online bookings and appointments you add yourself are in the same calendar. The booking page only offers times that are still free there.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-book">
+        <p class="br-book-head"><b>Saturday</b><span>Murat</span></p>
+        <ol>
+          <li><time>09:00</time><span>Haircut<small>30 min, Jonas</small></span></li>
+          <li><time>09:30</time><span>Haircut + beard<small>45 min, Deniz</small></span></li>
+          <li><time>10:15</time><span>Beard trim and line-up<small>15 min, Leon</small></span></li>
+          <li class="is-walkin"><time>10:30</time><span>Haircut<small>30 min, walked in without an appointment, added in the shop</small></span></li>
+          <li><time>11:00</time><span>Skin fade<small>45 min, Ali</small></span></li>
+          <li><time>11:45</time><span>Hot towel shave<small>30 min, Paul</small></span></li>
+          <li class="is-free"><time>12:15</time><span>free<small>bookable online</small></span></li>
+        </ol>
+        <figcaption>Example of a calendar day, simplified.</figcaption>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/buchung.svg" width="48" height="48" alt="">
+        <p><b>At 10:30, someone walked in.</b> Murat added him without an email address. After that, 10:30 was no longer bookable online.</p>
+        <p><b>No double bookings.</b> If the time is already taken when you add an appointment, Kammzeit tells you which appointment is already there and when.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-daily">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Shop life</p>
+      <h2 id="h-daily">Situations you know</h2>
+    </div>
+    <div class="br-scenes">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+        <h3>The shop is full, and someone books for five minutes from now.</h3>
+        <p>With the minimum notice, you set how close to the appointment customers can still book online: immediately, 30 minutes, one hour or longer before. If you like spontaneous customers, leave it at “immediately”.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Only one of you does hot towel shaves.</h3>
+        <p>You decide who offers which service. Anyone booking a hot towel shave can only choose Murat or “Anyone available”, and only sees Murat's free times.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+        <h3>The same fade every three weeks.</h3>
+        <p>His customer card has a note: “Sides 0.5 to 2, top 4 cm with scissors, square neckline”. So everyone on the team cuts it the same way, even when his usual barber is off.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt="">
+        <h3>Saturday's 9:00 customer doesn't turn up.</h3>
+        <p>Customers with an email address get a reminder 24 hours before, with a link to cancel, so they're more likely to cancel than forget. If someone still doesn't come, you mark the appointment as a no-show. Next time, the customer card shows you who you can count on.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/pause.svg" width="48" height="48" alt="">
+        <h3>Fridays from noon, but until late.</h3>
+        <p>Every barber has their own working hours for each weekday, with up to two blocks per day. Someone who works Fridays from 12:00 to 15:00 and from 16:00 to 21:00 can be booked exactly then.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt="">
+        <h3>The link belongs in your Instagram bio.</h3>
+        <p>Your booking page has its own address, such as yourshop.kammzeit.com. Customers don't need an app or an account, just their name and email address.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-not">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / To be honest</p>
+      <h2 id="h-not">What Kammzeit can't do for barbershops yet</h2>
+    </div>
+    <div class="br-not">
+      <div><h3>A queue for walk-ins</h3><p>There's no digital queue that calls walk-ins up in turn. When someone comes in, you add them straight to the calendar as an appointment.</p></div>
+      <div><h3>Text messages or WhatsApp</h3><p>Confirmations and reminders are sent by email. Kammzeit doesn't send messages to phones.</p></div>
+      <div><h3>Till</h3><p>Kammzeit isn't a till or point-of-sale system. Customers pay in your shop, as before.</p></div>
+      <div><h3>Deposit when booking <span class="br-tag">planned</span></h3><p>Coming later. Until then, reminders, the cancellation deadline and the no-show mark help.</p></div>
+      <div><h3>Separate logins for each barber</h3><p>There is one login per shop. Barbers can't log in individually.</p></div>
+    </div>
+    {{template "enbr-also" .Path}}
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-cta">Set up your shop and share the link.</h2>
+      <p>Free for one barber, with no time limit. All you need is an email address.</p>
+      {{template "enbr-actions"}}
+    </div>
+    <img class="cta-band-ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy">
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ===================================================================== Beauty salons */}}
+{{define "enbr-beauty-salons"}}{{template "site-top" .}}{{template "branchen-css"}}
+<section class="page-head br-head" aria-labelledby="h-top">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">For beauty salons</li></ol></nav>
+      <h1 id="h-top">Ninety minutes of treatment, no phone in between.</h1>
+      <p class="lead">With Kammzeit, your customers book facials, lashes or brows online, with the duration you set. You stay with the customer who is on your treatment couch right now.</p>
+      {{template "enbr-actions"}}
+      <p class="note">Free for one person. 14.90&nbsp;€ a month for the whole team.</p>
+    </div>
+    <figure class="page-head-media br-head-media">
+      {{template "branchen-deco"}}
+      <img class="ill" src="/static/img/ill/branche-kosmetik.webp" width="1200" height="900" alt="" fetchpriority="high">
+      <p class="br-medal"><b>90</b><span>min intensive facial</span></p>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-prices">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Example price list</p>
+      <h2 id="h-prices">Classic or intensive? Your customer knows before booking.</h2>
+      <p class="lead">This is how a beauty salon might set up its treatments. Each variant is a service of its own, with duration, price and a short description. The prices are only examples.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-menu">
+        <p class="br-menu-head"><b>Price list</b><span>Example</span></p>
+        <ul>
+          <li><p class="br-item"><b>Classic facial</b><i></i><span>60&nbsp;min</span><span>65.00&nbsp;€</span></p>
+            <small>Description: cleansing, exfoliation, extractions, mask, moisturiser.</small></li>
+          <li><p class="br-item"><b>Intensive facial</b><i></i><span>90&nbsp;min</span><span>89.00&nbsp;€</span></p>
+            <small>Description: as the classic facial, plus serum and a massage for face, neck and décolletage.</small></li>
+          <li><p class="br-item"><b>First treatment with skin analysis</b><i></i><span>90&nbsp;min</span><span>79.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Brow shape and tint</b><i></i><span>30&nbsp;min</span><span>22.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Lash tint</b><i></i><span>15&nbsp;min</span><span>14.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Lash lift</b><i></i><span>60&nbsp;min</span><span>59.00&nbsp;€</span></p>
+            <small class="br-pill">only bookable with Lea</small></li>
+          <li><p class="br-item"><b>Cosmetic pedicure</b><i></i><span>45&nbsp;min</span><span>39.00&nbsp;€</span></p></li>
+        </ul>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+        <p><b>The right time in the calendar.</b> When a customer books the intensive facial, Kammzeit plans 90 minutes; for the classic one, 60. So nothing gets squeezed in.</p>
+        <p><b>No guesswork before booking.</b> Duration, price and description are on your booking page before the customer decides.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-rules">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Your rules</p>
+      <h2 id="h-rules">Long appointments need clear rules</h2>
+      <p class="lead">A 90-minute treatment cancelled on the morning itself is hard to fill. So you decide how short-notice customers can book and until when they can cancel online. These three booking rules apply to your whole booking page.</p>
+    </div>
+    <figure class="br-rules">
+      <dl>
+        <div><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><dt>Minimum notice</dt><dd class="br-rule-val">1 day before</dd><dd>So you can prepare products and plan your day. Options: from immediately up to 1 day before.</dd></div>
+        <div><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><dt>Cancellation deadline</dt><dd class="br-rule-val">up to 2 days before</dd><dd>After that, customers can only cancel with you directly. Options: from “until the appointment starts” up to 2 days before.</dd></div>
+        <div><img class="icon-lg" src="/static/img/icons/kalender.svg" width="48" height="48" alt=""><dt>Booking window</dt><dd class="br-rule-val">90 days</dd><dd>For customers who like to plan their next appointment straight away. Options: 14 to 180 days.</dd></div>
+      </dl>
+      <figcaption>Example settings for a beauty salon. You can change them at any time.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-daily">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Salon life</p>
+      <h2 id="h-daily">Situations you know</h2>
+    </div>
+    <div class="br-scenes">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/telefon.svg" width="48" height="48" alt="">
+        <h3>The phone rings while you're applying a mask.</h3>
+        <p>Customers book online, around the clock. You get an email for every booking and every cancellation, and you look when you have time.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+        <h3>Combination skin, sensitive, can't tolerate retinol.</h3>
+        <p>Skin type, products used and aftercare tips go on the customer card. It also lists all of the customer's past and upcoming appointments.</p>
+        <p class="br-sens">Allergies, skin conditions or medication are health data, a special category of personal data under the GDPR. Only note them with the customer's explicit consent and as briefly as possible. The data is stored on servers in the EU, and there is a <a href="/dpa">data processing agreement</a> for your customer data.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Only your colleague does lash lifts.</h3>
+        <p>You decide who offers which treatment. When a customer books a lash lift, they only see the free times of the colleague who does it.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/pause.svg" width="48" height="48" alt="">
+        <h3>Tuesdays from 13:00 only.</h3>
+        <p>Working hours are set per weekday, with up to two blocks per day. A treatment is only offered if it finishes before the break or the end of the day.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt="">
+        <h3>The customer forgot her appointment.</h3>
+        <p>24 hours before, she gets a reminder by email, with a link to cancel. If she still doesn't come, you mark the appointment as a no-show, and it appears on her customer card.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt="">
+        <h3>People book in the evening, from the sofa.</h3>
+        <p>Your booking page works in the browser on any phone, with no app and no customer account. Your address, phone number and a short text about your salon are on it too.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-not">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / To be honest</p>
+      <h2 id="h-not">What Kammzeit can't do for beauty salons yet</h2>
+    </div>
+    <div class="br-not">
+      <div><h3>Treatment rooms and equipment</h3><p>Kammzeit plans by person, not by room or device. If two therapists share a treatment room, Kammzeit doesn't check whether both have booked it for the same time.</p></div>
+      <div><h3>Gift vouchers</h3><p>Kammzeit doesn't have them. Keep selling and recording vouchers the way you do now.</p></div>
+      <div><h3>Treatment courses</h3><p>Customers book online one appointment at a time. You can add the follow-up appointments of a course to the calendar yourself.</p></div>
+      <div><h3>Deposit when booking <span class="br-tag">planned</span></h3><p>Coming later. Until then, minimum notice, the cancellation deadline and reminders help.</p></div>
+    </div>
+    {{template "enbr-also" .Path}}
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-cta">Set up your salon at your own pace.</h2>
+      <p>Free, with no time limit. You can change services, working hours and rules at any time.</p>
+      {{template "enbr-actions"}}
+    </div>
+    <img class="cta-band-ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt="" loading="lazy">
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ===================================================================== Nail salons */}}
+{{define "enbr-nail-salons"}}{{template "site-top" .}}{{template "branchen-css"}}
+<section class="page-head br-head" aria-labelledby="h-top">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">For nail salons</li></ol></nav>
+      <h1 id="h-top">Your hands are busy with gel. Bookings come in anyway.</h1>
+      <p class="lead">With Kammzeit, your customers choose a new set, an infill or a manicure themselves and only see times where the whole appointment fits. No more arranging appointments by message between two customers.</p>
+      {{template "enbr-actions"}}
+      <p class="note">Free for one person. 14.90&nbsp;€ a month for the whole team.</p>
+    </div>
+    <figure class="page-head-media br-head-media">
+      {{template "branchen-deco"}}
+      <img class="ill" src="/static/img/ill/branche-nagelstudio.webp" width="1200" height="900" alt="" fetchpriority="high">
+      <p class="br-medal"><b>75</b><span>min infill, every three to four weeks</span></p>
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-prices">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Example price list</p>
+      <h2 id="h-prices">From a manicure to a full new set</h2>
+      <p class="lead">This is how a nail salon might set up its services. Long appointments are no problem: Kammzeit only offers a new set when the full two hours are free before a break or the end of the day. The prices are only examples.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-menu">
+        <p class="br-menu-head"><b>Price list</b><span>Example</span></p>
+        <ul>
+          <li><p class="br-item"><b>Gel new set</b><i></i><span>120&nbsp;min</span><span>59.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Gel infill</b><i></i><span>75&nbsp;min</span><span>42.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Infill with nail art</b><i></i><span>90&nbsp;min</span><span>49.00&nbsp;€</span></p>
+            <small>A service of its own, because customers choose one service per booking.</small></li>
+          <li><p class="br-item"><b>Manicure with gel polish</b><i></i><span>60&nbsp;min</span><span>35.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Removal and care</b><i></i><span>30&nbsp;min</span><span>18.00&nbsp;€</span></p></li>
+          <li><p class="br-item"><b>Pedicure with polish</b><i></i><span>60&nbsp;min</span><span>39.00&nbsp;€</span></p>
+            <small class="br-pill">only bookable with Jana</small></li>
+        </ul>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/pause.svg" width="48" height="48" alt="">
+        <p><b>Build in time to tidy up.</b> If you need time to disinfect after each customer, include it in the duration. There's no separate buffer time.</p>
+        <p><b>Nail art as a service of its own.</b> Customers choose one service per booking, so you set up combinations with their total duration.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-card">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Customer records</p>
+      <h2 id="h-card">Every customer has a card</h2>
+      <p class="lead">The customer records hold your notes and all of a customer's appointments, including upcoming ones. You can see at a glance when she was last in and whether her next infill is already booked.</p>
+    </div>
+    <div class="br-split">
+      <figure class="br-card">
+        <div class="br-card-in">
+          <p class="br-card-name">Sophie K.</p>
+          <p class="br-card-label">Note</p>
+          <p class="br-card-note">Almond shape, length 2. Favourite colour Rosé 112. Right index finger breaks often, build it up a little thicker there.</p>
+          <p class="br-card-label">Appointments</p>
+          <ol class="br-card-list">
+            <li class="is-next"><time>12&nbsp;Nov&nbsp;2026</time><span>Gel infill</span><em>upcoming</em></li>
+            <li><time>22&nbsp;Oct&nbsp;2026</time><span>Gel infill</span></li>
+            <li><time>1&nbsp;Oct&nbsp;2026</time><span>Infill with nail art</span></li>
+            <li><time>10&nbsp;Sep&nbsp;2026</time><span>Gel infill</span></li>
+            <li><time>3&nbsp;Sep&nbsp;2026</time><span>Gel infill</span><em>cancelled</em></li>
+            <li><time>13&nbsp;Aug&nbsp;2026</time><span>Gel new set</span></li>
+          </ol>
+        </div>
+        <figcaption>Example of a customer card, simplified.</figcaption>
+      </figure>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/export.svg" width="48" height="48" alt="">
+        <p><b>You can see the rhythm.</b> A new set in August, an infill every three weeks since then. One cancellation in September, made up a week later.</p>
+        <p><b>Your records belong to you.</b> You can export them as a CSV file at any time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-daily">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Salon life</p>
+      <h2 id="h-daily">Situations you know</h2>
+    </div>
+    <div class="br-scenes">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+        <h3>A new set at 16:30, closing time at 18:00.</h3>
+        <p>That doesn't fit, so Kammzeit doesn't offer that time in the first place. Start times only appear if the full 120 minutes fit before a break or the end of the day.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/kalender.svg" width="48" height="48" alt="">
+        <h3>Booking the next one before she leaves.</h3>
+        <p>At the end of the appointment, you add the infill in three weeks straight to the calendar, with an email confirmation if she wants one. Or she books later herself using your link, up to 180 days ahead depending on your settings.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt="">
+        <h3>Two hours blocked, and she doesn't come.</h3>
+        <p>24 hours before, every customer with an email address gets a reminder with a link to cancel. Anyone who cancels frees up the time straight away. If someone still doesn't turn up, you mark a no-show, and it's on the customer card.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/team.svg" width="48" height="48" alt="">
+        <h3>Only Jana does pedicures.</h3>
+        <p>You decide who offers which service. When a customer books a pedicure, she only sees Jana's free times.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt="">
+        <h3>She reacts to HEMA.</h3>
+        <p>Good to know at her next appointment. But think carefully before putting it on the customer card.</p>
+        <p class="br-sens">An allergy to an ingredient or a nail condition is health data, a special category of personal data under the GDPR. Only note it if the customer explicitly agrees, and keep it as brief as possible.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt="">
+        <h3>“Are you free on Thursday?”</h3>
+        <p>Instead of going back and forth in a chat, send the link to your booking page. Your customer sees all free times and books herself, with no app and no account.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-not">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / To be honest</p>
+      <h2 id="h-not">What Kammzeit can't do for nail salons yet</h2>
+    </div>
+    <div class="br-not">
+      <div><h3>Buffer time</h3><p>There's no separate setting for time between two appointments. Include it in the duration of the service.</p></div>
+      <div><h3>Add-ons</h3><p>Customers choose one service per booking. Set up nail art, French tips or extensions as combinations of their own.</p></div>
+      <div><h3>Deposit when booking <span class="br-tag">planned</span></h3><p>Understandable with a two-hour new set. Coming later; until then, reminders and the cancellation deadline help.</p></div>
+      <div><h3>Text messages</h3><p>Confirmations and reminders are sent by email. Kammzeit doesn't send text messages (SMS).</p></div>
+    </div>
+    {{template "enbr-also" .Path}}
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-cta">Set up your services and send the link.</h2>
+      <p>Free, with no time limit. All you need is an email address.</p>
+      {{template "enbr-actions"}}
+    </div>
+    <img class="cta-band-ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy">
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ===================================================================== About */}}
+{{define "enbr-about"}}{{template "site-top" .}}{{template "branchen-css"}}
+<section class="page-head br-head" aria-labelledby="h-top">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">About Kammzeit</li></ol></nav>
+      <h1 id="h-top">Who is behind Kammzeit</h1>
+      <p class="lead">Kammzeit is a small, independent project by Ben Oliver Mallow. Ben is a sole trader based in Germany and also runs the hosting company <a href="https://instantnode.eu">InstantNode</a>. Kammzeit runs on its own hardware in a data centre in the Netherlands, and the source code is open.</p>
+    </div>
+    <figure class="page-head-media br-head-media br-head-kammi">
+      {{template "branchen-deco"}}
+      <img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="Kammi, the Kammzeit hedgehog, waving." fetchpriority="high">
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-facts">
+  <div class="wrap">
+    <h2 id="h-facts" class="vh">At a glance</h2>
+    <dl class="br-facts">
+      <div><dt>Operator</dt><dd>Ben Oliver Mallow, sole trader in Germany. Full details in the <a href="/imprint">imprint</a>.</dd></div>
+      <div><dt>Servers</dt><dd>InstantNode's own hardware in a data centre in Eygelshoven, Netherlands.</dd></div>
+      <div><dt>Source code</dt><dd>Open source under the AGPL-3.0, on <a href="https://github.com/luxend0/kammzeit">GitHub</a>.</dd></div>
+      <div><dt>Contact</dt><dd><a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-why">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Why Kammzeit</p>
+      <h2 id="h-why">What Kammzeit cares about</h2>
+    </div>
+    <div class="br-scenes br-why">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/start.svg" width="48" height="48" alt="">
+        <h3>Simple</h3>
+        <p>One booking page, one calendar, one set of customer records. Your customers don't need an app or an account, and you don't need a password: you log in with a link sent by email.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/gratis.svg" width="48" height="48" alt="">
+        <h3>Fairly priced</h3>
+        <p>Free for one person, with no time limit. For the whole team, 14.90&nbsp;€ a month or 149&nbsp;€ a year, with no setup fee and cancellable at the end of the paid period. No VAT is charged (German small business scheme, §&nbsp;19 UStG). Details on the <a href="/pricing">pricing</a> page.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt="">
+        <h3>Data in the EU</h3>
+        <p>Appointments and customer data are stored on our own servers in the Netherlands and don't leave the EU. No tracking, no ads. There is a <a href="/dpa">data processing agreement</a> for your customers' data.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/offen.svg" width="48" height="48" alt="">
+        <h3>No lock-in</h3>
+        <p>You can take your data with you at any time: the customer records as CSV, everything together as JSON. And because the code is open, you can also run Kammzeit on a server of your own.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-next">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / What's next</p>
+      <h2 id="h-next">What's coming</h2>
+      <p class="lead">Kammzeit grows with what salons really need day to day. Planned means: not here yet. This website only describes something as available if it actually exists.</p>
+    </div>
+    <div class="br-split">
+      <ul class="br-planned">
+        <li><b>Deposits for online bookings</b><span class="br-tag">planned</span></li>
+        <li><b>Sync with Google Calendar</b><span class="br-tag">planned</span></li>
+        <li><b>Your own domain for the booking page</b><span class="br-tag">planned</span></li>
+      </ul>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt="">
+        <p><b>Missing something?</b> Write to <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>. Requests from everyday salon life help decide what gets built next.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-cta">Take a look at your own pace.</h2>
+      <p>The demo salon shows you how customers book. Your own salon is free for one person.</p>
+      {{template "enbr-actions"}}
+    </div>
+    <img class="cta-band-ill" src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="" loading="lazy">
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ===================================================================== Contact */}}
+{{define "enbr-contact"}}{{template "site-top" .}}{{template "branchen-css"}}
+<section class="page-head br-head" aria-labelledby="h-top">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Contact</li></ol></nav>
+      <h1 id="h-top">Send us an email.</h1>
+      <p class="br-mail"><a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a></p>
+      <p class="lead">For questions about Kammzeit, your salon account or the Pro plan, in English or German. You'll usually get a reply within 1-2 working days.</p>
+      <p class="note">There's no contact form. With an email, you have your question and our answer in writing.</p>
+    </div>
+    <figure class="page-head-media br-head-media br-head-kammi">
+      {{template "branchen-deco"}}
+      <img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="Kammi, the Kammzeit hedgehog, looking at a phone." fetchpriority="high">
+    </figure>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-first">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Check first</p>
+      <h2 id="h-first">The answer might already be here</h2>
+    </div>
+    <div class="br-links">
+      <a class="card" href="/help">
+        <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
+        <h3>Help centre</h3>
+        <p>Step-by-step guides, from setting up your salon to everyday work with the calendar and customer records.</p>
+        <img class="icon br-arrow" src="/static/img/icons/pfeil-rechts.svg" width="24" height="24" alt="">
+      </a>
+      <a class="card" href="/faq">
+        <img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt="">
+        <h3>Frequently asked questions</h3>
+        <p>Short answers to the most common questions, for example about prices, data and cancelling your plan.</p>
+        <img class="icon br-arrow" src="/static/img/icons/pfeil-rechts.svg" width="24" height="24" alt="">
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-booked">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Booked an appointment?</p>
+      <h2 id="h-booked">The salon looks after your appointment</h2>
+      <p class="lead">Did you book an appointment at a salon through Kammzeit? Kammzeit only provides the booking page; your appointment is with the salon.</p>
+    </div>
+    <div class="br-scenes br-why">
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt="">
+        <h3>Cancelling</h3>
+        <p>Use the link in your confirmation email, as long as the salon still allows online cancellation.</p>
+      </article>
+      <article class="card br-scene">
+        <img class="icon-lg" src="/static/img/icons/telefon.svg" width="48" height="48" alt="">
+        <h3>Anything else</h3>
+        <p>is quickest to sort out with the salon directly. Its address and phone number are on its booking page if the salon has added them. If you write to us anyway, we'll pass your question on to the salon.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-quick">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / For a quick answer</p>
+      <h2 id="h-quick">What to put in your email</h2>
+    </div>
+    <div class="br-split">
+      <ul class="br-checklist">
+        <li>the address of your booking page, for example yoursalon.kammzeit.com</li>
+        <li>the email address you use to log in to Kammzeit</li>
+        <li>what you did and what happened then, ideally with a screenshot</li>
+      </ul>
+      <div class="br-aside">
+        <img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt="">
+        <p><b>Please don't send unnecessary customer data.</b> Only include what's really needed for the answer.</p>
+        <p><b>Found a security issue?</b> Write to the same address with the subject “Security”.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top" aria-labelledby="h-post">
+  <div class="wrap br-split">
+    <div>
+      <p class="section-num"><span>04</span> / Post</p>
+      <h2 id="h-post" class="br-h2-sm">Postal address</h2>
+    </div>
+    <div class="br-address-card">
+      <address>Ben Oliver Mallow<br>Sickinger Straße 7<br>55758 Sien<br>Germany</address>
+      <p class="note">Further details are in the <a href="/imprint">imprint</a>.</p>
+    </div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
