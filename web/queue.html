@@ -1,0 +1,247 @@
+{{/* Warteschlange für Laufkundschaft (queue.go). Styles in /static/queue.css (Präfix queue-), JS in /static/queue.js.
+     Dashboard: queue-dash (Fragment queue-liste fürs Polling), queue-pro (Gratis-Plan), queue-qr (Druckseite),
+     queue-anzeige (Bildschirm im Laden, Fragment queue-anzeige-stand).
+     Öffentlich (Layout top/bottom aus pages.html, Akzentfarbe des Salons): queue-join, queue-status (Fragment queue-stand). */}}
+
+{{/* ---------- Dashboard ---------- */}}
+
+{{define "queue-dash"}}{{template "dash-top" .}}
+<div class="page-head">
+  <img class="page-head-icon" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+  <div class="page-head-text">
+    <h1>{{.PageTitle}}</h1>
+    <p>{{t .Lang "Kunden ohne Termin stellen sich per QR-Code an und sehen auf dem Handy, wann sie dran sind."}}</p>
+  </div>
+  <div class="page-head-actions">
+    <form method="post" action="/dashboard/warteschlange/einstellungen">
+      {{if .Q.Enabled}}<input type="hidden" name="an" value="0"><button class="btn btn-secondary" type="submit">{{t .Lang "Warteschlange ausschalten"}}</button>
+      {{else}}<input type="hidden" name="an" value="1"><button class="btn" type="submit">{{t .Lang "Warteschlange einschalten"}}</button>{{end}}
+    </form>
+  </div>
+</div>
+<link rel="stylesheet" href="/static/queue.css">
+<p class="queue-state-line">{{if .Q.Enabled}}<span class="chip chip-mint">{{t .Lang "An"}}</span>
+  {{if .Q.Open}}{{t .Lang "Kunden können sich gerade anstellen."}}{{else}}{{t .Lang "Laut Arbeitszeiten ist gerade geschlossen. Kunden sehen deshalb einen Hinweis statt des Formulars."}}{{end}}
+  {{else}}<span class="chip chip-grey">{{t .Lang "Aus"}}</span> {{t .Lang "Kunden sehen einen Hinweis, dass die Warteschlange geschlossen ist."}}{{end}}</p>
+<div class="queue-layout">
+  <section class="queue-main" aria-label="{{t .Lang "Heute"}}">{{template "queue-liste" .}}</section>
+  <div class="queue-side">
+    <section class="card" aria-labelledby="queue-h-neu">
+      <h2 class="section-title" id="queue-h-neu"><img src="/static/img/icons/team.svg" width="32" height="32" alt="">{{t .Lang "Person einreihen"}}</h2>
+      <p class="small muted">{{t .Lang "Für Kunden, die direkt am Tresen fragen."}}</p>
+      <form method="post" action="/dashboard/warteschlange/neu">
+        <label class="field">{{t .Lang "Name"}}<input type="text" name="name" maxlength="60" required autocomplete="off"></label>
+        {{if .Services}}<label class="field">{{t .Lang "Leistung (optional)"}}<select name="service">
+          <option value="">{{t .Lang "Keine Angabe"}}</option>
+          {{range .Services}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+        </select></label>{{end}}
+        {{if gt (len .Staff) 1}}<label class="field">{{t .Lang "Mitarbeiter (optional)"}}<select name="staff">
+          <option value="">{{t .Lang "Egal, wer frei ist"}}</option>
+          {{range .Staff}}<option value="{{.ID}}">{{.Name}}</option>{{end}}
+        </select></label>{{end}}
+        <button class="btn" type="submit">{{t .Lang "Einreihen"}}</button>
+      </form>
+    </section>
+    <section class="card" aria-labelledby="queue-h-kunden">
+      <h2 class="section-title" id="queue-h-kunden"><img src="/static/img/icons/handy.svg" width="32" height="32" alt="">{{t .Lang "Für deine Kunden"}}</h2>
+      <p class="actions queue-links">
+        <a class="btn btn-secondary btn-small" href="/dashboard/warteschlange/qr">{{t .Lang "QR-Code drucken"}}</a>
+        <a class="btn btn-secondary btn-small" href="/dashboard/warteschlange/anzeige" target="_blank" rel="noopener">{{t .Lang "Anzeige für den Laden"}}</a>
+      </p>
+      <p class="small queue-url">{{t .Lang "Adresse zum Anstellen:"}} <a href="{{.JoinURL}}" target="_blank" rel="noopener">{{.JoinURL}}</a></p>
+      <form method="post" action="/dashboard/warteschlange/einstellungen">
+        <label class="field">{{t .Lang "Hinweis für Kunden"}}<textarea name="hinweis" maxlength="300" rows="3">{{.Q.Note}}</textarea>
+          <span class="hint">{{t .Lang "Steht über dem Formular, z. B. „Bitte bleib in der Nähe, wir rufen dich auf.“"}}</span></label>
+        <button class="btn btn-secondary btn-small" type="submit">{{t .Lang "Hinweis speichern"}}</button>
+      </form>
+    </section>
+  </div>
+</div>
+{{template "dash-bottom" .}}{{end}}
+
+{{/* Liste von heute. Wird alle 10 s neu geholt; Knöpfe schicken per htmx und bekommen die neue Liste zurück
+     (hx-target/hx-swap erben sie vom Container). Ohne JS: normales POST mit Weiterleitung. */}}
+{{define "queue-liste"}}<div id="queue-liste" hx-get="/dashboard/warteschlange/liste" hx-trigger="every 10s" hx-target="this" hx-swap="outerHTML">
+<div class="stats queue-stats">
+  <div class="stat-card"><img src="/static/img/icons/team.svg" width="48" height="48" alt=""><div><p class="stat-label">{{t .Lang "Wartend"}}</p><p class="stat">{{.NWaiting}}</p></div></div>
+  <div class="stat-card"><img src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><div><p class="stat-label">{{t .Lang "Wartezeit für Neue"}}</p>
+    <p class="stat">{{if .Q.NewWait}}{{tf .Lang "ca. %d Min." .Q.NewWait}}{{else}}{{t .Lang "sofort dran"}}{{end}}</p></div></div>
+  <div class="stat-card"><img src="/static/img/icons/schere.svg" width="48" height="48" alt=""><div><p class="stat-label">{{t .Lang "Mitarbeiter heute"}}</p><p class="stat">{{.Q.Staff}}</p></div></div>
+</div>
+{{if .Active}}<ol class="queue-list">
+{{range .Active}}<li class="queue-item queue-is-{{.Status}}">
+  <span class="queue-nr"><span class="vh">{{t $.Lang "Nummer"}} </span>{{.Number}}</span>
+  <div class="queue-info">
+    <p class="queue-name">{{.Name}}
+      {{if eq .Status "called"}}<span class="chip chip-blue">{{t $.Lang "Aufgerufen"}}</span>{{else if eq .Status "serving"}}<span class="chip chip-mint">{{t $.Lang "Wird bedient"}}</span>{{end}}</p>
+    <p class="queue-meta">{{tf $.Lang "wartet seit %d Min." .SinceMin}}
+      {{- if eq .Status "waiting"}} · {{if .WaitMin}}{{tf $.Lang "dran in ca. %d Min." .WaitMin}}{{else}}{{t $.Lang "als Nächstes dran"}}{{end}}{{end}}
+      {{- with .Service}} · {{.}}{{end}}{{with .Staff}} · {{tf $.Lang "bei %s" .}}{{end}}{{if .Email}} · {{t $.Lang "bekommt eine Mail"}}{{end}}</p>
+  </div>
+  <div class="queue-actions">
+    {{if eq .Status "waiting"}}
+    <form method="post" action="/dashboard/warteschlange/{{.ID}}/aufrufen" hx-post="/dashboard/warteschlange/{{.ID}}/aufrufen"><button class="btn btn-small" type="submit">{{t $.Lang "Aufrufen"}}</button></form>
+    <form method="post" action="/dashboard/warteschlange/{{.ID}}/bedienen" hx-post="/dashboard/warteschlange/{{.ID}}/bedienen"><button class="btn btn-secondary btn-small" type="submit">{{t $.Lang "Bedient"}}</button></form>
+    {{else if eq .Status "called"}}
+    <form method="post" action="/dashboard/warteschlange/{{.ID}}/bedienen" hx-post="/dashboard/warteschlange/{{.ID}}/bedienen"><button class="btn btn-small" type="submit">{{t $.Lang "Bedient"}}</button></form>
+    <form method="post" action="/dashboard/warteschlange/{{.ID}}/nichtda" hx-post="/dashboard/warteschlange/{{.ID}}/nichtda"><button class="btn btn-secondary btn-small" type="submit">{{t $.Lang "Nicht da"}}</button></form>
+    {{else}}
+    <form method="post" action="/dashboard/warteschlange/{{.ID}}/fertig" hx-post="/dashboard/warteschlange/{{.ID}}/fertig"><button class="btn btn-small" type="submit">{{t $.Lang "Fertig"}}</button></form>
+    {{end}}
+    <form method="post" action="/dashboard/warteschlange/{{.ID}}/entfernen" hx-post="/dashboard/warteschlange/{{.ID}}/entfernen" hx-confirm="{{tf $.Lang "%s von der Liste nehmen?" .Name}}"><button class="link queue-remove" type="submit">{{t $.Lang "Entfernen"}}</button></form>
+  </div>
+</li>
+{{end}}</ol>
+{{else}}
+<div class="empty">
+  <img src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt="">
+  <h2>{{t .Lang "Gerade wartet niemand"}}</h2>
+  <p>{{if .Q.Enabled}}{{t .Lang "Sobald sich jemand über den QR-Code anstellt, erscheint er hier."}}{{else}}{{t .Lang "Schalte die Warteschlange ein und häng den QR-Code im Laden auf."}}{{end}}</p>
+</div>
+{{end}}
+{{if or .NDone .NNoshow .NLeft}}<p class="small muted">{{tf .Lang "Heute: %d fertig, %d nicht da, %d gegangen." .NDone .NNoshow .NLeft}}</p>{{end}}
+</div>{{end}}
+
+{{define "queue-pro"}}{{template "dash-top" .}}
+<div class="page-head">
+  <img class="page-head-icon" src="/static/img/icons/uhr.svg" width="48" height="48" alt="">
+  <div class="page-head-text"><h1>{{.PageTitle}}</h1><p>{{t .Lang "Für Kunden ohne Termin: anstellen per QR-Code, live sehen, wann man dran ist."}}</p></div>
+</div>
+<div class="empty">
+  <img src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="">
+  <h2>{{t .Lang "Die Warteschlange gibt es im Pro-Plan"}}</h2>
+  <p>{{t .Lang "Kunden scannen einen QR-Code im Laden, tragen ihren Vornamen ein und sehen auf dem Handy, wann sie dran sind. Du rufst mit einem Klick auf, ein Bildschirm im Laden zeigt die Nummern."}}</p>
+  <p class="actions"><a class="btn" href="/dashboard/abo">{{t .Lang "Zu Pro wechseln"}}</a></p>
+</div>
+{{template "dash-bottom" .}}{{end}}
+
+{{/* Eigene Seiten ohne Menü: Druckseite und Anzeige für den Bildschirm im Laden. */}}
+{{define "queue-doc-head"}}<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}}</title>
+<link rel="icon" href="/static/img/kammzeit.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/dash.css">
+<link rel="stylesheet" href="/static/queue.css">
+<script src="/static/htmx.min.js" defer></script>
+<script src="/static/queue.js" defer></script>
+</head>{{end}}
+
+{{define "queue-qr"}}{{template "queue-doc-head" .}}
+<body class="queue-print-page">
+<main class="queue-print">
+  <nav class="queue-print-bar" aria-label="{{t .Lang "Aktionen"}}">
+    <a href="/dashboard/warteschlange">{{t .Lang "Zurück zur Warteschlange"}}</a>
+    <button class="btn" type="button" data-queue="print">{{t .Lang "Drucken"}}</button>
+  </nav>
+  {{if not .Enabled}}<p class="error queue-noprint">{{t .Lang "Die Warteschlange ist gerade aus. Wer den Code scannt, sieht nur einen Hinweis. Einschalten kannst du sie auf der Seite Warteschlange."}}</p>{{end}}
+  <div class="queue-sheet">
+    <p class="queue-sheet-salon">{{.Salon.Name}}</p>
+    <h1>{{t .Lang "Ohne Termin? Stell dich online an."}}</h1>
+    {{if .QR}}<div class="queue-sheet-qr">{{.QR}}</div>{{end}}
+    <ol class="queue-sheet-steps">
+      <li>{{t .Lang "QR-Code mit der Handykamera scannen"}}</li>
+      <li>{{t .Lang "Vornamen eintragen"}}</li>
+      <li>{{t .Lang "Auf dem Handy sehen, wann du dran bist"}}</li>
+    </ol>
+    <p class="queue-sheet-url">{{.ShortURL}}</p>
+  </div>
+</main>
+</body>
+</html>{{end}}
+
+{{define "queue-anzeige"}}{{template "queue-doc-head" .}}
+<body class="queue-tv">
+<header class="queue-tv-head">
+  <span class="queue-tv-salon">{{.Salon.Name}}</span>
+  <button class="queue-tv-fs" type="button" data-queue="fullscreen">{{t .Lang "Vollbild"}}</button>
+</header>
+<div class="queue-tv-body">
+  {{template "queue-anzeige-stand" .}}
+  {{if .QR}}<aside class="queue-tv-qr">
+    <p class="queue-tv-qr-title">{{t .Lang "Hier anstellen"}}</p>
+    {{.QR}}
+    <p class="queue-tv-url">{{.ShortURL}}</p>
+  </aside>{{end}}
+</div>
+</body>
+</html>{{end}}
+
+{{define "queue-anzeige-stand"}}<main id="queue-tv" class="queue-tv-main" hx-get="/dashboard/warteschlange/anzeige/stand" hx-trigger="every 10s" hx-swap="outerHTML">
+  <section class="queue-tv-now">
+    <h1>{{t .Lang "Jetzt dran"}}</h1>
+    {{if .Called}}<p class="queue-tv-big">{{range $i, $n := .Called}}{{if $i}} <span class="queue-tv-sep">·</span> {{end}}{{$n}}{{end}}</p>
+    {{else}}<p class="queue-tv-big queue-tv-none">-</p>{{end}}
+    {{with .Serving}}<p class="queue-tv-serving">{{t $.Lang "In Bedienung:"}} {{range $i, $n := .}}{{if $i}}, {{end}}{{$n}}{{end}}</p>{{end}}
+  </section>
+  <section class="queue-tv-next">
+    <h2>{{t .Lang "Wartend"}}</h2>
+    {{if .Waiting}}<ol class="queue-tv-list">{{range .Waiting}}<li>{{.}}</li>{{end}}{{with .More}}<li class="queue-tv-more">+{{.}}</li>{{end}}</ol>
+    {{else}}<p class="queue-tv-empty">{{t .Lang "Niemand wartet."}}</p>{{end}}
+    {{if not .CanJoin}}<p class="queue-tv-closed">{{t .Lang "Online anstellen ist gerade geschlossen."}}</p>{{end}}
+  </section>
+</main>{{end}}
+
+{{/* ---------- Öffentlich ---------- */}}
+
+{{define "queue-join"}}{{template "top" .}}
+<link rel="stylesheet" href="/static/queue.css">
+<div class="queue-pub">
+<h1>{{t .Lang "Online anstellen"}}</h1>
+<p class="lead">{{t .Lang "Ohne Termin vorbeikommen: Stell dich hier an und sieh live, wann du dran bist."}}</p>
+{{with .Q.Note}}<p class="notice queue-note">{{.}}</p>{{end}}
+{{with .Error}}<p class="notice queue-error" role="alert">{{.}}</p>{{end}}
+{{if .CanJoin}}
+<p class="queue-now">{{if eq .Waiting 0}}{{t .Lang "Gerade wartet niemand. Du bist wahrscheinlich sofort dran."}}
+  {{else if eq .Waiting 1}}{{tf .Lang "Gerade wartet 1 Person. Geschätzte Wartezeit: ca. %d Min." .Q.NewWait}}
+  {{else}}{{tf .Lang "Gerade warten %d Personen. Geschätzte Wartezeit: ca. %d Min." .Waiting .Q.NewWait}}{{end}}</p>
+<form method="post" action="/warteschlange">
+  <label class="field">{{t .Lang "Vorname"}}<input type="text" name="name" value="{{.Form.Get "name"}}" maxlength="60" autocomplete="given-name" required></label>
+  <label class="field">{{t .Lang "E-Mail"}} <span class="optional">({{t .Lang "optional"}})</span><input type="email" name="email" value="{{.Form.Get "email"}}" maxlength="200" autocomplete="email">
+    <span class="hint">{{t .Lang "Dann schicken wir dir eine Mail, wenn du gleich dran bist."}}</span></label>
+  {{if .Services}}<label class="field">{{t .Lang "Leistung"}} <span class="optional">({{t .Lang "optional"}})</span><select name="service">
+    <option value="">{{t .Lang "Weiß ich noch nicht"}}</option>
+    {{range .Services}}<option value="{{.ID}}"{{if eq (print .ID) ($.Form.Get "service")}} selected{{end}}>{{.Name}} ({{tf $.Lang "%d Min." .Duration}})</option>{{end}}
+  </select></label>{{end}}
+  <div class="hp" aria-hidden="true"><label>Firma, bitte leer lassen<input type="text" name="firma" tabindex="-1" autocomplete="off"></label></div>
+  <button type="submit">{{t .Lang "Anstellen"}}</button>
+  <p class="muted small">{{t .Lang "Name und Mail-Adresse speichern wir nur für die Warteschlange von heute."}} <a href="/datenschutz">{{t .Lang "Hinweise zum Datenschutz"}}</a></p>
+</form>
+{{else}}
+<p class="notice queue-closed">{{if not .Q.Enabled}}{{t .Lang "Die Online-Warteschlange ist gerade geschlossen."}}{{else}}{{t .Lang "Gerade ist geschlossen. Online anstellen kannst du dich, wenn der Salon geöffnet hat."}}{{end}}</p>
+<a class="btn" href="/">{{t .Lang "Termin buchen"}}</a>
+{{end}}
+</div>
+{{template "bottom" .}}{{end}}
+
+{{define "queue-status"}}{{template "top" .}}
+<link rel="stylesheet" href="/static/queue.css">
+<div class="queue-pub">
+{{template "queue-stand" .}}
+{{with .Q.Note}}<p class="notice queue-note">{{.}}</p>{{end}}
+</div>
+{{template "bottom" .}}{{end}}
+
+{{/* Statusbereich, alle 15 s neu geholt, solange der Platz noch aktiv ist. */}}
+{{define "queue-stand"}}<div id="queue-stand" class="queue-stand queue-is-{{.E.Status}}" aria-live="polite"{{if .Poll}} hx-get="/warteschlange/{{.E.Token}}/stand" hx-trigger="every 15s" hx-swap="outerHTML"{{end}}>
+  <p class="queue-label">{{tf .Lang "%s, deine Nummer:" .E.Name}}</p>
+  <p class="queue-number">{{.E.Number}}</p>
+  {{if eq .E.Status "waiting"}}
+    {{if .E.Ahead}}<p class="queue-msg">{{if eq .E.Ahead 1}}{{t .Lang "Noch 1 Person vor dir."}}{{else}}{{tf .Lang "Noch %d Personen vor dir." .E.Ahead}}{{end}}</p>
+    <p class="queue-wait">{{tf .Lang "Geschätzte Wartezeit: ca. %d Min." .E.WaitMin}}</p>
+    {{else}}<p class="queue-msg">{{t .Lang "Du bist als Nächstes dran."}}</p>{{end}}
+    {{if .E.Email}}<p class="small">{{t .Lang "Wir schicken dir eine Mail, wenn du gleich dran bist."}}</p>{{end}}
+  {{else if eq .E.Status "called"}}<p class="queue-msg">{{t .Lang "Du bist dran! Bitte komm jetzt zum Empfang."}}</p>
+  {{else if eq .E.Status "serving"}}<p class="queue-msg">{{t .Lang "Du wirst gerade bedient. Viel Spaß!"}}</p>
+  {{else if eq .E.Status "done"}}<p class="queue-msg">{{t .Lang "Danke für deinen Besuch!"}}</p>
+  {{else if eq .E.Status "noshow"}}<p class="queue-msg">{{t .Lang "Wir haben dich aufgerufen, aber nicht gefunden. Bitte melde dich am Empfang."}}</p>
+  {{else}}<p class="queue-msg">{{t .Lang "Du stehst nicht mehr in der Warteschlange."}}</p>
+  <a class="btn" href="/warteschlange">{{t .Lang "Neu anstellen"}}</a>{{end}}
+  {{if .Poll}}<p class="small queue-hint">{{t .Lang "Die Seite aktualisiert sich von selbst. Lass sie einfach offen."}}</p>{{end}}
+  {{if .Active}}<form method="post" action="/warteschlange/{{.E.Token}}/gehen" hx-post="/warteschlange/{{.E.Token}}/gehen" hx-target="#queue-stand" hx-swap="outerHTML" hx-confirm="{{t .Lang "Wirklich aus der Warteschlange gehen?"}}">
+    <button class="queue-leave" type="submit">{{t .Lang "Ich gehe doch nicht"}}</button>
+  </form>{{end}}
+</div>{{end}}
