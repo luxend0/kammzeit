@@ -1,0 +1,173 @@
+/* Branchenseiten, Über uns, Kontakt. Wird nach site.css geladen und nutzt dessen Bausteine
+   (.page-head, .section-alt, .wave-*, .section-head, .card, .icon-lg, .blob, .deco, .cta-band).
+   Hier nur, was es dort nicht gibt; eigene Klassen mit Präfix br-. Farben = Palette v2
+   (Tokens aus site.css, Werte als Rückfall). Text auf Blau nur Weiß, auf Gelb/Mint Nachtblau. */
+
+.site {
+  --br-sky-l: var(--sky-50, #e3f3ff);
+  --br-sky: var(--sky, #7cc4ff);
+  --br-blue: var(--blue, #1e6bff);
+  --br-sun: var(--sun, #ffc93c);
+  --br-coral: var(--coral, #ff7a59);
+  --br-mint: var(--mint, #3ccf91);
+  --br-night: var(--night, #13294b);
+  --br-muted: var(--muted, #4a5b78);
+  --br-line: var(--line, #cfe4f7);
+  --br-sun-t: #fff4d8;
+  --br-coral-t: #ffe5df;
+  --br-mint-t: #d8f5e9;
+  --br-night-t: #e7eaed;
+  --br-shadow: 0 14px 34px -18px rgba(19, 41, 75, .28);
+}
+
+/* Kopf: Überschriften sind ganze Sätze, darum etwas kleiner als das site.css-h1.
+   Illustration auf Blob (site.css), dazu ein gelbes Medaillon mit der Kennzahl der Branche. */
+.br-head h1 { max-width: 15ch; font-size: clamp(2.4rem, 1.3rem + 3.6vw, 4.25rem); }
+.br-head .note { margin-top: 1rem; }
+.br-head-media { position: relative; padding-block: .5rem 2rem; }
+.br-head-media .ill { position: relative; z-index: 1; }
+.br-head-kammi .ill { max-width: 22rem; margin-inline: auto; }
+.br-medal {
+  position: absolute; z-index: 2; left: -.5rem; bottom: 0; display: grid; place-content: center; justify-items: center;
+  width: clamp(7.5rem, 6rem + 4vw, 9.25rem); aspect-ratio: 1; padding: 1.1rem; border-radius: 50%;
+  background: var(--br-sun); color: var(--br-night); text-align: center; box-shadow: 0 0 0 6px #fff;
+}
+.br-medal b { font-size: clamp(2.25rem, 1.6rem + 2vw, 3.25rem); font-weight: 800; line-height: .9; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.br-medal span { margin-top: .35rem; font-size: .75rem; font-weight: 700; line-height: 1.2; hyphens: auto; }
+
+/* Zweispaltig: großes Element links, Hinweis-Kasten rechts */
+.br-split { display: grid; gap: 1.5rem; }
+@media (min-width: 64rem) { .br-split { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 3rem; align-items: start; } }
+.br-aside { padding: clamp(1.25rem, 1rem + 1vw, 1.75rem); border-radius: 20px; background: var(--br-sky-l); }
+.section-alt .br-aside { background: #fff; box-shadow: var(--br-shadow); }
+.br-aside p { margin: 1rem 0 0; max-width: 34em; }
+.br-aside b { display: block; color: var(--br-night); }
+
+/* Weiße Karten mit runden Ecken für die Schaubilder */
+.br-menu, .br-day-in, .br-book, .br-rules dl > div, .br-card-in, .br-address-card { border-radius: 20px; background: #fff; box-shadow: var(--br-shadow); }
+.br-menu figcaption, .br-day figcaption, .br-book figcaption, .br-rules figcaption, .br-card figcaption { margin-top: 1rem; max-width: 40em; color: var(--br-muted); font-size: .875rem; }
+
+/* Preisliste: Name ...... Dauer Preis */
+.br-menu { margin: 0; padding: clamp(1.25rem, 1rem + 1.2vw, 2rem); border: 2px solid var(--br-line); }
+.br-menu-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 .5rem; }
+.br-menu-head b { font-size: 1.5rem; font-weight: 800; }
+.br-menu-head span, .br-tag { display: inline-block; padding: .2rem .7rem; border-radius: 999px; background: var(--br-sun); color: var(--br-night); font-size: .75rem; font-weight: 800; line-height: 1.4; letter-spacing: .04em; text-transform: uppercase; }
+.br-menu ul { margin: 0; padding: 0; list-style: none; }
+.br-menu li { padding-block: .85rem; border-top: 1px solid var(--br-line); }
+.br-item { display: flex; align-items: baseline; align-items: last baseline; gap: .6rem; margin: 0; }
+.br-item i { flex: 1 1 1.5rem; min-width: 1rem; border-bottom: 3px dotted var(--br-sky); }
+.br-item span { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.br-item span:last-child { min-width: 4.6em; text-align: right; color: var(--br-blue); font-weight: 800; }
+.br-menu small { display: block; margin-top: .3rem; color: var(--br-muted); font-size: .875rem; }
+.br-menu small.br-pill { display: inline-block; margin-top: .45rem; padding: .15rem .7rem; border-radius: 999px; background: var(--br-mint-t); color: var(--br-night); font-size: .8125rem; font-weight: 700; }
+@media (max-width: 39.99rem) { .br-item { flex-wrap: wrap; row-gap: .15rem; } .br-item b { flex-basis: 100%; } }
+
+/* Friseure: Tag im 15-Minuten-Raster (Lineal oben wie Kammzähne) */
+.br-day { margin: 0; }
+.br-day-in { padding: 1.5rem clamp(1rem, .5rem + 1.5vw, 2rem) 1.75rem; }
+.br-hours { position: relative; height: 1.75rem; font-size: clamp(.875rem, .7rem + .6vw, 1.25rem); font-weight: 800; font-variant-numeric: tabular-nums; }
+.br-hours span { position: absolute; bottom: .3rem; left: calc(var(--h) / 9 * 100%); transform: translateX(-50%); line-height: 1; }
+.br-ticks { display: block; width: 100%; height: 12px; overflow: visible; }
+.br-ticks path { fill: none; stroke: var(--br-night); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.br-row-label { margin: 1.25rem 0 .45rem; font-size: .8125rem; font-weight: 700; }
+.br-bars { display: grid; grid-template-columns: repeat(36, minmax(0, 1fr)); height: 2.75rem; }
+.br-bars span {
+  display: flex; align-items: center; grid-row: 1; grid-column: var(--s) / var(--e); min-width: 0; margin-inline: 1px;
+  padding-inline: .6rem; overflow: hidden; border-radius: 10px; white-space: nowrap;
+  font-size: clamp(.6875rem, .6rem + .35vw, .9375rem); font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.br-blk { background: var(--br-blue); color: #fff; }
+.br-bars .br-gap { justify-content: center; padding-inline: 0; border: 2px dashed var(--br-coral); background: var(--br-coral-t); color: var(--br-night); font-weight: 600; }
+.br-ok { background: var(--br-mint); color: var(--br-night); }
+.br-bars b { font-weight: inherit; }
+.br-bars i { display: none; font-style: normal; }
+@media (max-width: 39.99rem) { .br-bars span { padding-inline: .4rem; } .br-bars b { display: none; } .br-bars i { display: inline; } }
+
+/* Barbershops: Terminbuch eines Samstags */
+.br-book { margin: 0; padding: clamp(1rem, .8rem + 1vw, 1.5rem); }
+.br-book-head { display: flex; justify-content: space-between; align-items: center; margin: 0 0 .5rem; padding: 0 .25rem .75rem; border-bottom: 2px solid var(--br-sky-l); }
+.br-book-head b { font-size: 1.5rem; font-weight: 800; }
+.br-book-head span { padding: .25rem .8rem; border-radius: 999px; background: var(--br-sky-l); font-size: .875rem; font-weight: 700; }
+.br-book ol { margin: 0; padding: 0; list-style: none; }
+.br-book li { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem; align-items: baseline; padding: .75rem; border-radius: 12px; }
+.br-book li + li { margin-top: .25rem; }
+.br-book li:not(.is-walkin, .is-free) { border-radius: 0; box-shadow: inset 0 -1px 0 var(--br-line); }
+.br-book time { color: var(--br-blue); font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2rem); font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.br-book li span { font-weight: 700; }
+.br-book li small { display: block; color: var(--br-muted); font-size: .875rem; font-weight: 400; }
+.br-book .is-walkin { background: var(--br-sun); }
+.br-book .is-walkin time, .br-book .is-walkin small { color: var(--br-night); }
+.br-book .is-free { border: 2px dashed var(--br-mint); }
+.br-book .is-free span { font-weight: 600; }
+
+/* Kosmetik: drei Regeln */
+.br-rules { margin: 0; }
+.br-rules dl { display: grid; gap: 1.25rem; margin: 0; }
+@media (min-width: 48rem) { .br-rules dl { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.br-rules dl > div { padding: clamp(1.25rem, 1rem + 1vw, 1.75rem); }
+.br-rules dt, .br-facts dt, .br-card-label { font-size: .8125rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--br-muted); }
+.br-rules dt { margin-top: 1rem; }
+.br-rules dd { margin: .6rem 0 0; max-width: 24em; color: var(--br-muted); }
+.br-rules .br-rule-val { margin-top: .35rem; color: var(--br-blue); font-size: clamp(2rem, 1.4rem + 2vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+
+/* Nagelstudios: Karteikarte */
+.br-card { margin: 0; }
+.br-card-in { overflow: hidden; padding-bottom: 1rem; }
+.br-card-name { margin: 0; padding: 1.1rem 1.5rem; background: var(--br-blue); color: #fff; font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.25rem); font-weight: 800; line-height: 1; }
+.br-card-label { margin: 1.25rem 1.5rem .4rem; }
+.br-card-note { margin: 0 1.5rem; padding: .8rem 1rem; border-radius: 12px; background: var(--br-sun-t); }
+.br-card-in .br-card-list { margin: 0 1rem; padding: 0; list-style: none; } /* schlägt .site :where(ol)[class] */
+.br-card-list li { display: grid; grid-template-columns: 6.25rem minmax(0, 1fr) auto; gap: .75rem; align-items: center; padding: .6rem .5rem; border-bottom: 1px solid var(--br-line); font-variant-numeric: tabular-nums; }
+.br-card-list em { padding: .1rem .6rem; border-radius: 999px; background: var(--br-night-t); font-size: .8125rem; font-style: normal; font-weight: 700; }
+.br-card-list .is-next { border-bottom-color: transparent; border-radius: 10px; background: var(--br-mint-t); font-weight: 700; }
+.br-card-list .is-next em { background: var(--br-mint); }
+@media (max-width: 39.99rem) { .br-card-list li { grid-template-columns: 5.4rem minmax(0, 1fr) auto; gap: .5rem; font-size: .9375rem; } }
+
+/* Situationen und Gründe: .card mit großem Icon */
+.br-scenes { display: grid; gap: 1.25rem; }
+@media (min-width: 48rem) { .br-scenes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { .br-scenes { grid-template-columns: repeat(3, minmax(0, 1fr)); } .br-why { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.br-scene { box-shadow: var(--br-shadow); }
+.br-scene h3 { margin-top: 1rem; font-size: clamp(1.1875rem, 1.05rem + .4vw, 1.375rem); line-height: 1.25; }
+.br-sens { padding: .8rem 1rem; border-left: 4px solid var(--br-coral); border-radius: 12px; background: var(--br-coral-t); font-size: .9375rem; }
+
+/* Ehrlich gesagt: was es nicht gibt (gestrichelt = fehlt) */
+.br-not { display: grid; gap: 1rem; }
+@media (min-width: 48rem) { .br-not { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.br-not > div { padding: 1.25rem 1.5rem; border: 2px dashed rgba(19, 41, 75, .28); border-radius: 20px; background: #fff; }
+.br-not h3 { margin: 0 0 .45rem; font-size: 1.1875rem; line-height: 1.3; }
+.br-not p { margin: 0; max-width: 34em; }
+.br-not .br-tag { margin-left: .35rem; vertical-align: .15em; }
+
+/* Querverweis auf andere Branchen */
+.br-also { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-top: 2.5rem; }
+.br-also span { margin-right: .4rem; color: var(--br-muted); }
+.br-also a { padding: .5rem 1.1rem; border: 2px solid var(--br-blue); border-radius: 999px; background: #fff; color: var(--br-blue); font-weight: 700; text-decoration: none; }
+.br-also a:hover { background: var(--br-blue); color: #fff; }
+
+/* Über uns */
+.br-facts { display: grid; gap: 1rem; margin: 0; }
+@media (min-width: 48rem) { .br-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 64rem) { .br-facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.br-facts > div { padding: 1.25rem 1.5rem; border-radius: 20px; background: var(--br-sky-l); }
+.br-facts dd { margin: .45rem 0 0; font-weight: 600; }
+.br-planned { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.br-planned li { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 16px; background: var(--br-sky-l); font-size: 1.0625rem; }
+
+/* Kontakt */
+.br-mail { margin: 1.25rem 0 0; font-size: clamp(1.6rem, .9rem + 3vw, 3rem); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.br-mail a { color: var(--br-blue); text-decoration-color: var(--br-sun); text-decoration-thickness: .12em; text-underline-offset: .15em; }
+.br-links { display: grid; gap: 1.25rem; }
+@media (min-width: 48rem) { .br-links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.br-links a { position: relative; padding-bottom: 3.75rem; box-shadow: var(--br-shadow); }
+.br-links h3 { margin-top: 1rem; }
+.br-links p { max-width: 30em; }
+.br-links .br-arrow { position: absolute; right: 1.5rem; bottom: 1.25rem; }
+.br-checklist { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.br-checklist li { position: relative; padding: 1rem 1.25rem 1rem 3.25rem; border-radius: 16px; background: var(--br-sky-l); }
+.br-checklist li::before { content: ""; position: absolute; left: 1.1rem; top: 1.1rem; width: 1.35rem; height: 1.35rem; border-radius: 50%; background: var(--br-mint); }
+.br-checklist li::after { content: ""; position: absolute; left: 1.6rem; top: 1.35rem; width: .32rem; height: .6rem; border: solid var(--br-night); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.br-h2-sm { margin-top: .75rem; }
+.br-address-card { padding: clamp(1.25rem, 1rem + 1vw, 2rem); }
+.br-address-card address { font-size: 1.25rem; font-style: normal; line-height: 1.5; }
+.br-address-card .note { margin-top: 1rem; }
