@@ -13,7 +13,8 @@ import (
 // Englisches Hilfe-Center: jede Seite nur auf kammzeit.com (Testhost
 // kammzeit-en.test), mit Titel, Canonical, englischem Inhalt ohne deutsche
 // Reste, hreflang-Partner auf der deutschen Seite (und zurück), Links nur auf
-// englische Seiten. /open-source liefert je Domain die eigene Sprache.
+// englische Seiten, Registrierung über /signup, jede Anleitung steht auf /help.
+// /open-source liefert je Domain die eigene Sprache.
 func TestSiteENHilfe(t *testing.T) {
 	db, err := openDB(t.TempDir() + "/t.db")
 	if err != nil {
@@ -60,6 +61,10 @@ func TestSiteENHilfe(t *testing.T) {
 		}
 	}
 
+	// Sätze, die seit Mitarbeiter-Logins, App und englischer Selbsthost-Doku nicht mehr stimmen.
+	stale := []string{"Staff members do not get their own logins", "Staff members don't have their own login",
+		"Do my staff get their own logins?</summary>\n            <p>No", "(currently in German)"}
+	_, index := get(en, "/help")
 	var pages int
 	links := map[string]string{} // Ziel -> Seite, auf der der Link steht
 	for _, p := range sitePages {
@@ -89,14 +94,20 @@ func TestSiteENHilfe(t *testing.T) {
 				t.Errorf("%s enthält nicht %q", p.Path, want)
 			}
 		}
-		for _, bad := range []string{"\u2014", "<script", "{{", "ZgotmplZ"} {
+		for _, bad := range append([]string{"\u2014", "<script", "{{", "ZgotmplZ"}, stale...) {
 			if strings.Contains(body, bad) {
 				t.Errorf("%s enthält %q", p.Path, bad)
 			}
 		}
+		if strings.HasPrefix(p.Path, "/help/") && !strings.Contains(index, `href="`+p.Path+`"`) {
+			t.Errorf("/help verlinkt die Anleitung %s nicht", p.Path)
+		}
 		// Inhalt zwischen <main> und </main>: Kopf und Fuß gehören zum gemeinsamen Layout.
 		_, main, _ := strings.Cut(body, "<main")
 		main, _, _ = strings.Cut(main, "</main>")
+		if strings.Contains(main, `href="/registrieren"`) {
+			t.Errorf("%s verlinkt /registrieren statt /signup", p.Path)
+		}
 		if m := germanText.FindString(main); m != "" {
 			t.Errorf("%s: deutscher Text im Inhalt: %q", p.Path, m)
 		}
@@ -117,8 +128,8 @@ func TestSiteENHilfe(t *testing.T) {
 			}
 		}
 	}
-	if pages != 14 {
-		t.Errorf("%d Seiten registriert, erwartet 14", pages)
+	if pages != 19 {
+		t.Errorf("%d Seiten registriert, erwartet 19", pages)
 	}
 	for target, from := range links {
 		if code, _ := get(en, target); code != http.StatusOK {
@@ -138,6 +149,10 @@ func TestSiteENHilfe(t *testing.T) {
 	alt := a.alternates("en", "/help/services")
 	if len(alt) != 2 || alt[1] != (alternate{"de", "https://kammzeit.de/hilfe/leistungen"}) {
 		t.Errorf("alternates /help/services = %v", alt)
+	}
+	alt = a.alternates("de", "/hilfe/warteschlange")
+	if len(alt) != 2 || alt[1].Lang != "en" || !strings.HasSuffix(alt[1].URL, "/help/queue") {
+		t.Errorf("alternates /hilfe/warteschlange = %v", alt)
 	}
 
 	// Sitemap je Domain

@@ -12,7 +12,9 @@ import (
 
 // Hilfe-Center, Open Source, Sicherheit und Fragen: jede Seite gibt es nur auf
 // der Hauptdomain, mit eigenem Titel, ohne Em-Dash und Skripte, und jeder Link
-// auf eine Seite dieses Bereichs führt zu einer registrierten Seite.
+// auf eine Seite dieses Bereichs führt zu einer registrierten Seite. Jede
+// Anleitung steht auf /hilfe, und überholte Aussagen (keine Mitarbeiter-Logins,
+// keine App, Menüpunkt "Pro") tauchen nicht mehr auf.
 func TestSiteHilfe(t *testing.T) {
 	db, err := openDB(t.TempDir() + "/t.db")
 	if err != nil {
@@ -45,6 +47,11 @@ func TestSiteHilfe(t *testing.T) {
 		return path == "/hilfe" || strings.HasPrefix(path, "/hilfe/") || path == "/open-source" || path == "/sicherheit" || path == "/fragen"
 	}
 	href := regexp.MustCompile(`href="(/[^"#?]*)`)
+	// Sätze, die seit Mitarbeiter-Logins, App, Verschieben und Menüpunkt "Abo" nicht mehr stimmen.
+	stale := []string{"Eigene Zugänge für Mitarbeiter gibt es nicht", "Mitarbeiter haben keinen eigenen Login",
+		"Bekommen meine Mitarbeiter eigene Logins?</summary>\n            <p>Nein", "Verschieben geht nicht in einem Schritt",
+		"heißt der Menüpunkt", "Menü <b class=\"ui\">Pro</b>", "Interne Notiz", "+ Termin"}
+	_, index := get("kammzeit.test", "/hilfe")
 	var pages int
 	links := map[string]string{} // Ziel -> Seite, auf der der Link steht
 	for _, p := range sitePages {
@@ -67,10 +74,13 @@ func TestSiteHilfe(t *testing.T) {
 				t.Errorf("%s enthält nicht %q", p.Path, want)
 			}
 		}
-		for _, bad := range []string{"\u2014", "<script", "{{", "ZgotmplZ"} {
+		for _, bad := range append([]string{"\u2014", "<script", "{{", "ZgotmplZ"}, stale...) {
 			if strings.Contains(body, bad) {
 				t.Errorf("%s enthält %q", p.Path, bad)
 			}
+		}
+		if strings.HasPrefix(p.Path, "/hilfe/") && !strings.Contains(index, `href="`+p.Path+`"`) {
+			t.Errorf("/hilfe verlinkt die Anleitung %s nicht", p.Path)
 		}
 		for _, m := range href.FindAllStringSubmatch(body, -1) {
 			if own(m[1]) {
@@ -81,8 +91,8 @@ func TestSiteHilfe(t *testing.T) {
 			t.Errorf("%s auf der Salon-Subdomain: Status %d, erwartet 404", p.Path, code)
 		}
 	}
-	if pages != 14 {
-		t.Errorf("%d Seiten registriert, erwartet 14", pages)
+	if pages != 19 {
+		t.Errorf("%d Seiten registriert, erwartet 19", pages)
 	}
 	for target, from := range links {
 		if code, _ := get("kammzeit.test", target); code != http.StatusOK {
