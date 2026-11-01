@@ -30,7 +30,7 @@
 <h2>Responsible for content pursuant to § 18(2) MStV (German Interstate Media Treaty)</h2>
 <p>Ben Oliver Mallow, address as above.</p>
 <h2>Salon booking pages</h2>
-<p>Each salon is responsible for the content of its own booking page (e.g. salonname.kammzeit.de or salonname.kammzeit.com).</p>
+<p>Each salon is responsible for the content of its own booking page (e.g. salonname.kammzeit.de or salonname.kammzeit.com), including uploaded images.</p>
 <h2>Consumer dispute resolution</h2>
 <p>We are neither willing nor obliged to take part in dispute resolution proceedings before a consumer arbitration board.</p>
 </article>
@@ -44,7 +44,7 @@
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Privacy policy</li></ol></nav>
       <h1>Privacy policy</h1>
-      <p class="lead">Last updated: 1 November 2026</p>
+      <p class="lead">Last updated: 2 November 2026</p>
     </div>
   </div>
 </section>
@@ -57,48 +57,80 @@
 <p>Ben Oliver Mallow, Sickinger Straße 7, 55758 Sien, Germany, email <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>. Further details can be found in our <a href="/imprint">imprint</a>.</p>
 
 <h2>2. Two roles</h2>
-<p>We are the controller for the websites kammzeit.de and kammzeit.com and for the salons' accounts. For bookings made on a salon's page (e.g. salonname.kammzeit.de or salonname.kammzeit.com), <strong>the salon</strong> is the controller. We process this data only on the salon's behalf and on its instructions (processing by a processor under Art. 28 GDPR, see our <a href="/dpa">data processing agreement</a>). Questions about a booking are best sent directly to the salon.</p>
+<p>We are the controller for the websites kammzeit.de and kammzeit.com, for the accounts of salon owners and for Kammzeit news. For the data a salon manages with Kammzeit, <strong>the salon</strong> is the controller: bookings on its page (e.g. salonname.kammzeit.de or salonname.kammzeit.com), its customer records, its waiting list, its staff logins and the images it uploads. We process this data only on the salon's behalf and on its instructions (processing by a processor under Art. 28 GDPR, see our <a href="/dpa">data processing agreement</a>). Questions about a booking or the waiting list are best sent directly to the salon.</p>
 
 <h2>3. Hosting</h2>
 <p>Kammzeit runs on InstantNode's own servers in a data centre in Eygelshoven (Netherlands), i.e. within the EU. The data centre is operated by Skylink Data Centers B.V. Traffic to our servers is filtered against overload attacks by Tube-Hosting (Ferdinand Zink, Germany) using PletX technology. Only connection data such as IP addresses is processed for this, not content, because the connections are encrypted. Both service providers are based in the EU and act as processors.</p>
-<p>Booking data and data from the customer records do not leave the EU. The only exception relating to third countries is payment for the Pro plan via Stripe (section 8), which only concerns salons.</p>
+<p>Booking data, data from the customer records and the waiting list, and uploaded images do not leave the EU. The only exception relating to third countries is payment for the Pro plan via Stripe (section 9), which only concerns salons.</p>
 
 <h2>4. Visiting the website</h2>
 <p>When you visit the website, the server processes your IP address and the requested address because this is technically necessary to deliver the page (Art. 6(1)(f) GDPR). We do not keep access logs. The server's error logs may contain email addresses (for example if an email could not be delivered) and are deleted after 14 days.</p>
-<p>To protect against misuse, we limit how often certain actions can be carried out within a short time, such as logins, sign-ups and bookings. For this purpose, the server briefly keeps the IP address and, where applicable, the email address entered, together with the time, in memory. This information is not written to disk, not analysed and is discarded at the latest when the service restarts. The legal basis is our legitimate interest in secure operation (Art. 6(1)(f) GDPR).</p>
-<p>Kammzeit is available in German at kammzeit.de and in English at kammzeit.com. If your browser states German as its preferred language, we redirect you from the home page of kammzeit.com to kammzeit.de. For this, the server only reads the language setting that your browser sends with every request anyway (Accept-Language). We do not store it and do not set a cookie for it. If you come from one of our own pages or open kammzeit.com/?lang=en, there is no redirect. The legal basis is our legitimate interest in showing the website in your language (Art. 6(1)(f) GDPR).</p>
+<p>To protect against misuse, we limit how often certain actions can be carried out within a short time, such as logins, sign-ups, bookings, joining a waiting list, invitations and image uploads. For this purpose, the server briefly keeps the IP address and, where applicable, the email address entered or the account identifier, together with the time, in memory. This information is not written to disk, not analysed and is discarded at the latest when the service restarts. The legal basis is our legitimate interest in secure operation (Art. 6(1)(f) GDPR).</p>
+<p>Kammzeit is available in German at kammzeit.de and in English at kammzeit.com. If your browser states German as its preferred language, we redirect you from the home page of kammzeit.com to kammzeit.de. For this, the server only reads the language setting that your browser sends with every request anyway (Accept-Language). We do not store it and do not set a cookie for it. If you come from one of our own pages or open kammzeit.com/?lang=en, there is no redirect. The legal basis is our legitimate interest in showing the website in your language (Art. 6(1)(f) GDPR). Which language we store for an account and a booking page is explained in section 6.</p>
 <p>There are no tracking or analytics tools, no advertising and no third-party content or scripts on our pages.</p>
 
-<h2>5. Cookies</h2>
-<p>We set exactly one cookie, and only when a salon logs in to the dashboard:</p>
+<h2>5. Cookies and browser storage</h2>
+<p>We set two cookies, each only in a specific situation:</p>
 <ul>
-<li><strong>kz_session</strong>: keeps you logged in. It contains a random identifier, is only valid for the domain on which you log in (kammzeit.de or kammzeit.com, not for the booking pages), cannot be read by scripts (HttpOnly), is only sent over encrypted connections (Secure) and expires after 30 days. When you log out, we delete it immediately.</li>
+<li><strong>kz_session</strong>: keeps you logged in to the dashboard, for owners and staff logins alike. It contains a random identifier, is only valid for the domain on which you log in (kammzeit.de or kammzeit.com, not for the booking pages), cannot be read by scripts (HttpOnly), is only sent over encrypted connections (Secure) and expires after 30 days. When you log out, we delete it immediately.</li>
+<li><strong>kz_queue</strong>: only when you join a salon's waiting list on its page (section 13). It contains the random identifier of your entry and is only valid for that salon's waiting list. If you open the waiting list again on the same device, it takes you straight to your status page instead of adding you a second time. It cannot be read by scripts (HttpOnly), is only sent over encrypted connections (Secure) and expires after 12 hours.</li>
 </ul>
-<p>The cookie is strictly necessary for us to provide the service you have expressly requested (the dashboard). No consent is required for it (§ 25(2) no. 2 TDDDG, German Telecommunications Digital Services Data Protection Act). The associated processing serves the performance of the contract with the salon (Art. 6(1)(b) GDPR). Anyone who only uses Kammzeit to book an appointment does not receive a cookie.</p>
+<p>In the dashboard, Kammzeit also stores the following in your browser's storage. None of it is sent to us:</p>
+<ul>
+<li><strong>kz-pwa-hint</strong> (local storage, localStorage): remembers that you closed the "Kammzeit as an app" hint so that it does not appear again.</li>
+<li><strong>kz-tour-</strong> followed by the number of your login (localStorage): remembers that the dashboard tour has already run in this browser so that it does not start again every time you log in.</li>
+<li><strong>Service worker with cache</strong>: so that Kammzeit can be installed as an app on a phone or computer and shows a notice instead of an error message when there is no connection, the dashboard registers a service worker. It only stores Kammzeit's static files in the browser, such as styles, fonts, images, scripts and an offline page. It never stores pages containing customer or account data, login links or sessions; these always come directly from the server. With every new version of Kammzeit it replaces the old files.</li>
+</ul>
+<p>The two localStorage entries only contain a flag, no customer data. You can delete them, the cache and the cookies at any time in your browser settings. The hint and the tour will then appear again.</p>
+<p>The cookies, entries and cache are strictly necessary for us to provide the service you have expressly requested: the dashboard, its use as an app and the waiting list. No consent is required for them (§ 25(2) no. 2 TDDDG, German Telecommunications Digital Services Data Protection Act). For the dashboard, the associated processing serves the performance of the contract with the salon (Art. 6(1)(b) GDPR); for the waiting list, it serves the service you are asking the salon for (Art. 6(1)(b) GDPR, the salon is the controller). Anyone who only uses Kammzeit to book an appointment receives neither a cookie nor any entries in their browser's storage.</p>
 
 <h2>6. Registration and salon account</h2>
-<p>When you create a salon account, we process the email address used for logging in, the name of the salon and the desired address of the booking page. In the dashboard you can add further information, such as the salon's address, phone number, website and imprint, services, and the names and working hours of staff. Information intended for the booking page is publicly visible there. We also store when the account was created and when you last logged in.</p>
-<p>The purpose is to provide Kammzeit in accordance with our <a href="/terms">terms and conditions</a>; the legal basis is Art. 6(1)(b) GDPR. Registration is not possible without an email address, because logging in only works via email. We also use the email address to send you notices relating to the contract, for example about changes to the terms and conditions, maintenance or payments. We do not send advertising.</p>
+<p>When you create a salon account, we process the email address used for logging in, the name of the salon and the desired address of the booking page. In the dashboard you can add further information, such as the salon's address, phone number, website and imprint, services, the names and working hours of staff, and a logo, links to social networks and other design options for the booking page (section 11). Information intended for the booking page is publicly visible there. We also store when the account was created, when you last logged in and when you accepted which version of the terms and conditions and the data processing agreement.</p>
+<p>For each login we store a language (German or English). It follows from the domain through which you sign up or last request a login link (kammzeit.de or kammzeit.com) and determines the language of our emails to you. You set the language of the booking page in the settings. Emails to the salon's customers are also sent in that language.</p>
+<p>The purpose is to provide Kammzeit in accordance with our <a href="/terms">terms and conditions</a>; the legal basis is Art. 6(1)(b) GDPR. Registration is not possible without an email address, because logging in only works via email. We also use the email address to send you notices relating to the contract, for example about changes to the terms and conditions, maintenance or payments. We only send advertising by email if you have expressly subscribed to and confirmed Kammzeit news (section 10).</p>
 
 <h2>7. Logging in with an email link</h2>
 <p>Kammzeit has no passwords. To log in, we send a link to the email address on file. The link is valid for 15 minutes and can only be used once. In the database we store it only as a cryptographic hash, and the same applies to the session identifier. We delete expired sessions. The legal basis is Art. 6(1)(b) GDPR.</p>
 
-<h2>8. Pro plan and payment via Stripe</h2>
+<h2>8. Staff logins (Pro)</h2>
+<p>On the Pro plan, a salon owner can give staff members their own access to the dashboard. To do so, the owner enters the staff member's email address on the team page. We store it together with the link to the staff member in the team, the role (owner or staff), the language, the time of creation and the time of the last login. The owner can see on the team page whether and when the staff member last logged in. We send an invitation with a login link to this address and, afterwards, login links whenever the staff member requests them. Logging in works as described in section 7.</p>
+<p>In the dashboard, staff members see the calendar, the customer records including notes and the waiting list, and maintain their own working hours. The plan, settings, images, services, team, export and deleting customers remain reserved for the owner.</p>
+<p>The salon is the controller for this data; we process it on its behalf (section 2). If the owner removes the access or deletes the staff member, we immediately delete the login with all login links and sessions. If the salon no longer has a Pro plan or the staff member is not active in the team, the login is paused: it remains stored, but logging in is not possible and current sessions are ended. Kammzeit news is not available for staff logins.</p>
+
+<h2>9. Pro plan and payment via Stripe</h2>
 <p>You pay for the Pro plan via Stripe Payments Europe, Ltd., 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, D02 H210, Ireland ("Stripe"). To pay, you are redirected to a Stripe page. We do not embed any Stripe scripts on kammzeit.de or kammzeit.com.</p>
 <p>Stripe processes the data required for payment, in particular name, email address, billing address, payment details (e.g. card details or IBAN), amount and time, as well as technical data such as the IP address for fraud prevention. We do not receive full card details or the IBAN. Stripe tells us whether and when payment was made and assigns identifiers for the customer and the subscription, which we store with the salon account. In Stripe's customer portal you can change the payment method and billing details, download invoices and cancel the plan.</p>
 <p>The purpose is to handle the subscription. The legal basis is Art. 6(1)(b) GDPR and, for the retention of invoices, Art. 6(1)(c) GDPR in conjunction with § 147 AO (German Fiscal Code) and § 257 HGB (German Commercial Code). Stripe is an independent controller for payment processing, fraud prevention and compliance with its own legal obligations. <a href="https://stripe.com/privacy">Stripe's privacy policy</a> applies.</p>
 <p>Stripe may transfer data to Stripe, Inc. in the USA. Stripe, Inc. is certified under the EU-US Data Privacy Framework, for which the European Commission has adopted an adequacy decision (Art. 45 GDPR). In addition, Stripe uses the European Commission's standard contractual clauses (Art. 46(2)(c) GDPR).</p>
 
-<h2>9. Booking appointments</h2>
-<p>When you book an appointment, we process the following on behalf of the salon: name, email address, phone number if you choose to provide it, and the selected service, staff member and time. The salon can add notes about you to its customer records. The purpose is to carry out the appointment, including confirmation, reminder and cancellation link by email. The legal basis for the salon is Art. 6(1)(b) GDPR. The salon decides how long the data is kept. When the contract between the salon and Kammzeit ends, we delete the salon's data.</p>
+<h2>10. Kammzeit news by email</h2>
+<p>Owners of a salon account can voluntarily subscribe to Kammzeit news: occasional emails with updates about Kammzeit, new features and tips for the salon. This is done with a separate checkbox when registering or later in the settings. The checkbox is never pre-ticked, and Kammzeit works without the news too.</p>
+<p><strong>Confirmation (double opt-in)</strong>: After you subscribe, we send an email with a confirmation link to the account's email address. The link is valid for 7 days. Only when you open it and submit the confirmation on the following page do we add you. If you do not confirm, you will not receive any news. We store the link only as a hash.</p>
+<p><strong>Proof</strong>: With the account we store when you confirmed, how you subscribed (registration or settings), the exact wording of the consent in your account's language and, where applicable, when you withdrew it.</p>
+<p><strong>Withdrawal</strong>: You can unsubscribe at any time, in the settings or via the unsubscribe link in every news email. You do not need to log in to use the unsubscribe link. Withdrawal applies to the future; it does not affect the lawfulness of processing up to that point (Art. 7(3) GDPR). You will continue to receive emails about your account, such as login links, invoices and important notices.</p>
+<p>The legal basis for sending the news is your consent (Art. 6(1)(a) GDPR). We keep the proof because we must be able to demonstrate consent (Art. 7(1) GDPR) and have a legitimate interest in being able to defend ourselves against allegations of unsolicited advertising (Art. 6(1)(f) GDPR). The information is kept for as long as the account exists and is deleted with it. We send the news via our own mail servers and without tracking (section 14).</p>
 
-<h2>10. Emails</h2>
-<p>We send confirmations, reminders and login links via InstantNode's own mail servers in the EU.</p>
+<h2>11. Booking page design and images</h2>
+<p>Salons can design their booking page: with a logo, links to social networks (Instagram, TikTok, Facebook, Google, WhatsApp) and a box with opening hours, and on the Pro plan also with a cover image, design options and a photo gallery with up to 12 images.</p>
+<p><strong>Images</strong>: We store uploaded images in Kammzeit's database on our servers in the EU. We only accept JPG, PNG and WebP, and we resize and re-save every image. In the process we remove all embedded metadata such as EXIF data, camera data and the GPS location. The images are publicly visible on the booking page; the logo also appears in the dashboard and in emails to the salon's customers. We deliver them without cookies. The salon can delete any image at any time; all images disappear with the account.</p>
+<p>If an image shows people, for example staff or customers with their new hairstyle, the salon is responsible for it and needs their consent. We process such images on the salon's behalf. If you recognise yourself in an image and do not want this, it is best to contact the salon. We also accept notices at <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a>.</p>
+<p><strong>Social links</strong> are plain links. We do not embed any content, scripts or buttons of the networks, so no data flows to them before a click. Only when you click a link does your browser open the network's page. The network's privacy policy applies there.</p>
 
-<h2>11. Contact</h2>
+<h2>12. Booking appointments</h2>
+<p>When you book an appointment, we process the following on behalf of the salon: name, email address, phone number if you choose to provide it, and the selected service, staff member and time. The salon can add notes about you to its customer records. The purpose is to carry out the appointment, including confirmation, reminder and cancellation link by email in the language of the booking page. The legal basis for the salon is Art. 6(1)(b) GDPR. The salon decides how long the data is kept. When the contract between the salon and Kammzeit ends, we delete the salon's data.</p>
+
+<h2>13. Waiting list</h2>
+<p>Salons on the Pro plan can switch on a waiting list for walk-in customers. If you join it via the QR code in the salon or via the salon's page, we process the following on behalf of the salon: your first name, if you wish your email address and the service you want, your number and the status of your entry (waiting, called, being served, done, did not show up or left) with the times of joining, being called and completion. The salon can also add you itself at the front desk, in that case with first name, service and, where applicable, staff member, but without an email address.</p>
+<p>Your status page can only be reached via a random address and shows how many people are waiting ahead of you and roughly how long it will take. We use the email address only for a single email when the salon calls you ("It's your turn"). The salon sees the entries in the dashboard; the screen in the salon only shows numbers, no names. Waiting list entries are not added to the customer records. For the kz_queue cookie, see section 5.</p>
+<p>The purpose is to serve customers in the order in which they joined; the legal basis for the salon is Art. 6(1)(b) GDPR. The salon only needs the entries for the day in question. We delete them automatically, at the latest on the following day.</p>
+
+<h2>14. Emails</h2>
+<p>We send confirmations, reminders, login links, staff invitations, the waiting list email and Kammzeit news via InstantNode's own mail servers in the EU. Our emails contain a text part and an HTML part. Your email program loads the images in them (the Kammzeit logo, our mascot and, where applicable, the salon's logo) from our server. The addresses of these images are the same for all recipients and contain no identifier. We do not use tracking pixels and do not redirect links through our servers, so we do not learn whether or when you open an email or click a link. When the images are loaded, our server technically processes your IP address in the same way as when you visit the website (section 4). If you do not want this, you can turn off loading images in your email program.</p>
+
+<h2>15. Contact</h2>
 <p>If you write to us, we process your details to answer your enquiry (Art. 6(1)(b) GDPR if it concerns a contract, otherwise Art. 6(1)(f) GDPR). We forward questions about a booking to the salon.</p>
 
-<h2>12. Google Calendar (in preparation)</h2>
+<h2>16. Google Calendar (in preparation)</h2>
 <p>In future, salons will be able to connect their staff members' Google Calendars. Only after this express authorisation does Kammzeit access the connected calendar via the Google Calendar API, and exclusively to</p>
 <ul>
 <li>query busy times so that only free slots are offered (no titles or content of other appointments are stored), and</li>
@@ -106,17 +138,22 @@
 </ul>
 <p>We store the access keys in encrypted form. The connection can be removed at any time in Kammzeit or in the Google account settings; we then delete the keys. Kammzeit's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements. We do not share this data, do not sell it and do not use it for advertising or for training AI models.</p>
 
-<h2>13. Retention periods</h2>
+<h2>17. Retention periods</h2>
 <ul>
-<li><strong>Salon account</strong>: until you delete the account or the contract ends. We then delete the salon's data, including customer records and appointments. It disappears from our backups no later than 30 days after deletion.</li>
+<li><strong>Salon account</strong>: until you delete the account or the contract ends. We then delete the salon's data, including customer records, appointments, waiting list, staff logins and images. It disappears from our backups no later than 30 days after deletion.</li>
+<li><strong>Staff logins</strong>: until the owner removes the access or deletes the staff member, at the latest with the salon account.</li>
+<li><strong>Images</strong>: until the salon deletes them, at the latest with the salon account.</li>
+<li><strong>Waiting list</strong>: entries at the latest on the following day. The kz_queue cookie expires after 12 hours.</li>
+<li><strong>Kammzeit news</strong>: proof of consent and withdrawal for as long as the account exists. An unconfirmed confirmation link expires after 7 days.</li>
 <li><strong>Login links</strong>: valid for 15 minutes. <strong>Sessions</strong>: at most 30 days, ended immediately when you log out.</li>
+<li><strong>Browser storage</strong> (localStorage, the service worker's cache): on your device until you delete it in your browser. Every new version of Kammzeit replaces the cache.</li>
 <li><strong>Error logs</strong>: 14 days.</li>
 <li><strong>Rate limits</strong>: only briefly in memory, never on disk.</li>
 <li><strong>Invoices and payment records</strong>: for as long as commercial and tax law requires (§ 257 HGB, § 147 AO), currently up to ten years (accounting records such as invoices eight years, books and records ten years). This concerns our accounting and the data held by Stripe.</li>
 </ul>
 
-<h2>14. Your rights</h2>
-<p>You have the right of access, rectification, erasure, restriction of processing, data portability and objection (Art. 15 to 21 GDPR). For booking data, please contact the salon; we support it in this. You can also lodge a complaint with a data protection supervisory authority. The authority responsible for us is the State Commissioner for Data Protection and Freedom of Information of Rhineland-Palatinate (Landesbeauftragter für den Datenschutz und die Informationsfreiheit Rheinland-Pfalz).</p>
+<h2>18. Your rights</h2>
+<p>You have the right of access, rectification, erasure, restriction of processing, data portability and objection (Art. 15 to 21 GDPR). You can withdraw consent, for example to Kammzeit news, at any time with effect for the future. For booking data, waiting list entries, staff logins and images, please contact the salon; we support it in this. You can also lodge a complaint with a data protection supervisory authority. The authority responsible for us is the State Commissioner for Data Protection and Freedom of Information of Rhineland-Palatinate (Landesbeauftragter für den Datenschutz und die Informationsfreiheit Rheinland-Pfalz).</p>
 <p><strong>Right to object:</strong> Where we process data on the basis of our legitimate interest (Art. 6(1)(f) GDPR), you may object at any time on grounds relating to your particular situation (Art. 21 GDPR). An informal message to <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a> is sufficient.</p>
 <p>There is no automated decision-making, including profiling (Art. 22 GDPR).</p>
 </article>
@@ -130,7 +167,7 @@
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Terms and conditions</li></ol></nav>
       <h1>Terms and conditions</h1>
-      <p class="lead">for the use of Kammzeit. Last updated: 1 November 2026</p>
+      <p class="lead">for the use of Kammzeit. Last updated: 2 November 2026</p>
     </div>
   </div>
 </section>
@@ -154,7 +191,7 @@
 
 <h2>§ 3 Services</h2>
 <ol>
-<li>Kammzeit is software for online appointment booking that we provide as a service over the internet. This includes in particular a public booking page for the salon at its own address (e.g. salonname.kammzeit.de), a dashboard with calendar, customer records, services, team and settings, and automatic emails to the salon's customers (confirmation, reminder, cancellation link) and to the salon. The detailed scope follows from the description on kammzeit.de and kammzeit.com and from the selected plan (§ 5).</li>
+<li>Kammzeit is software for online appointment booking that we provide as a service over the internet. This includes in particular a public booking page for the salon at its own address (e.g. salonname.kammzeit.de), which the salon can design with a logo, links to social networks and opening hours, a dashboard with calendar, customer records, services, team and settings, which can also be installed as an app on a phone or computer, and automatic emails to the salon's customers (confirmation, reminder, cancellation link) and to the salon. Further functions are part of the Pro plan (§ 5(2)). The detailed scope follows from the description on kammzeit.de and kammzeit.com and from the selected plan (§ 5).</li>
 <li>Contracts for appointments and services of the salon are concluded exclusively between the salon and its customers. We are not a party to them, not the salon's representative and not responsible for the offer, prices, performance or cancellation of appointments. Kammzeit does not process payments from the salon's customers.</li>
 <li>We send emails to the salon's customers via our mail servers. Whether an email arrives also depends on the recipient's email provider (e.g. spam filters). We therefore cannot guarantee delivery.</li>
 <li>We provide support by email without guaranteed response times. We do not owe setup, consulting or integration with other systems.</li>
@@ -172,11 +209,17 @@
 <h2>§ 5 Plans and prices</h2>
 <ol>
 <li><strong>Free</strong>: free of charge, with one active staff member. The booking page shows the note "Online-Termine mit Kammzeit" (on English booking pages, its English equivalent) with a link to the Kammzeit website.</li>
-<li><strong>Pro</strong>: unlimited staff members, without the note. Price: €14.90 per month with monthly payment or €149 per year with annual payment.</li>
+<li><strong>Pro</strong>: unlimited staff members, without the note. In addition, Pro includes:
+<ul>
+<li>staff logins: separate access to the dashboard for the salon's staff, with restricted rights (calendar, customer records, waiting list and their own working hours),</li>
+<li>a waiting list for walk-in customers with QR code, status page, email notification and a display for a screen in the salon,</li>
+<li>a cover image, design options (font, corners, light or dark, welcome text) and a photo gallery with up to 12 images on the booking page.</li>
+</ul>
+Price: €14.90 per month with monthly payment or €149 per year with annual payment.</li>
 <li>The prices are final prices. As a small business under § 19 UStG (German VAT Act), we do not charge VAT. If VAT becomes payable on our services in future, for example because the small business scheme no longer applies to us, it will be added to the prices stated. We will announce this by email at least six weeks in advance. The salon may then cancel the Pro plan with effect from the date of the change.</li>
 <li>Price changes only apply to future billing periods. We will announce them by email at least six weeks before the start of the billing period from which they are to apply. Until then, the salon may cancel the Pro plan with effect from the end of the current billing period. If it does not cancel, the new price applies from then on. We will point out this consequence in the announcement.</li>
 </ol>
-<p><strong>Note on VAT for salons outside Germany:</strong> No VAT is charged (German small business scheme, § 19 UStG). For business customers in other EU countries the reverse charge procedure may apply, in which case the salon accounts for any VAT due in its own country. This note is for information only and does not change the prices.</p>
+<p><strong>Note on VAT for salons outside Germany:</strong> We do not charge VAT (German small business scheme, § 19 UStG). For businesses in other EU countries the reverse charge procedure may apply. In that case the salon accounts for any VAT due in its own country. This note is for information only and does not change the prices.</p>
 
 <h2>§ 6 Payment via Stripe</h2>
 <ol>
@@ -190,7 +233,7 @@
 <ol>
 <li><strong>Free</strong>: The contract runs for an indefinite period. The salon can end it at any time by deleting its account in the dashboard or by giving us notice in text form (e.g. by email). We may terminate it with four weeks' notice in text form.</li>
 <li><strong>Pro</strong>: The term corresponds to the selected billing period (one month or one year). It is renewed for the same period each time unless cancelled before it expires. The salon can cancel at any time with effect from the end of the current billing period, via the customer portal (in the dashboard under "Plan") or in text form. The Pro plan remains usable until the end of the period. We may terminate with one month's notice to the end of a billing period in text form.</li>
-<li>When the Pro plan ends, the account continues on the Free plan unless the salon deletes it. The limits of the Free plan then apply again; the stored data is retained.</li>
+<li>When the Pro plan ends, the account continues on the Free plan unless the salon deletes it. The limits of the Free plan then apply again: staff logins are paused (logging in is not possible and current sessions end), the waiting list is not available, and the booking page shows the standard design again without cover image and photo gallery. Nothing is deleted in the process: data, logins, settings and images remain stored and take effect again as soon as the salon books Pro again.</li>
 <li>The right of both parties to terminate without notice for good cause remains unaffected. For us, good cause exists in particular if the salon seriously or repeatedly breaches § 9 despite a warning. If we terminate for good cause for which the salon is not responsible, we will refund fees paid in advance on a pro rata basis.</li>
 <li>If the salon cancels with effect from the end of the billing period, fees already paid are not refunded.</li>
 </ol>
@@ -206,9 +249,11 @@
 <ol>
 <li>The salon provides truthful information when registering and keeps its email address up to date.</li>
 <li><strong>Access</strong>: Logging in is only possible via a link sent to the email address on file. Anyone with access to this mailbox can log in. The salon therefore protects the mailbox like a password (strong password, two-factor authentication where possible), logs out on devices that are not its own and informs us without undue delay if it suspects misuse.</li>
+<li><strong>Staff logins</strong>: The salon decides whom it gives a login and is responsible for the use of Kammzeit via these logins as for its own use. It only gives logins to people who work for its business and need the access for their work, obliges them to keep the data confidential and to protect their mailbox in accordance with paragraph 2, and removes a login in the dashboard without undue delay when the person leaves or no longer needs the access.</li>
+<li><strong>Images</strong>: If the salon uploads images (logo, cover image, photo gallery), it must hold the necessary rights, for example the rights of use from the photographer or designer. It only uploads images in which people can be recognised, for example customers or staff, if these people have consented to publication. The salon obtains and documents this consent itself.</li>
 <li><strong>Obligations towards its own customers</strong>: The salon is itself responsible for its booking page and for the processing of its customers' data. In particular, it provides its own imprint and its own privacy information under Art. 13 GDPR (Kammzeit offers a field for the link to the imprint), provides the information required by law, for example on prices, and obtains any necessary consent, for example if it records health information such as allergies in the customer records.</li>
 <li><strong>Lawful use</strong>: The salon uses Kammzeit only for appointments of its own business. It does not post any unlawful content or content that infringes the rights of others, does not use the email functions for advertising or spam, does not attack the service, does not query it automatically to an extent that impairs operation, and does not circumvent the limits of the plans, for example by using several Free accounts for the same business.</li>
-<li>The salon indemnifies us against third-party claims based on unlawful content of the salon or on unlawful use for which the salon is responsible, including reasonable costs of legal defence.</li>
+<li>The salon indemnifies us against third-party claims based on unlawful content of the salon (for example images without the necessary rights or consent) or on unlawful use for which the salon is responsible, including use via its staff logins. This includes reasonable costs of legal defence.</li>
 <li>We recommend that the salon regularly backs up its data using the export function.</li>
 </ol>
 
@@ -220,15 +265,15 @@
 
 <h2>§ 11 Data and processing on behalf of the salon</h2>
 <ol>
-<li>We process the data of the salon's customers and staff on its behalf. This is governed by the <a href="/dpa">data processing agreement</a> (DPA), which the salon concludes with us when registering and which forms part of this contract. In matters of data protection, the DPA takes precedence over these terms and conditions.</li>
+<li>We process the data of the salon's customers, of people on its waiting list and of its staff, including staff logins, as well as images showing people, on its behalf. This is governed by the <a href="/dpa">data processing agreement</a> (DPA), which the salon concludes with us when registering and which forms part of this contract. In matters of data protection, the DPA takes precedence over these terms and conditions.</li>
 <li>The data belongs to the salon. We use it only to provide the service. We do not sell it, do not pass it on for advertising and do not use it to train AI models.</li>
-<li>The salon grants us the simple (non-exclusive) rights to its content (e.g. texts, service descriptions, name) that we need to operate the service, for example to store it, display it on the booking page and use it in emails. These rights end with the contract.</li>
+<li>The salon grants us the simple (non-exclusive) rights to its content (e.g. texts, service descriptions, name, logo and photos) that we need to operate the service, for example to store it, adapt it technically (for example to resize and re-save images), display it on the booking page and in the dashboard and use it in emails. These rights end with the contract.</li>
 <li>Our <a href="/privacy">privacy policy</a> applies to data that we process as an independent controller (e.g. account and billing data).</li>
 </ol>
 
 <h2>§ 12 Data export and deletion</h2>
 <ol>
-<li>During the term, the salon can export its data at any time in the dashboard in a common, machine-readable format.</li>
+<li>During the term, the salon can export its data at any time in the dashboard in a common, machine-readable format. Uploaded images are listed in the export with their address and can be downloaded from there.</li>
 <li>The salon can delete its account at any time in the dashboard; the contract then ends with immediate effect. If a Pro plan is running, it must first be cancelled via the customer portal; the account can be deleted once the plan has expired at the end of the paid period.</li>
 <li>If the contract ends in any other way, the salon can export its data until the end of the contract. After that, we delete it. The data disappears from our backups no later than 30 days after deletion. If the salon wishes to keep data for longer, it must export it beforehand.</li>
 <li>We retain invoice and payment data for as long as the law requires.</li>
@@ -275,7 +320,7 @@
     <div>
       <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Data processing agreement</li></ol></nav>
       <h1>Data processing agreement</h1>
-      <p class="lead">pursuant to Art. 28 GDPR. Version 1.0, last updated: 1 November 2026</p>
+      <p class="lead">pursuant to Art. 28 GDPR. Version 1.1, last updated: 2 November 2026</p>
     </div>
   </div>
 </section>
@@ -288,27 +333,29 @@
 <ol>
 <li>This agreement is concluded between the salon that creates an account with Kammzeit (controller, "salon") and Ben Oliver Mallow, sole proprietor, also trading under the name InstantNode, Sickinger Straße 7, 55758 Sien, Germany, email <a href="mailto:kontakt@kammzeit.de">kontakt@kammzeit.de</a> (processor, "we", "us").</li>
 <li>The agreement is concluded electronically (Art. 28(9) GDPR). The salon accepts it when registering by ticking the box provided for this purpose. It supplements Kammzeit's <a href="/terms">terms and conditions</a>. In matters of data protection, this agreement takes precedence over the terms and conditions. On request, we will send the salon a copy by email.</li>
-<li>This agreement does not apply to data that we process as an independent controller, such as the salon's account and billing data. Our <a href="/privacy">privacy policy</a> applies to such data.</li>
+<li>This agreement does not apply to data that we process as an independent controller, such as the salon owner's account and billing data and the information on Kammzeit news. Our <a href="/privacy">privacy policy</a> applies to such data.</li>
 </ol>
 
 <h2>§ 2 Subject matter, duration, nature and purpose</h2>
 <ol>
-<li><strong>Subject matter</strong>: provision of the online service Kammzeit for the salon: public booking page, dashboard with calendar, customer records, services and team, and automatic emails to the salon's customers.</li>
+<li><strong>Subject matter</strong>: provision of the online service Kammzeit for the salon: public booking page with the images uploaded by the salon, dashboard with calendar, customer records, services and team, on the Pro plan also staff logins and waiting list, and automatic emails to the salon's customers and staff.</li>
 <li><strong>Duration</strong>: the term of the contract under the terms and conditions, until deletion under § 12 has been completed.</li>
-<li><strong>Nature of the processing</strong>: collection (via the booking form or by input from the salon), storage, display, modification, sending of emails (confirmation, reminder, cancellation), export, backup and erasure.</li>
-<li><strong>Purpose</strong>: online appointment booking and appointment management for the salon.</li>
+<li><strong>Nature of the processing</strong>: collection (via the booking form, the waiting list form or by input and upload from the salon), storage, display, modification, resizing and re-saving of images, sending of emails (confirmation, reminder, cancellation, call from the waiting list, staff invitation), export, backup and erasure.</li>
+<li><strong>Purpose</strong>: online appointment booking, appointment management and waiting list for the salon, dashboard access for its staff and presentation of its booking page.</li>
 </ol>
 
 <h2>§ 3 Types of data and categories of data subjects</h2>
 <ol>
 <li><strong>Customers and prospective customers of the salon</strong>: name, email address, phone number (if provided), appointments (service, staff member, time, status such as booked, cancelled or no-show, origin of the booking), the salon's notes in the customer records and on appointments, cancellation links, and technical data during booking (IP address, held only briefly in memory for rate limiting).</li>
-<li><strong>Staff of the salon</strong>: name, working hours, services offered and assigned appointments.</li>
+<li><strong>People on the waiting list</strong>: first name, email address (if provided), requested service and, where applicable, staff member, number and status of the entry, times of joining, being called, completion and notification, the random identifier of the status page (also in the kz_queue cookie on the person's device), and technical data (IP address, held only briefly in memory for rate limiting).</li>
+<li><strong>Staff of the salon</strong>: name, working hours, services offered and assigned appointments. For staff logins also email address, role, language, time of creation and of the last login, and login links and sessions (only as hashes).</li>
+<li><strong>People shown in images</strong>: images uploaded by the salon (logo, cover image, photo gallery) with their image descriptions, insofar as people can be recognised in them, for example staff or customers of the salon. We remove metadata such as EXIF data and GPS location on upload; it is not stored.</li>
 <li><strong>Special categories</strong> of personal data (Art. 9 GDPR) are not intended. If the salon records such information in free-text fields, for example allergies or intolerances, it is responsible for the legal basis, usually the explicit consent of the data subject. The measures set out in Annex 1 apply to this information. Kammzeit does not offer further measures, such as separate encryption. The salon decides whether the level of protection is sufficient for its data.</li>
 </ol>
 
 <h2>§ 4 Rights and obligations of the salon</h2>
 <ol>
-<li>The salon is responsible for the lawfulness of the processing, in particular for the legal basis, for informing its customers under Art. 13 GDPR, for handling requests from data subjects and for determining how long data is kept.</li>
+<li>The salon is responsible for the lawfulness of the processing, in particular for the legal basis, for informing its customers, people on its waiting list and staff under Art. 13 GDPR, for the consent of people shown in uploaded images, for handling requests from data subjects and for determining how long data is kept.</li>
 <li>The salon has the right to issue instructions (§ 5), to request evidence and audits (§ 13), to object to new sub-processors (§ 9) and to choose between return and deletion after the end of the contract (§ 12).</li>
 <li>If the salon discovers errors or irregularities in the processing, it informs us without undue delay.</li>
 </ol>
@@ -334,7 +381,7 @@
 <ol>
 <li>We implement the technical and organisational measures set out in Annex 1 (Art. 28(3)(c), Art. 32 GDPR).</li>
 <li>We develop the measures further in line with the state of the art. We may replace them with equivalent or better measures. The level of protection must not be reduced in the process.</li>
-<li>The salon is responsible for the security of its access, in particular of its email mailbox, through which logging in takes place.</li>
+<li>The salon is responsible for the security of its access, in particular of its email mailbox, through which logging in takes place. This also applies to the staff logins it issues: it decides who receives access, only gives access to people who need it for their work, and removes it without undue delay when someone leaves or no longer needs it.</li>
 </ol>
 
 <h2>§ 9 Sub-processors</h2>
@@ -350,7 +397,7 @@
 
 <h2>§ 11 Assistance to the salon</h2>
 <ol>
-<li><strong>Data subject rights</strong>: The salon can view, rectify, erase and export its customers' data in the dashboard and thus fulfil requests for access, rectification, erasure and data portability itself. Beyond this, we assist it as far as possible with appropriate technical and organisational measures (Art. 28(3)(e) GDPR). We forward requests from data subjects that reach us directly to the salon within three working days and do not answer them ourselves, unless the law requires otherwise.</li>
+<li><strong>Data subject rights</strong>: The salon can view, rectify, erase and export its customers' data in the dashboard and thus fulfil requests for access, rectification, erasure and data portability itself. It can remove waiting list entries, images and staff logins in the dashboard. Beyond this, we assist it as far as possible with appropriate technical and organisational measures (Art. 28(3)(e) GDPR). We forward requests from data subjects that reach us directly to the salon within three working days and do not answer them ourselves, unless the law requires otherwise.</li>
 <li><strong>Further obligations</strong>: Taking into account the nature of the processing and the information available to us, we assist the salon with the security of processing, the notification of personal data breaches, the communication of breaches to data subjects, data protection impact assessments and prior consultation of the supervisory authority (Art. 32 to 36, Art. 28(3)(f) GDPR).</li>
 <li><strong>Personal data breaches</strong>: We notify the salon of any personal data breach affecting the salon's data without undue delay and at the latest 48 hours after becoming aware of it, by email to the address stored in the account. As far as known, the notification contains the nature of the breach, the categories of data concerned, the approximate number of data subjects and records concerned, the likely consequences and the measures taken or proposed. Information may be provided in phases. The salon decides whether the supervisory authority or data subjects are notified.</li>
 <li>We may charge a reasonable fee for assistance that goes beyond the functions of the dashboard and a minor effort, after first announcing the expected amount, unless the reason for it lies within our area of responsibility.</li>
@@ -359,7 +406,7 @@
 <h2>§ 12 Deletion and return</h2>
 <ol>
 <li>During the term, the salon can export and delete its data at any time in the dashboard.</li>
-<li>After the end of the contract, the salon may choose between return and deletion (Art. 28(3)(g) GDPR). Return takes place by the salon downloading the data in a common, machine-readable format via the export function before the end of the contract.</li>
+<li>After the end of the contract, the salon may choose between return and deletion (Art. 28(3)(g) GDPR). Return takes place by the salon downloading the data in a common, machine-readable format via the export function before the end of the contract. Uploaded images are listed in the export with their address and can be downloaded from there until the end of the contract.</li>
 <li>If the salon deletes its account or the contract ends in any other way, we delete all of the salon's data from the live system. It disappears from the backups as they rotate, at the latest 30 days after the deletion of the account or the end of the contract. We are under no obligation to store this data any longer.</li>
 <li>On request, we confirm the deletion in text form.</li>
 </ol>
@@ -390,7 +437,8 @@
 
 <h3>System access control</h3>
 <ul>
-<li>Login to the dashboard only via a one-time link sent to the email address on file, valid for 15 minutes and usable only once. Kammzeit does not use passwords.</li>
+<li>Login to the dashboard, including staff logins, only via a one-time link sent to the email address on file, valid for 15 minutes and usable only once. Kammzeit does not use passwords.</li>
+<li>Each staff login has its own email address. If the salon removes a login or deletes the associated staff member, all sessions of that login end immediately. Without a Pro plan or if the staff member is inactive, the login is blocked and current sessions are ended on the next request.</li>
 <li>Login links and session identifiers are stored in the database only as SHA-256 hashes.</li>
 <li>Sessions expire after 30 days and end immediately on logout. The session cookie is HttpOnly, Secure and SameSite=Lax.</li>
 <li>Rate limiting against mass requests, for example for login and booking.</li>
@@ -401,6 +449,9 @@
 <ul>
 <li>Only the processor has access to servers, database and backups.</li>
 <li>A salon account only sees the data of its own salon.</li>
+<li>Roles in the salon account: owners have full access. Staff logins only see the calendar, customer records and waiting list and maintain their own working hours. Settings, images, plan, services, team, export and deleting customers are reserved for the owner. Rights are checked on the server with every request.</li>
+<li>Waiting list status pages can only be reached via a random address that cannot be guessed. The screen for the salon only shows numbers, no names.</li>
+<li>The installable app (service worker) only stores static files on the device, no pages containing customer or account data.</li>
 <li>Requests that change data in the dashboard are only possible via POST, and their origin is checked (protection against cross-site request forgery). A content security policy prevents external scripts from being loaded.</li>
 </ul>
 
@@ -415,12 +466,21 @@
 <ul>
 <li>All connections to the website, booking pages and dashboard are encrypted with TLS.</li>
 <li>Emails are sent via InstantNode's own mail servers in the EU.</li>
-<li>No disclosure of data to third parties, no tracking or analytics services, no third-party content on the pages.</li>
+<li>No disclosure of data to third parties, no tracking or analytics services, no third-party content on the pages. Links to social networks are plain links without embedded content.</li>
+<li>No tracking pixels and no click tracking in emails.</li>
+</ul>
+
+<h3>Uploaded images</h3>
+<ul>
+<li>Only JPG, PNG and WebP are accepted, no SVG (it could contain script). At most 5 MB per image, protection against images with an excessive number of pixels (decompression bombs).</li>
+<li>Every image is read on the server, resized and re-saved. In the process all metadata is removed, in particular EXIF data, camera data and GPS location.</li>
+<li>The images are stored in the database on the servers in the EU and are included in the backups. They are delivered without cookies; a salon's booking page only serves that salon's own images.</li>
 </ul>
 
 <h3>Input control</h3>
 <ul>
-<li>Appointments store the time of creation and their origin (online booking or entry by the salon).</li>
+<li>Appointments store the time of creation and their origin (online booking or entry by the salon). Waiting list entries store the times of joining, being called and completion.</li>
+<li>Kammzeit does not store which login (owner or staff) created or changed an entry.</li>
 <li>No access logs. Error logs are deleted automatically after 14 days.</li>
 </ul>
 
@@ -432,8 +492,9 @@
 
 <h3>Deletion control</h3>
 <ul>
-<li>When an account is deleted, all of the salon's data is deleted, including customer records, appointments, staff, services, login links and sessions. Backups rotate after at most 30 days.</li>
+<li>When an account is deleted, all of the salon's data is deleted, including customer records, appointments, waiting list, staff, staff logins, services, images, login links and sessions. Backups rotate after at most 30 days.</li>
 <li>Expired sessions are deleted automatically.</li>
+<li>Waiting list entries are deleted automatically, at the latest on the day after they were made.</li>
 </ul>
 
 <h3>Organisational measures</h3>

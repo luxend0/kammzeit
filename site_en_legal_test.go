@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 // Englische Rechtstexte: nur auf kammzeit.com (deutsche Domain und Salon-Subdomains
@@ -98,5 +100,39 @@ func TestSiteENLegal(t *testing.T) {
 	}
 	if _, de := get("kammzeit.test", "/datenschutz"); !strings.Contains(de, "(Accept-Language). Wir speichern sie nicht") {
 		t.Error("deutsche Datenschutzerklärung ohne Absatz zur Browsersprache")
+	}
+
+	// Beide Cookies, Kammzeit-News und Bilder in beiden Datenschutzerklärungen,
+	// Reverse-Charge-Hinweis auch in den deutschen AGB.
+	for _, c := range []struct{ host, path, doi string }{
+		{"kammzeit.test", "/datenschutz", "Double-Opt-in"}, {"kammzeit-en.test", "/privacy", "double opt-in"},
+	} {
+		_, body := get(c.host, c.path)
+		for _, want := range []string{"kz_session", "kz_queue", "kz-pwa-hint", "kz-tour-", "EXIF", c.doi} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s enthält nicht %q", c.path, want)
+			}
+		}
+	}
+	if _, agb := get("kammzeit.test", "/agb"); !strings.Contains(agb, "Reverse-Charge-Verfahren") {
+		t.Error("deutsche AGB ohne Reverse-Charge-Hinweis")
+	}
+
+	// Stand von AGB und AVV = termsVersion (Nachweis bei der Registrierung):
+	// wer die Texte ändert, zählt beides hoch.
+	day, err := time.Parse(time.DateOnly, termsVersion)
+	if err != nil {
+		t.Fatal(err)
+	}
+	monate := []string{"Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"}
+	standDE := fmt.Sprintf("Stand: %d. %s %d", day.Day(), monate[day.Month()-1], day.Year())
+	standEN := "last updated: " + day.Format("2 January 2006")
+	for _, c := range []struct{ host, path, want string }{
+		{"kammzeit.test", "/agb", standDE}, {"kammzeit.test", "/avv", standDE},
+		{"kammzeit-en.test", "/terms", "Last updated: " + day.Format("2 January 2006")}, {"kammzeit-en.test", "/dpa", standEN},
+	} {
+		if _, body := get(c.host, c.path); !strings.Contains(body, c.want) {
+			t.Errorf("%s: %q fehlt (termsVersion %s)", c.path, c.want, termsVersion)
+		}
 	}
 }
