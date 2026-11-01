@@ -1,0 +1,279 @@
+{{/* Englische Seiten Features und Pricing (kammzeit.com), Gegenstück zu site_main.html.
+     Layout aus site.html, Stil in site.css + site-main.css. Screenshots zeigen das deutsche UI,
+     das steht jeweils dabei. */}}
+
+{{define "en-features"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-main.css">
+
+<section class="page-head" aria-labelledby="h-fn">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Features</li></ol></nav>
+      <h1 id="h-fn">Everything your salon needs for online booking</h1>
+      <p class="lead">A booking page for your customers, a calendar and customer records for you. Here is what Kammzeit can do today, and what comes next.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/pricing">See pricing</a></p>
+    </div>
+    <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt="Kammi the hedgehog with a calendar page" fetchpriority="high"></div>
+  </div>
+</section>
+
+<nav class="wrap fn-jump" aria-label="On this page">
+  <a href="#customers">For your customers</a><a href="#salon">For you at the salon</a><a href="#data">Data and security</a><a href="#planned">Coming next</a>
+</nav>
+
+<section class="section" id="customers" aria-labelledby="h-customers">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / For your customers</p>
+      <h2 id="h-customers">Booking without an app or a phone call</h2>
+      <p class="lead">Your booking page runs in the browser, on any phone. Customers need no account, just a name and an email address.</p>
+    </div>
+    <div class="fn-split">
+      <ul class="feature-list">
+        <li><img class="icon-lg" src="/static/img/icons/link.svg" width="48" height="48" alt=""><h3>Your own booking page</h3><p>At yoursalon.kammzeit.com. Share the link in your Instagram bio, your Google Business Profile or on your website.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/buchung.svg" width="48" height="48" alt=""><h3>Service, staff member, time</h3><p>Customers choose the service, then who with, or simply “anyone available”. Then a free time.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/uhr.svg" width="48" height="48" alt=""><h3>Only free times</h3><p>Customers only see times that fit the working hours and are not taken. Breaks and existing appointments are left out.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Confirmation with calendar entry</h3><p>Right after booking, an email arrives with all the details and a calendar file (.ics) for their own phone.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/erinnerung.svg" width="48" height="48" alt=""><h3>Reminder 24 hours before</h3><p>Automatically by email. So an appointment gets cancelled rather than forgotten.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Cancellation by link</h3><p>Up to the deadline you set. The slot can be booked again straight away, and you get an email.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/handy.svg" width="48" height="48" alt=""><h3>No app, no customer account</h3><p>Nothing to install, nothing to sign up for. The phone number is optional.</p></li>
+        <li><img class="icon-lg" src="/static/img/icons/farbe.svg" width="48" height="48" alt=""><h3>Your salon, your colour</h3><p>Accent colour, address, phone number and a few words about your salon. You choose whether the booking page is in English or German.</p></li>
+      </ul>
+      <figure class="figure fn-phone">
+        <img class="shot" src="/static/img/shots/buchung-start-mobil.webp" width="390" height="824" alt="Booking page of a sample salon on a phone, German version: name, address and services with duration and price" loading="lazy">
+        <figcaption>A sample salon's booking page on a phone, shown in German.</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" id="salon" aria-labelledby="h-salon">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / For you at the salon</p>
+      <h2 id="h-salon">Calendar, records and team in one place</h2>
+      <p class="lead">In the dashboard at kammzeit.com. You log in with a link sent by email, there is no password. The screenshots show the German version, the dashboard is also available in English.</p>
+    </div>
+    <div class="fn-rows">
+      <div class="split fn-row">
+        <div>
+          <h3>Calendar by day and week</h3>
+          <ul class="fn-checks">
+            <li>Online bookings and appointments you add yourself side by side, one column per staff member</li>
+            <li>Add a phone booking with one click on a free slot</li>
+            <li>Mark no-shows and add an internal note to an appointment that only you can see</li>
+            <li>An email to you for every online booking and every cancellation</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/kalender.webp" width="1280" height="1067" alt="Day view in the calendar, German version: appointments of three staff members, one marked as a no-show" loading="lazy">
+      </div>
+      <div class="split split-rev fn-row">
+        <div>
+          <h3>Customer records with notes</h3>
+          <ul class="fn-checks">
+            <li>Every booking creates a customer card or adds to an existing one</li>
+            <li>Notes such as colour formula, preferred length or favourite product stay with the customer</li>
+            <li>Appointment history: when someone came, what was done, who did not turn up</li>
+            <li>Export all your customer records as CSV</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/kunde.webp" width="1280" height="1470" alt="Customer card with notes and appointment history, German version" loading="lazy">
+      </div>
+      <div class="split fn-row">
+        <div>
+          <h3>Team, services and breaks</h3>
+          <ul class="fn-checks">
+            <li>Services with duration, price and a short description</li>
+            <li>Staff members with their own working hours, up to two time blocks a day, so breaks are included</li>
+            <li>You decide who does which service</li>
+            <li>One staff member on the Free plan, unlimited with Pro</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/team.webp" width="1280" height="593" alt="Team overview with staff members and their working hours, German version" loading="lazy">
+      </div>
+      <div class="split split-rev fn-row">
+        <div>
+          <h3>Your booking rules</h3>
+          <ul class="fn-checks">
+            <li>Minimum notice: how short-notice an online booking can be</li>
+            <li>Cancellation deadline: until when customers can cancel on their own</li>
+            <li>Booking window: how far ahead customers can book</li>
+          </ul>
+        </div>
+        <img class="shot" src="/static/img/shots/einstellungen-regeln.webp" width="597" height="590" alt="Settings for minimum notice, cancellation deadline and booking window, German version" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="data" aria-labelledby="h-data">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Data and security</p>
+      <h2 id="h-data">Your data stays yours</h2>
+    </div>
+    <ul class="feature-list feature-list-3">
+      <li><img class="icon-lg" src="/static/img/icons/eu.svg" width="48" height="48" alt=""><h3>Servers in the EU</h3><p>In a data centre in Eygelshoven in the Netherlands. Bookings and customer records never leave the EU.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/kartei.svg" width="48" height="48" alt=""><h3>Data processing agreement</h3><p>For your customers' data there is a <a href="/dpa">DPA under Art. 28 GDPR</a>. No tracking, no ads.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/schloss.svg" width="48" height="48" alt=""><h3>Log in with an email link</h3><p>No password that could be guessed. One login per salon, there are no separate staff logins.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/export.svg" width="48" height="48" alt=""><h3>Export at any time</h3><p>Customer records as CSV, all of your salon's data as a JSON file.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Delete your account yourself</h3><p>In the dashboard, without a phone call or a cancellation letter.</p></li>
+      <li><img class="icon-lg" src="/static/img/icons/offen.svg" width="48" height="48" alt=""><h3>Open source</h3><p>The code is licensed under AGPL-3.0 and you can run it on your own server. <a href="/open-source">Learn more</a></p></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section-alt wave-top" id="planned" aria-labelledby="h-planned">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>04</span> / Coming next</p>
+      <h2 id="h-planned">Planned, but not here yet</h2>
+      <p class="lead">These three features are next in line. We are not promising a date.</p>
+    </div>
+    <ul class="grid-3">
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Deposit at booking</h3><p>Customers pay part of the price upfront when they book, for example for long colour appointments.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Google Calendar</h3><p>See your Kammzeit appointments in your own Google Calendar.</p></li>
+      <li class="card fn-planned"><p class="fn-tag">Planned</p><h3>Custom domain</h3><p>Your booking page at your own address instead of yoursalon.kammzeit.com.</p></li>
+    </ul>
+    <p class="fn-not"><b>Not included today:</b> SMS, point of sale, gift vouchers, waiting list, reviews, multiple locations, booking rooms or equipment, separate staff logins, an app.</p>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-fn-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-fn-cta">Try it with your own salon</h2>
+      <p>Free and with no time limit. All you need is an email address.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/pricing">See pricing</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
+
+{{define "en-pricing"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-main.css">
+
+<section class="page-head" aria-labelledby="h-pr">
+  <div class="wrap page-head-in">
+    <div>
+      <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Kammzeit</a></li><li aria-current="page">Pricing</li></ol></nav>
+      <h1 id="h-pr">Start for free, go Pro as your team grows</h1>
+      <p class="lead">The Free plan has no time limit and covers one staff member. Pro costs €14.90 per month or €149 per year and covers your whole team.</p>
+    </div>
+    <div class="page-head-media"><img class="ill" src="/static/img/ill/kammi-schere.webp" width="800" height="800" alt="Kammi the hedgehog with a pair of scissors" fetchpriority="high"></div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-plans">
+  <div class="wrap">
+    <h2 class="vh" id="h-plans">The two plans</h2>
+    <div class="plans pr-plans">
+      <div class="plan">
+        <h3>Free</h3>
+        <p class="price">€0</p>
+        <p class="price-per">forever, no time limit</p>
+        <ul>
+          <li>1 active staff member</li>
+          <li>Booking page, confirmation, reminder, cancellation by link</li>
+          <li>Calendar and customer records</li>
+          <li>A small Kammzeit note on the booking page</li>
+        </ul>
+        <p class="actions"><a class="btn" href="/registrieren">Start for free</a></p>
+      </div>
+      <div class="plan plan-pro">
+        <h3>Pro</h3>
+        <p class="price">€14.90</p>
+        <p class="price-per">per month, cancel monthly</p>
+        <p class="pr-year"><b>or €149 per year</b>, cancel yearly. That works out at €12.42 a month, two months for free.</p>
+        <ul>
+          <li>Unlimited staff</li>
+          <li>Everything in Free</li>
+          <li>No Kammzeit note on the booking page</li>
+        </ul>
+        <p class="pr-how">You start for free and switch on Pro in the dashboard under “Plan” as soon as you need it.</p>
+      </div>
+    </div>
+    <p class="pr-tax">No VAT is charged (German small business scheme, §&nbsp;19&nbsp;UStG). For business customers in other EU countries the reverse charge procedure may apply. No set-up fee.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-compare">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>01</span> / Comparison</p>
+      <h2 id="h-compare">What each plan includes</h2>
+    </div>
+    <div class="compare-wrap">
+      <table class="compare">
+        <thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Pro</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Booking page at yoursalon.kammzeit.com</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Active staff members</th><td>1</td><td>unlimited</td></tr>
+          <tr><th scope="row">Services with duration, price and description</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Working hours with breaks</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Confirmation with calendar entry, reminder, cancellation by link</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Calendar by day and week, add appointments yourself</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Customer records with notes and CSV export</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Booking page in English or German</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Your own accent colour, address, text about the salon</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Data export (JSON), account deletion, DPA</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Support by email</th><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+          <tr><th scope="row">Kammzeit note on the booking page</th><td>Yes</td><td>No</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt wave-top wave-bottom" aria-labelledby="h-terms">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>02</span> / Tax, payment, cancellation</p>
+      <h2 id="h-terms">The small print, in large letters</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card"><img class="icon-lg" src="/static/img/icons/pro.svg" width="48" height="48" alt=""><h3>No VAT under §&nbsp;19&nbsp;UStG</h3><p>Kammzeit is a small business under §&nbsp;19 of the German VAT Act (UStG), so the invoice shows no VAT and the price here is the price you pay. For business customers in other EU countries the reverse charge procedure may apply.</p></div>
+      <div class="card"><img class="icon-lg" src="/static/img/icons/mail.svg" width="48" height="48" alt=""><h3>Payment via Stripe</h3><p>With the payment methods offered at checkout. The amount is due at the start of each month or year. Invoices arrive by email and are also in the customer portal.</p></div>
+      <div class="card"><img class="icon-lg" src="/static/img/icons/absage.svg" width="48" height="48" alt=""><h3>Cancel in the dashboard</h3><p>Under “Plan” via the customer portal, effective at the end of the paid month or year. Your salon then carries on with the Free plan, and your data is kept.</p></div>
+    </div>
+    <p class="pr-terms-more">The details are in the <a href="/terms">terms</a>.</p>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="h-pr-faq">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-num"><span>03</span> / Questions</p>
+      <h2 id="h-pr-faq">Questions about pricing</h2>
+    </div>
+    <div class="faq landing-faq">
+      <details><summary>Is there a trial for Pro?</summary>
+        <p>No, that is what the Free plan is for, with no time limit. It includes everything except more staff members, so you can try Kammzeit with your salon at your own pace.</p></details>
+      <details><summary>What happens if I cancel Pro?</summary>
+        <p>Pro stays available until the end of the paid period. After that, the limits of the Free plan apply again: one active staff member and the Kammzeit note on the booking page. Your data is kept.</p></details>
+      <details><summary>Are there costs per booking or per email?</summary>
+        <p>No. There is no set-up fee and no charge per booking, per staff member or per email. Just the price of the plan.</p></details>
+      <details><summary>Why is no VAT charged?</summary>
+        <p>Kammzeit is run from Germany as a small business under §&nbsp;19&nbsp;UStG and does not charge VAT. If you are a business customer in another EU country, the reverse charge procedure may apply. Your accountant can tell you whether it does.</p></details>
+      <details><summary>Are SMS reminders included?</summary>
+        <p>Kammzeit does not send SMS. Reminders and confirmations go out by email, included in both plans at no extra cost.</p></details>
+      <details><summary>Do I get an invoice?</summary>
+        <p>Yes, electronically by email. You can also find all invoices in the customer portal, which you open in the dashboard under “Plan”.</p></details>
+      <details><summary>Can I host Kammzeit myself?</summary>
+        <p>Yes. The code is licensed under AGPL-3.0, and running it yourself costs nothing. You then look after the server, emails and updates yourself. <a href="/open-source">More about open source</a></p></details>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band" aria-labelledby="h-pr-cta">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="h-pr-cta">Start for free, upgrade later</h2>
+      <p>All you need is an email address. Switch on Pro when your team grows.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="/features">All features</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>
+{{template "site-bottom" .}}{{end}}
