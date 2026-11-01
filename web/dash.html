@@ -1,0 +1,42 @@
+{{/* Gemeinsames Dashboard-Layout. Seiten: {{template "dash-top" .}} ... {{template "dash-bottom" .}}
+     Daten kommen aus a.dashPage(): Title, Heading, Nav, Salon, User, Accent, BookingURL, Saved. */}}
+{{define "dash-top"}}<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{.Title}}</title>
+<link rel="stylesheet" href="/static/dash.css">
+<script src="/static/htmx.min.js" defer></script>
+</head>
+<body class="dash"{{with .Accent}} style="--accent: {{.}}"{{end}}>
+<header class="topbar">
+  <a class="brand" href="/dashboard">Kammzeit</a>
+  <span class="salon-name">{{.Salon.Name}}</span>
+  <nav aria-label="Hauptmenü">
+    <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>Kalender</a>
+    <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>Kunden</a>
+    <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>Leistungen</a>
+    <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>Team</a>
+    <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>Einstellungen</a>
+    <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>{{if .Salon.Pro}}Pro{{else}}Abo{{end}}</a>
+  </nav>
+  <div class="topbar-end">
+    <a href="{{.BookingURL}}" target="_blank" rel="noopener">Buchungsseite</a>
+    <form method="post" action="/logout"><button class="link" type="submit">Abmelden</button></form>
+  </div>
+</header>
+<main class="dash-main">
+{{if .Heading}}<h1>{{.Heading}}</h1>{{end}}
+{{if .Saved}}<p class="flash" role="status">Gespeichert.</p>{{end}}
+{{end}}
+
+{{define "dash-bottom"}}</main>
+</body>
+</html>{{end}}
+
+{{define "dash-error"}}{{template "dash-top" .}}
+<p>{{.Message}}</p>
+<p><a href="/dashboard">Zurück zum Kalender</a></p>
+{{template "dash-bottom" .}}{{end}}

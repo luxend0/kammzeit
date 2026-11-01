@@ -18,12 +18,6 @@ import (
 // ponytail: festes 15-Minuten-Raster, pro Salon einstellbar erst bei Bedarf.
 const slotStep = 15 * time.Minute
 
-type salon struct {
-	ID                              int64
-	Slug, Name, Email, Accent, Plan string
-	Loc                             *time.Location
-}
-
 type service struct {
 	ID, PriceCents int64
 	Name           string
@@ -53,13 +47,16 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("GET /impressum", a.static("impressum", "Impressum"))
 	mux.HandleFunc("GET /datenschutz", a.static("datenschutz", "Datenschutz"))
 	mux.HandleFunc("GET /_tls/allow", a.tlsAllow)
-	// ponytail: Admin (Kalender, Kundenkartei, Leistungen pflegen) kommt mit dem
-	// Login. Bis dahin bewusst gesperrt statt ungeschützt.
-	admin := func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Der Admin-Bereich folgt (Login fehlt noch).", http.StatusNotImplemented)
-	}
-	mux.HandleFunc("/admin", admin)
-	mux.HandleFunc("/admin/", admin)
+	mux.HandleFunc("GET /agb", a.static("agb", "AGB"))
+	mux.HandleFunc("GET /avv", a.static("avv", "Auftragsverarbeitung"))
+	// Jeder Bereich registriert seine Routen in seiner eigenen Datei.
+	a.routesAuth(mux)      // auth.go: /login, /logout
+	a.routesSignup(mux)    // signup.go: /registrieren
+	a.routesCalendar(mux)  // dash_calendar.go: /dashboard, /dashboard/termine
+	a.routesCustomers(mux) // dash_customers.go: /dashboard/kunden
+	a.routesCatalog(mux)   // dash_catalog.go: /dashboard/leistungen, /dashboard/team
+	a.routesSettings(mux)  // dash_settings.go: /dashboard/einstellungen
+	a.routesBilling(mux)   // billing.go: /dashboard/abo, /stripe/webhook
 	return securityHeaders(mux)
 }
 
@@ -142,20 +139,17 @@ var hexColor = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 // salonFor sucht den Salon zum Host. Antwortet selbst mit 404, wenn es keinen gibt.
 func (a *app) salonFor(w http.ResponseWriter, r *http.Request) *salon {
 	var row *sql.Row
-	const cols = `SELECT id, slug, name, email, accent, plan, timezone FROM salons `
 	if a.cfg.SingleTenant {
-		row = a.db.QueryRow(cols + `ORDER BY id LIMIT 1`)
+		row = a.db.QueryRow(salonCols + `ORDER BY id LIMIT 1`)
 	} else {
 		slug, _ := tenantSlug(r.Host, a.cfg.BaseDomain)
 		if slug == "" {
 			a.fail(w, nil, http.StatusNotFound, "Diesen Salon gibt es nicht.")
 			return nil
 		}
-		row = a.db.QueryRow(cols+`WHERE slug = ?`, slug)
+		row = a.db.QueryRow(salonCols+`WHERE slug = ?`, slug)
 	}
-	var s salon
-	var tz string
-	err := row.Scan(&s.ID, &s.Slug, &s.Name, &s.Email, &s.Accent, &s.Plan, &tz)
+	s, err := scanSalon(row)
 	if errors.Is(err, sql.ErrNoRows) {
 		a.fail(w, nil, http.StatusNotFound, "Diesen Salon gibt es nicht.")
 		return nil
@@ -164,11 +158,7 @@ func (a *app) salonFor(w http.ResponseWriter, r *http.Request) *salon {
 		a.serverError(w, nil, err)
 		return nil
 	}
-	s.Loc = location(tz)
-	if !hexColor.MatchString(s.Accent) {
-		s.Accent = "#3b82f6"
-	}
-	return &s
+	return s
 }
 
 func (a *app) home(w http.ResponseWriter, r *http.Request) {

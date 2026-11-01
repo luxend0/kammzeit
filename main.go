@@ -36,7 +36,8 @@ type config struct {
 	BaseDomain   string // Salons laufen unter <slug>.<BaseDomain>
 	DBPath       string
 	SingleTenant bool   // Selbsthosten: genau ein Salon, keine Subdomains
-	PublicURL    string // für Links in Mails, "{slug}" wird ersetzt
+	PublicURL    string // Buchungsseite eines Salons, "{slug}" wird ersetzt
+	SiteURL      string // Hauptseite (Landing, Login, Dashboard)
 }
 
 type app struct {
@@ -65,6 +66,11 @@ func loadConfig() config {
 		def = "http://localhost:" + c.Port
 	}
 	c.PublicURL = strings.TrimRight(env("PUBLIC_URL", def), "/")
+	site := "https://" + c.BaseDomain
+	if c.SingleTenant {
+		site = c.PublicURL
+	}
+	c.SiteURL = strings.TrimRight(env("SITE_URL", site), "/")
 	return c
 }
 
@@ -73,6 +79,13 @@ func main() {
 	db, err := openDB(cfg.DBPath)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if len(os.Args) > 2 && os.Args[1] == "session" {
+		// Für Tests und Notfälle auf dem Server: gibt einen Session-Cookie-Wert aus.
+		if err := printSession(db, os.Args[2]); err != nil {
+			log.Fatal(err)
+		}
+		return
 	}
 	if len(os.Args) > 1 && os.Args[1] == "demo" {
 		if err := seedDemo(db); err != nil {
@@ -110,6 +123,9 @@ func openDB(path string) (*sql.DB, error) {
 	db.SetMaxOpenConns(1)
 	if _, err := db.Exec(schemaSQL); err != nil {
 		return nil, fmt.Errorf("schema: %w", err)
+	}
+	if err := migrate(db); err != nil {
+		return nil, err
 	}
 	return db, nil
 }
@@ -273,7 +289,8 @@ func seedDemo(db *sql.DB) error {
 		return err
 	}
 	defer tx.Rollback()
-	res, err := tx.Exec(`INSERT INTO salons (slug, name) VALUES ('demo', 'Salon Demo')`)
+	res, err := tx.Exec(`INSERT INTO salons (slug, name, plan, address, phone, about)
+		VALUES ('demo', 'Salon Demo', 'pro', 'Musterstraße 1' || char(10) || '55469 Simmern', '06761 000000', 'Dies ist ein Beispiel-Salon zum Ausprobieren.')`)
 	if err != nil {
 		return err
 	}
@@ -302,9 +319,32 @@ func seedDemo(db *sql.DB) error {
 			}
 		}
 	}
+	if _, err := tx.Exec(`INSERT INTO staff_services (staff_id, service_id)
+		SELECT st.id, sv.id FROM staff st JOIN services sv ON sv.salon_id = st.salon_id WHERE st.salon_id = ?`, salonID); err != nil {
+		return err
+	}
+	if _, err := tx.Exec(`INSERT INTO users (salon_id, email) VALUES (?, 'demo@example.com')`, salonID); err != nil {
+		return err
+	}
 	if err := tx.Commit(); err != nil {
 		return err
 	}
-	log.Print("Salon demo angelegt")
+	log.Print("Salon demo angelegt (Login: demo@example.com)")
+	return nil
+}
+
+// printSession legt eine Session für das Konto an und gibt den Cookie-Wert aus
+// (kz_session=...). Nur über die Kommandozeile, also nur mit Server-Zugang.
+func printSession(db *sql.DB, email string) error {
+	var userID int64
+	if err := db.QueryRow(`SELECT id FROM users WHERE email = ?`, email).Scan(&userID); err != nil {
+		return fmt.Errorf("Konto %s: %w", email, err)
+	}
+	token := randomToken()
+	if _, err := db.Exec(`INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
+		hashToken(token), userID, time.Now().Add(sessionTTL).Unix()); err != nil {
+		return err
+	}
+	fmt.Println(sessionCookie + "=" + token)
 	return nil
 }
