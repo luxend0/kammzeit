@@ -53,7 +53,7 @@ func (a *app) routesBilling(mux *http.ServeMux) {
 
 func (a *app) aboPage(w http.ResponseWriter, r *http.Request, c *dctx) {
 	cfg := stripeEnv()
-	d := a.dashPage(c, r, "abo", "Abo")
+	d := a.dashPage(c, r, "abo", tr(a.langFor(r), "Abo"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Online"] = cfg.online()
 	d["Portal"] = cfg.key != "" && c.Salon.StripeCustomerID != ""
@@ -62,9 +62,10 @@ func (a *app) aboPage(w http.ResponseWriter, r *http.Request, c *dctx) {
 }
 
 func (a *app) aboCheckout(w http.ResponseWriter, r *http.Request, c *dctx) {
+	lang := a.langFor(r)
 	r.Body = http.MaxBytesReader(w, r.Body, 4<<10)
 	if err := r.ParseForm(); err != nil {
-		a.dashError(w, r, c, http.StatusBadRequest, "Das Formular war unvollständig.")
+		a.dashError(w, r, c, http.StatusBadRequest, tr(lang, "Das Formular war unvollständig."))
 		return
 	}
 	cfg := stripeEnv()
@@ -74,7 +75,7 @@ func (a *app) aboCheckout(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	price := map[string]string{"monat": cfg.monthly, "jahr": cfg.yearly}[r.PostFormValue("intervall")]
 	if price == "" {
-		a.dashError(w, r, c, http.StatusBadRequest, "Bitte monatlich oder jährlich wählen.")
+		a.dashError(w, r, c, http.StatusBadRequest, tr(lang, "Bitte monatlich oder jährlich wählen."))
 		return
 	}
 	id := strconv.FormatInt(c.Salon.ID, 10)
@@ -87,7 +88,7 @@ func (a *app) aboCheckout(w http.ResponseWriter, r *http.Request, c *dctx) {
 		"subscription_data[metadata][salon_id]": {id},
 		"success_url":                           {a.siteURLFor(r) + "/dashboard/abo?erfolg"},
 		"cancel_url":                            {a.siteURLFor(r) + "/dashboard/abo"},
-		"locale":                                {"de"},
+		"locale":                                {stripeLocale(lang)},
 	}
 	if c.Salon.StripeCustomerID != "" {
 		form.Set("customer", c.Salon.StripeCustomerID)
@@ -105,8 +106,16 @@ func (a *app) aboPortal(w http.ResponseWriter, r *http.Request, c *dctx) {
 	a.stripeRedirect(w, r, c, "/v1/billing_portal/sessions", url.Values{
 		"customer":   {c.Salon.StripeCustomerID},
 		"return_url": {a.siteURLFor(r) + "/dashboard/abo"},
-		"locale":     {"de"},
+		"locale":     {stripeLocale(a.langFor(r))},
 	})
+}
+
+// stripeLocale: Sprache der Stripe-Seiten. Englisch britisch wie die Seite (EU-Markt, Datum "3 November").
+func stripeLocale(lang string) string {
+	if lang == "en" {
+		return "en-GB"
+	}
+	return "de"
 }
 
 // stripeRedirect legt eine Checkout- oder Portal-Session an und leitet auf deren URL weiter.
@@ -116,7 +125,7 @@ func (a *app) stripeRedirect(w http.ResponseWriter, r *http.Request, c *dctx, pa
 	}
 	if err := stripeCall(http.MethodPost, path, form, &s); err != nil || s.URL == "" {
 		log.Printf("Stripe %s (Salon %d): %v", path, c.Salon.ID, err)
-		a.dashError(w, r, c, http.StatusBadGateway, "Die Zahlungsseite ist gerade nicht erreichbar. Bitte später noch einmal versuchen.")
+		a.dashError(w, r, c, http.StatusBadGateway, tr(a.langFor(r), "Die Zahlungsseite ist gerade nicht erreichbar. Bitte später noch einmal versuchen."))
 		return
 	}
 	http.Redirect(w, r, s.URL, http.StatusSeeOther)
