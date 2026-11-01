@@ -1,0 +1,140 @@
+{{/* Leistungen (leist-*) und Team (team-*). Handler: dash_catalog.go */}}
+
+{{define "leist-liste"}}{{template "dash-top" .}}
+{{if .Deactivated}}<p class="flash" role="status">Die Leistung hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.</p>{{end}}
+{{if .Deleted}}<p class="flash" role="status">Gelöscht.</p>{{end}}
+<div class="toolbar">
+  <span class="spacer"></span>
+  <a class="btn" href="/dashboard/leistungen/neu">Neue Leistung</a>
+</div>
+{{if .Services}}
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Name</th><th class="num">Dauer</th><th class="num">Preis</th><th>Status</th><th>Reihenfolge</th></tr></thead>
+<tbody>
+{{range .Services}}<tr>
+  <td><a href="/dashboard/leistungen/{{.ID}}">{{.Name}}</a></td>
+  <td class="num nowrap">{{.Duration}} Min.</td>
+  <td class="num nowrap">{{euro .PriceCents}}</td>
+  <td>{{if .Active}}<span class="badge">aktiv</span>{{else}}<span class="badge badge-muted">inaktiv</span>{{end}}</td>
+  <td class="nowrap"><form method="post" action="/dashboard/leistungen/{{.ID}}/verschieben" style="margin:0">
+    <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="hoch" aria-label="{{.Name}} nach oben"{{if .First}} disabled{{end}}>&uarr;</button>
+    <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="runter" aria-label="{{.Name}} nach unten"{{if .Last}} disabled{{end}}>&darr;</button>
+  </form></td>
+</tr>{{end}}
+</tbody>
+</table></div>
+{{else}}
+<p class="empty">Noch keine Leistungen. Lege die erste an, damit Kunden buchen können.</p>
+{{end}}
+{{template "dash-bottom" .}}{{end}}
+
+{{define "leist-form"}}{{template "dash-top" .}}
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{with .F}}
+<form method="post" class="form">
+  <label class="field">Name
+    <input type="text" name="name" value="{{.Name}}" maxlength="80" required></label>
+  <label class="field">Beschreibung <span class="hint">Optional, höchstens 300 Zeichen.</span>
+    <textarea name="beschreibung" maxlength="300">{{.Description}}</textarea></label>
+  <div class="row">
+    <label class="field">Dauer in Minuten
+      <input type="number" name="dauer" value="{{.Duration}}" min="5" max="480" step="5" required></label>
+    <label class="field">Preis in Euro
+      <input type="text" name="preis" value="{{.Price}}" inputmode="decimal" placeholder="25,00" maxlength="12" required></label>
+  </div>
+  <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> Aktiv, online buchbar</label>
+  {{if not .ID}}<p class="muted small">Neue Leistungen bekommen automatisch alle aktiven Mitarbeiter. Ändern kannst du das unter Team.</p>{{end}}
+  <div class="actions">
+    <button class="btn" type="submit">Speichern</button>
+    <a href="/dashboard/leistungen">Abbrechen</a>
+  </div>
+</form>
+{{if .ID}}
+<h2>Löschen</h2>
+<form method="post" action="/dashboard/leistungen/{{.ID}}/loeschen" class="actions">
+  <label class="check"><input type="checkbox" name="ok" value="1" required> Ja, löschen</label>
+  <button class="btn btn-danger btn-small" type="submit">Leistung löschen</button>
+</form>
+<p class="muted small">Hat die Leistung schon Termine, wird sie stattdessen deaktiviert.</p>
+{{end}}
+{{end}}
+{{template "dash-bottom" .}}{{end}}
+
+{{define "team-liste"}}{{template "dash-top" .}}
+{{if .Deactivated}}<p class="flash" role="status">Der Mitarbeiter hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.</p>{{end}}
+{{if .Deleted}}<p class="flash" role="status">Gelöscht.</p>{{end}}
+<div class="toolbar">
+  {{if .ShowLimit}}<span class="muted">Aktive Mitarbeiter im Gratis-Plan: höchstens {{.Limit}}. Mehr mit <a href="/dashboard/abo">Pro</a>.</span>{{end}}
+  <span class="spacer"></span>
+  <a class="btn" href="/dashboard/team/neu">Neuer Mitarbeiter</a>
+</div>
+{{if .Staff}}
+<div class="table-wrap"><table class="table">
+<thead><tr><th>Name</th><th>Arbeitszeiten</th><th class="num">Leistungen</th><th>Status</th></tr></thead>
+<tbody>
+{{range .Staff}}<tr>
+  <td><a href="/dashboard/team/{{.ID}}">{{.Name}}</a></td>
+  <td>{{range .Hours}}<div class="nowrap">{{.}}</div>{{else}}<span class="muted">keine</span>{{end}}</td>
+  <td class="num">{{.Services}}</td>
+  <td>{{if .Active}}<span class="badge">aktiv</span>{{else}}<span class="badge badge-muted">inaktiv</span>{{end}}</td>
+</tr>{{end}}
+</tbody>
+</table></div>
+{{else}}
+<p class="empty">Noch keine Mitarbeiter. Ohne aktiven Mitarbeiter ist nichts buchbar.</p>
+{{end}}
+{{template "dash-bottom" .}}{{end}}
+
+{{define "team-form"}}{{template "dash-top" .}}
+<style>
+.team-hours { border-collapse: collapse; margin: 0 0 8px; }
+.team-hours th, .team-hours td { padding: 4px 16px 4px 0; text-align: left; vertical-align: middle; }
+.team-hours thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.team-hours input[type=time] { display: inline-block; width: 7.5em; margin: 0; }
+</style>
+{{if .LimitHit}}<p class="error" role="alert">Aktive Mitarbeiter im Gratis-Plan: höchstens {{.Limit}}.
+  <a href="/dashboard/abo">Zu Pro wechseln</a>{{if .F}} oder einen anderen Mitarbeiter deaktivieren{{end}}.</p>
+{{if not .F}}<p><a href="/dashboard/team">Zurück zum Team</a></p>{{end}}{{end}}
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{with .F}}
+<form method="post" class="form form-wide">
+  <div class="form">
+    <label class="field">Name
+      <input type="text" name="name" value="{{.Name}}" maxlength="60" required></label>
+    <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> Aktiv, online buchbar</label>
+  </div>
+  {{if not .ID}}<p class="muted small">Leistungen und Arbeitszeiten sind ein Vorschlag. Pass sie vor dem Speichern an.</p>{{end}}
+
+  <h2>Leistungen</h2>
+  {{range .Services}}<label class="check"><input type="checkbox" name="leistung" value="{{.ID}}"{{if .Checked}} checked{{end}}> {{.Name}}{{if not .Active}} <span class="muted">(inaktiv)</span>{{end}}</label>
+  {{else}}<p class="muted">Noch keine Leistungen. <a href="/dashboard/leistungen/neu">Leistung anlegen</a></p>{{end}}
+
+  <h2>Arbeitszeiten</h2>
+  <p class="muted small">Leer heißt frei. Der zweite Block ist für eine Pause, z. B. 9:00-12:00 und 13:00-18:00.</p>
+  <div class="table-wrap"><table class="team-hours">
+    <thead><tr><th>Tag</th><th>Block 1</th><th>Block 2</th></tr></thead>
+    <tbody>
+    {{range .Days}}<tr>
+      <th scope="row">{{.Label}}</th>
+      <td class="nowrap"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{.Label}}, Block 1, Beginn">
+        - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{.Label}}, Block 1, Ende"></td>
+      <td class="nowrap"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{.Label}}, Block 2, Beginn">
+        - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{.Label}}, Block 2, Ende"></td>
+    </tr>{{end}}
+    </tbody>
+  </table></div>
+  <div class="actions">
+    <button class="btn" type="submit">Speichern</button>
+    <a href="/dashboard/team">Abbrechen</a>
+  </div>
+</form>
+{{if .ID}}
+<h2>Löschen</h2>
+<form method="post" action="/dashboard/team/{{.ID}}/loeschen" class="actions">
+  <label class="check"><input type="checkbox" name="ok" value="1" required> Ja, löschen</label>
+  <button class="btn btn-danger btn-small" type="submit">Mitarbeiter löschen</button>
+</form>
+<p class="muted small">Hat der Mitarbeiter schon Termine, wird er stattdessen deaktiviert.</p>
+{{end}}
+{{end}}
+{{template "dash-bottom" .}}{{end}}
