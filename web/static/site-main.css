@@ -98,3 +98,4 @@
 .pr-tax { margin-top: 1.75rem; font-weight: 700; }
 .pr-terms-more { margin-top: 2rem; }
 .section-alt .card .icon-lg { margin-bottom: .5rem; }
+.feature-list + .link-more { margin-top: 2rem; }
