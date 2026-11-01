@@ -20,13 +20,14 @@ func TestParseSettings(t *testing.T) {
 		"address": {"Hauptstr. 1\r\n55469 Simmern"}, "website": {"http://mueller.de"},
 		"imprint_url": {"https://mueller.de/impressum"}, "about": {"Seit 1990."}, "accent": {"#AABBCC"},
 		"timezone": {"Europe/Vienna"}, "min_notice": {"1440"}, "cancel_notice": {"2880"}, "horizon": {"180"},
+		"lang": {"de"},
 	}
 	s, errs := parseSettings(base)
 	if len(errs) != 0 {
 		t.Fatalf("gültiges Formular: %v", errs)
 	}
 	if s.Accent != "#aabbcc" || s.Address != "Hauptstr. 1\n55469 Simmern" || s.TZ != "Europe/Vienna" ||
-		s.MinNoticeMin != 1440 || s.CancelNoticeMin != 2880 || s.HorizonDays != 180 || s.Email != "Info@Mueller.de" {
+		s.MinNoticeMin != 1440 || s.CancelNoticeMin != 2880 || s.HorizonDays != 180 || s.Email != "Info@Mueller.de" || s.Lang != "de" {
 		t.Fatalf("falsch übernommen: %+v", s)
 	}
 
@@ -73,6 +74,10 @@ func TestParseSettings(t *testing.T) {
 		{"cancel_notice", "30", true},
 		{"horizon", "14", false},
 		{"horizon", "365", true},
+		{"lang", "en", false},
+		{"lang", "fr", true},
+		{"lang", "", true},
+		{"lang", "EN", true},
 	}
 	// Ohne Schema: https:// davor, auch beim Impressum.
 	f := maps.Clone(base)
@@ -189,7 +194,7 @@ func TestSettingsSaveExportDelete(t *testing.T) {
 	valid := url.Values{
 		"name": {"Alpha Neu"}, "email": {""}, "phone": {"0123"}, "address": {"Weg 1"}, "website": {"alpha.de"},
 		"imprint_url": {""}, "about": {""}, "accent": {"#112233"}, "timezone": {"Europe/Vienna"},
-		"min_notice": {"30"}, "cancel_notice": {"1440"}, "horizon": {"90"},
+		"min_notice": {"30"}, "cancel_notice": {"1440"}, "horizon": {"90"}, "lang": {"en"},
 	}
 
 	// Ungültig: 422, Eingaben bleiben im Formular, nichts gespeichert.
@@ -216,10 +221,10 @@ func TestSettingsSaveExportDelete(t *testing.T) {
 	}
 	sa, _ := a.loadSalon(aID)
 	sb, _ := a.loadSalon(bID)
-	if sa.Name != "Alpha Neu" || sa.Accent != "#112233" || sa.TZ != "Europe/Vienna" || sa.HorizonDays != 90 || sa.Website != "https://alpha.de" {
+	if sa.Name != "Alpha Neu" || sa.Accent != "#112233" || sa.TZ != "Europe/Vienna" || sa.HorizonDays != 90 || sa.Website != "https://alpha.de" || sa.Lang != "en" {
 		t.Fatalf("nicht gespeichert: %+v", sa)
 	}
-	if sb.Name != "Salon beta" || sb.TZ != "Europe/Berlin" {
+	if sb.Name != "Salon beta" || sb.TZ != "Europe/Berlin" || sb.Lang != "de" {
 		t.Fatalf("fremder Salon verändert: %+v", sb)
 	}
 	// Meldung: "Gespeichert." aus dem Layout, nach Umstellung auf .SavedMsg der feste Text.
@@ -295,5 +300,87 @@ func TestSettingsSaveExportDelete(t *testing.T) {
 		if list, _ := data[key].([]any); len(list) != 1 {
 			t.Errorf("beta %s: %d Einträge, erwartet 1", key, len(list))
 		}
+	}
+}
+
+// Dashboard auf der englischen Domain: Texte und Fehler auf Englisch, Sprache der
+// Buchungsseite speichern (Adresse wechselt auf die .com-Domain), News an- und abmelden.
+func TestSettingsEnglish(t *testing.T) {
+	a := einstApp(t)
+	a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
+	aID, aCookie := einstSeed(t, a.db, "alpha")
+	do := func(method, path, origin string, form url.Values) *httptest.ResponseRecorder {
+		t.Helper()
+		var body io.Reader
+		if form != nil {
+			body = strings.NewReader(form.Encode())
+		}
+		r := httptest.NewRequest(method, "https://kammzeit-en.test"+path, body)
+		if form != nil {
+			r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
+		r.Header.Set("Origin", origin)
+		r.AddCookie(&http.Cookie{Name: sessionCookie, Value: aCookie})
+		w := httptest.NewRecorder()
+		a.routes().ServeHTTP(w, r)
+		return w
+	}
+	const own = "https://kammzeit-en.test"
+
+	body := do("GET", "/dashboard/einstellungen", own, nil).Body.String()
+	for _, want := range []string{`<html lang="en">`, "<title>Settings - Kammzeit</title>", "Booking page language", "Kammzeit news by email",
+		"Subscribe", "Minimum notice for online bookings", "Germany (Berlin)", "Log out", `href="/imprint"`, `data-copied="Copied"`,
+		"https://alpha.kammzeit.test/"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("englische Einstellungen: %q fehlt", want)
+		}
+	}
+	for _, de := range []string{"Speichern", "Buchungsregeln", "Abmelden", "Sprache der Buchungsseite"} {
+		if strings.Contains(body, de) {
+			t.Errorf("englische Einstellungen: deutscher Text %q", de)
+		}
+	}
+
+	form := url.Values{"name": {"Alpha"}, "accent": {"#112233"}, "timezone": {"Europe/Berlin"},
+		"min_notice": {"0"}, "cancel_notice": {"0"}, "horizon": {"30"}, "lang": {"fr"}, "website": {"javascript:x"}}
+	w := do("POST", "/dashboard/einstellungen", own, form)
+	if w.Code != http.StatusUnprocessableEntity || !strings.Contains(w.Body.String(), "Please choose a language from the list.") ||
+		!strings.Contains(w.Body.String(), "Please enter a valid web address") {
+		t.Fatalf("ungültige Sprache: Status %d", w.Code)
+	}
+	form.Set("lang", "en")
+	form.Set("website", "")
+	if w := do("POST", "/dashboard/einstellungen", own, form); w.Code != http.StatusSeeOther {
+		t.Fatalf("Speichern: Status %d", w.Code)
+	}
+	if s, _ := a.loadSalon(aID); s.Lang != "en" {
+		t.Fatalf("Sprache nicht gespeichert: %q", s.Lang)
+	}
+	body = do("GET", "/dashboard/einstellungen?gespeichert=einstellungen", own, nil).Body.String()
+	if !strings.Contains(body, "https://alpha.kammzeit-en.test/") || !strings.Contains(body, "Settings saved.") {
+		t.Errorf("nach Sprachwechsel: .com-Adresse oder Meldung fehlt")
+	}
+
+	// News: an -> Bestätigungsmail (Meldung), aus -> abbestellt, Unsinn -> 400, fremde Herkunft -> 403.
+	w = do("POST", "/dashboard/einstellungen/news", own, url.Values{"news": {"an"}})
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != "/dashboard/einstellungen?gespeichert=news-unterwegs" {
+		t.Fatalf("News an: %d %q", w.Code, w.Header().Get("Location"))
+	}
+	if body := do("GET", w.Header().Get("Location"), own, nil).Body.String(); !strings.Contains(body, "The confirmation email is on its way.") {
+		t.Errorf("Meldung nach News an fehlt")
+	}
+	if w := do("POST", "/dashboard/einstellungen/news", own, url.Values{"news": {"aus"}}); w.Header().Get("Location") != "/dashboard/einstellungen?gespeichert=news-aus" {
+		t.Errorf("News aus: %d %q", w.Code, w.Header().Get("Location"))
+	}
+	if w := do("POST", "/dashboard/einstellungen/news", own, url.Values{"news": {"x"}}); w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "The form was incomplete.") {
+		t.Errorf("News Unsinn: %d", w.Code)
+	}
+	if w := do("POST", "/dashboard/einstellungen/news", "https://evil.example", url.Values{"news": {"an"}}); w.Code != http.StatusForbidden {
+		t.Errorf("News fremde Herkunft: %d", w.Code)
+	}
+
+	// Konto löschen auf Englisch, falscher Slug.
+	if w := do("POST", "/dashboard/einstellungen/loeschen", own, url.Values{"slug": {"x"}}); !strings.Contains(w.Body.String(), "The address you typed does not match.") {
+		t.Errorf("Löschen: englische Meldung fehlt")
 	}
 }

@@ -1,10 +1,11 @@
 {{/* Gemeinsames Dashboard-Layout. Seiten: {{template "dash-top" .}} ... {{template "dash-bottom" .}}
      Daten kommen aus a.dashPage(): Title, Heading, Lead, Icon, Nav, Salon, User, Accent, OnAccent, BookingURL, Saved.
      SavedMsg setzt der Handler selbst (konkrete Erfolgsmeldung nach ?gespeichert), sonst "Gespeichert.".
+     Sprache: .Lang (Domain). Heading übersetzt dashPage; Lead und SavedMsg (deutscher Text) übersetzt das Layout.
      Aus Heading (+ Lead, Icon) baut das Layout den Seitenkopf .page-head. Wer einen eigenen Kopf mit
      Aktionen braucht: d["Heading"] = "" und <div class="page-head">...</div> als erstes Element (siehe dash.css). */}}
 {{define "dash-top"}}<!doctype html>
-<html lang="de">
+<html lang="{{.Lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,29 +20,29 @@
 {{/* Bewusst ohne die Akzentfarbe des Salons: das Dashboard nutzt die Kammzeit-Palette aus dash.css.
      Accent/OnAccent stehen für Vorschauen bereit (z. B. Einstellungen). */}}
 <body class="dash">
-<a class="skip" href="#inhalt">Zum Inhalt</a>
+<a class="skip" href="#inhalt">{{t .Lang "Zum Inhalt"}}</a>
 <header class="topbar">
   <div class="topbar-in">
     <a class="brand" href="/dashboard"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34"><span class="brand-text"><span class="brand-word">Kammzeit</span><span class="salon-name">{{.Salon.Name}}</span></span></a>
-    <nav class="topnav" aria-label="Hauptmenü">
-      <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>{{template "dash-icon" "kalender"}}Kalender</a>
-      <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>{{template "dash-icon" "kartei"}}Kunden</a>
-      <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>{{template "dash-icon" "schere"}}Leistungen</a>
-      <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>{{template "dash-icon" "team"}}Team</a>
-      <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>{{template "dash-icon" "farbe"}}Einstellungen</a>
-      <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>{{template "dash-icon" "pro"}}Abo</a>
+    <nav class="topnav" aria-label="{{t .Lang "Hauptmenü"}}">
+      <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>{{template "dash-icon" "kalender"}}{{t .Lang "Kalender"}}</a>
+      <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>{{template "dash-icon" "kartei"}}{{t .Lang "Kunden"}}</a>
+      <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>{{template "dash-icon" "schere"}}{{t .Lang "Leistungen"}}</a>
+      <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>{{template "dash-icon" "team"}}{{t .Lang "Team"}}</a>
+      <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>{{template "dash-icon" "farbe"}}{{t .Lang "Einstellungen"}}</a>
+      <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>{{template "dash-icon" "pro"}}{{t .Lang "Abo"}}</a>
     </nav>
     <div class="topbar-end">
-      <a href="{{.BookingURL}}" target="_blank" rel="noopener">{{template "dash-icon" "link"}}<span class="topbar-label">Buchungsseite</span></a>
-      <form method="post" action="/logout"><button class="link" type="submit">Abmelden</button></form>
+      <a href="{{.BookingURL}}" target="_blank" rel="noopener">{{template "dash-icon" "link"}}<span class="topbar-label">{{t .Lang "Buchungsseite"}}</span></a>
+      <form method="post" action="/logout"><button class="link" type="submit">{{t .Lang "Abmelden"}}</button></form>
     </div>
   </div>
 </header>
 <main class="dash-main" id="inhalt" tabindex="-1">
-{{if .Saved}}<p class="flash" role="status">{{or .SavedMsg "Gespeichert."}}</p>{{end}}
+{{if .Saved}}<p class="flash" role="status">{{t .Lang (or .SavedMsg "Gespeichert.")}}</p>{{end}}
 {{if .Heading}}<div class="page-head">
   {{with .Icon}}<img class="page-head-icon" src="/static/img/icons/{{.}}.svg" width="48" height="48" alt="">{{end}}
-  <div class="page-head-text"><h1>{{.Heading}}</h1>{{with .Lead}}<p>{{.}}</p>{{end}}</div>
+  <div class="page-head-text"><h1>{{.Heading}}</h1>{{with .Lead}}<p>{{t $.Lang .}}</p>{{end}}</div>
 </div>{{end}}
 {{end}}
 
@@ -54,5 +55,5 @@
 
 {{define "dash-error"}}{{template "dash-top" .}}
 <p>{{.Message}}</p>
-<p><a href="/dashboard">Zurück zum Kalender</a></p>
+<p><a href="/dashboard">{{t .Lang "Zurück zum Kalender"}}</a></p>
 {{template "dash-bottom" .}}{{end}}

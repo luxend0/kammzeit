@@ -152,7 +152,10 @@ var dashIcons = map[string]string{"kalender": "kalender", "kunden": "kartei", "l
 // nav = aktiver Menüpunkt: kalender, kunden, leistungen, team, einstellungen, abo.
 // Nach ?gespeichert zeigt das Layout d["SavedMsg"] (vom Handler gesetzt) oder "Gespeichert.".
 // Seitenkopf: Heading + Icon, optional d["Lead"] (ein Satz Erklärung unter der Überschrift).
+// title ist der deutsche Text (Schlüssel), übersetzt wird hier; Lead und SavedMsg übersetzt das Layout.
 func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]any {
+	lang := a.langFor(r)
+	title = tr(lang, title)
 	return map[string]any{
 		"Title":      title + " - Kammzeit",
 		"Heading":    title,
@@ -162,17 +165,17 @@ func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]a
 		"User":       c.User,
 		"Accent":     c.Salon.Accent,
 		"OnAccent":   onAccent(c.Salon.Accent),
-		"BookingURL": a.link(c.Salon.Slug, "/"),
+		"BookingURL": a.bookingURL(c.Salon, "/"),
 		"Saved":      r.URL.Query().Has("gespeichert"),
 		"Dashboard":  true,
-		"Lang":       a.langFor(r),
+		"Lang":       lang,
 	}
 }
 
-// dashError zeigt einen Fehler im Dashboard-Layout.
+// dashError zeigt einen Fehler im Dashboard-Layout. msg = deutscher Text (wird übersetzt).
 func (a *app) dashError(w http.ResponseWriter, r *http.Request, c *dctx, status int, msg string) {
 	d := a.dashPage(c, r, "", "Hinweis")
-	d["Message"] = msg
+	d["Message"] = tr(d["Lang"].(string), msg)
 	a.render(w, status, "dash-error", d)
 }
 
