@@ -51,19 +51,19 @@ func TestSiteENMain(t *testing.T) {
 		want       []string
 	}{
 		{"kammzeit-en.test", "/", []string{`<html lang="en">`, alt("en", en+"/"), alt("de", de+"/"), sw(de + "/"), ">Deutsch</a>",
-			`content="en_GB"`, `href="/features"`, `href="/pricing"`, `href="/for/hairdressers"`, `href="/privacy"`, "14.90&nbsp;€", "149&nbsp;€", "reverse charge"}},
+			`content="en_GB"`, `href="/features"`, `href="/pricing"`, `href="/for/hairdressers"`, `href="/privacy"`, "€14.90", "€149", "reverse charge"}},
 		{"kammzeit-en.test", "/features", []string{`<html lang="en">`, "<title>Features - Kammzeit</title>", `<link rel="canonical" href="` + en + `/features">`,
 			alt("en", en+"/features"), alt("de", de+"/funktionen"), sw(de + "/funktionen"), `aria-current="page">Features`, "shown in German"}},
 		{"kammzeit-en.test", "/pricing", []string{"<title>Pricing - Kammzeit</title>", alt("de", de+"/preise"), sw(de + "/preise"),
-			`aria-current="page">Pricing`, "14.90&nbsp;€", "149&nbsp;€", "§&nbsp;19&nbsp;UStG", "reverse charge procedure may apply", `<table class="compare">`}},
+			`aria-current="page">Pricing`, "€14.90", "€149", "§&nbsp;19&nbsp;UStG", "reverse charge procedure may apply", `<table class="compare">`}},
 		{"kammzeit.test", "/", []string{`<html lang="de">`, alt("de", de+"/"), alt("en", en+"/"), sw(en + "/?lang=en"), ">English</a>", `content="de_DE"`}},
 		{"kammzeit.test", "/funktionen", []string{`<html lang="de">`, alt("en", en+"/features"), sw(en + "/features"), `aria-current="page">Funktionen`}},
 		{"kammzeit.test", "/preise", []string{alt("en", en+"/pricing"), sw(en + "/pricing"), `href="/datenschutz"`}},
 	}
 	descRe := regexp.MustCompile(`<meta name="description" content="([^"]*)">`)
 	linkRe := regexp.MustCompile(`(?:href|src)="(/[^"#?]*)`)
-	// ponytail: englische Seiten anderer Bereiche gibt es erst nach dem Zusammenführen.
-	elsewhere := regexp.MustCompile(`^/(for/|help|open-source|security|faq|contact|about|guides|imprint|privacy|terms|dpa)`)
+	// ponytail: die englischen Hilfeseiten gibt es erst nach dem Zusammenführen.
+	elsewhere := regexp.MustCompile(`^/(help|open-source|security|faq)`)
 	german := regexp.MustCompile(`\b(und|der|die|das|für|mit|Kostenlos|Anmelden|Funktionen|Preise|Mitarbeiter|Kunden)\b`)
 	tags := regexp.MustCompile(`(?s)<[^>]*>`)
 	checked := map[string]bool{}
@@ -77,7 +77,7 @@ func TestSiteENMain(t *testing.T) {
 				t.Errorf("%s%s enthält nicht %q", c.host, c.path, n)
 			}
 		}
-		for _, bad := range []string{"—", "<script", "{{", "demo.kammzeit"} {
+		for _, bad := range []string{"\u2014", "<script", "{{", "demo.kammzeit"} {
 			if strings.Contains(body, bad) && (c.host == "kammzeit-en.test" || bad != "demo.kammzeit") {
 				t.Errorf("%s%s enthält %q", c.host, c.path, bad)
 			}
