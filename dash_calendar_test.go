@@ -280,3 +280,243 @@ func TestKalLanes(t *testing.T) {
 		t.Fatalf("Spuren falsch: %+v", bs)
 	}
 }
+
+func TestKalVerschieben(t *testing.T) {
+	a := kalTestApp(t)
+	f := kalSeed(t, a, "eins", "Europe/Berlin")
+	res, _ := a.db.Exec(`INSERT INTO staff (salon_id, name) VALUES (?, 'Ben')`, f.salon)
+	benID, _ := res.LastInsertId()
+	at := func(h, m int) time.Time { return time.Date(2030, 3, 4, h, m, 0, 0, f.loc) }
+	id := f.appt(t, a, at(10, 0), "booked") // 10:00-11:00 bei Anna
+	f.appt(t, a, at(12, 0), "booked")       // 12:00-13:00 bei Anna
+	cancelled := f.appt(t, a, at(14, 0), "cancelled")
+	a.db.Exec(`UPDATE appointments SET reminder_sent_at = 1 WHERE id = ?`, id)
+	move := func(id int64, staff int64, zeit string) *httptest.ResponseRecorder {
+		return kalDo(t, a, f.cookie, "POST", fmt.Sprintf("/dashboard/termine/%d/verschieben", id), url.Values{
+			"mitarbeiter": {fmt.Sprint(staff)}, "tag": {"2030-03-04"}, "zeit": {zeit}})
+	}
+	for _, c := range []struct {
+		zeit  string
+		staff int64
+		want  int
+	}{
+		{"11:30", f.staff, http.StatusConflict}, // ragt in 12:00
+		{"12:30", f.staff, http.StatusConflict}, // liegt im Termin
+		{"10:02", f.staff, http.StatusBadRequest},
+		{"10:30", f.staff, http.StatusSeeOther}, // überschneidet nur sich selbst
+		{"12:30", benID, http.StatusSeeOther},   // bei Ben ist 12:30 frei
+		{"14:00", f.staff, http.StatusSeeOther}, // abgesagter Termin blockiert nicht
+	} {
+		if rec := move(id, c.staff, c.zeit); rec.Code != c.want {
+			t.Errorf("verschieben auf %s (Mitarbeiter %d): %d, erwartet %d", c.zeit, c.staff, rec.Code, c.want)
+		}
+	}
+	var start, end, staff int64
+	var reminded sql.NullInt64
+	a.db.QueryRow(`SELECT starts_at, ends_at, staff_id, reminder_sent_at FROM appointments WHERE id = ?`, id).Scan(&start, &end, &staff, &reminded)
+	if start != at(14, 0).Unix() || end != at(15, 0).Unix() || staff != f.staff {
+		t.Fatalf("Termin steht auf %v-%v bei %d", time.Unix(start, 0), time.Unix(end, 0), staff)
+	}
+	if reminded.Valid {
+		t.Fatalf("Erinnerung nicht zurückgesetzt: %v", reminded)
+	}
+	// Erfolgsmeldung kommt aus dem Code, nicht aus der URL.
+	rec := move(id, f.staff, "15:00")
+	if loc := rec.Header().Get("Location"); loc != fmt.Sprintf("/dashboard/termine/%d?gespeichert=verschoben", id) {
+		t.Fatalf("Weiterleitung: %q", loc)
+	}
+	body := kalDo(t, a, f.cookie, "GET", fmt.Sprintf("/dashboard/termine/%d?gespeichert=verschoben", id), nil).Body.String()
+	if !strings.Contains(body, "Termin verschoben auf Mo 4.3. um 15:00 bei Anna-eins.") {
+		t.Errorf("Meldung fehlt")
+	}
+	body = kalDo(t, a, f.cookie, "GET", fmt.Sprintf("/dashboard/termine/%d?gespeichert=%%3Cb%%3Ehallo", id), nil).Body.String()
+	if strings.Contains(body, "hallo") || !strings.Contains(body, "Gespeichert.") {
+		t.Errorf("unbekannter Code: freier Text aus der URL oder keine Standardmeldung")
+	}
+	// Abgesagte Termine lassen sich nicht verschieben.
+	if rec := move(cancelled, f.staff, "16:00"); rec.Code != http.StatusConflict {
+		t.Errorf("abgesagt verschieben: %d", rec.Code)
+	}
+	// Kurzfristig (< 24 h) mit Mail: die Mail ersetzt die Erinnerung.
+	soon := time.Now().In(f.loc).Add(3 * time.Hour).Truncate(5 * time.Minute)
+	near := f.appt(t, a, soon.Add(48*time.Hour), "booked")
+	rec = kalDo(t, a, f.cookie, "POST", fmt.Sprintf("/dashboard/termine/%d/verschieben", near), url.Values{
+		"mitarbeiter": {fmt.Sprint(benID)}, "tag": {soon.Format(time.DateOnly)}, "zeit": {soon.Format("15:04")}, "informieren": {"1"}})
+	if rec.Code != http.StatusSeeOther || !strings.HasSuffix(rec.Header().Get("Location"), "gespeichert=verschoben-mail") {
+		t.Fatalf("kurzfristig: %d %s", rec.Code, rec.Header().Get("Location"))
+	}
+	a.db.QueryRow(`SELECT reminder_sent_at FROM appointments WHERE id = ?`, near).Scan(&reminded)
+	if !reminded.Valid {
+		t.Fatalf("Erinnerung sollte als verschickt gelten")
+	}
+}
+
+func TestKalVerschiebenMandanten(t *testing.T) {
+	a := kalTestApp(t)
+	mine := kalSeed(t, a, "meins", "Europe/Berlin")
+	other := kalSeed(t, a, "fremd", "Europe/Berlin")
+	start := time.Date(2030, 3, 4, 10, 0, 0, 0, mine.loc)
+	foreign := other.appt(t, a, start, "booked")
+	own := mine.appt(t, a, start, "booked")
+	path := func(id int64) string { return fmt.Sprintf("/dashboard/termine/%d/verschieben", id) }
+	if rec := kalDo(t, a, mine.cookie, "GET", path(foreign), nil); rec.Code != http.StatusNotFound {
+		t.Errorf("GET fremd: %d", rec.Code)
+	}
+	if rec := kalDo(t, a, mine.cookie, "POST", path(foreign), url.Values{"mitarbeiter": {fmt.Sprint(mine.staff)},
+		"tag": {"2030-03-05"}, "zeit": {"09:00"}}); rec.Code != http.StatusNotFound {
+		t.Errorf("POST fremd: %d", rec.Code)
+	}
+	// Eigener Termin zu fremdem Mitarbeiter: 404.
+	if rec := kalDo(t, a, mine.cookie, "POST", path(own), url.Values{"mitarbeiter": {fmt.Sprint(other.staff)},
+		"tag": {"2030-03-05"}, "zeit": {"09:00"}}); rec.Code != http.StatusNotFound {
+		t.Errorf("fremder Mitarbeiter: %d", rec.Code)
+	}
+	// Der fremde Termin zur gleichen Zeit blockiert den eigenen Mitarbeiter nicht.
+	if rec := kalDo(t, a, mine.cookie, "POST", path(own), url.Values{"mitarbeiter": {fmt.Sprint(mine.staff)},
+		"tag": {"2030-03-04"}, "zeit": {"10:30"}}); rec.Code != http.StatusSeeOther {
+		t.Errorf("eigener Mitarbeiter: %d", rec.Code)
+	}
+	var fs, fstaff int64
+	a.db.QueryRow(`SELECT starts_at, staff_id FROM appointments WHERE id = ?`, foreign).Scan(&fs, &fstaff)
+	if fs != start.Unix() || fstaff != other.staff {
+		t.Fatalf("fremder Termin verändert")
+	}
+	// Freie Zeiten: fremder Mitarbeiter, fremder Termin oder fremde Leistung liefern keine Vorschläge.
+	a.db.Exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, 1, 540, 1020)`, other.staff)
+	for _, q := range []string{
+		fmt.Sprintf("leistung=%d&mitarbeiter=%d&tag=2030-03-04", mine.service, other.staff),
+		fmt.Sprintf("termin=%d&mitarbeiter=%d&tag=2030-03-04", foreign, mine.staff),
+		fmt.Sprintf("leistung=%d&mitarbeiter=%d&tag=2030-03-04", other.service, mine.staff),
+	} {
+		rec := kalDo(t, a, mine.cookie, "GET", "/dashboard/termine/zeiten?"+q, nil)
+		if rec.Code != 200 || strings.Contains(rec.Body.String(), "kal-z-") || strings.Contains(rec.Body.String(), "fremd") {
+			t.Errorf("zeiten?%s: %d oder fremde Daten", q, rec.Code)
+		}
+	}
+}
+
+func TestKalFreieZeiten(t *testing.T) {
+	a := kalTestApp(t)
+	f := kalSeed(t, a, "eins", "Europe/Berlin")
+	a.db.Exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, 1, 540, 720)`, f.staff) // Mo 9-12
+	f.appt(t, a, time.Date(2030, 3, 4, 10, 0, 0, 0, f.loc), "booked")
+	body := kalDo(t, a, f.cookie, "GET", fmt.Sprintf("/dashboard/termine/zeiten?leistung=%d&mitarbeiter=%d&tag=2030-03-04&zeit=11:00",
+		f.service, f.staff), nil).Body.String()
+	for _, want := range []string{`value="09:00"`, `id="kal-z-1100" class="btn btn-small" name="zeit"`, `aria-pressed="true"`, `name="zeit" value="11:00" step="300"`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("fehlt %s", want)
+		}
+	}
+	for _, not := range []string{`value="09:15"`, `value="10:00"`, `value="10:30"`} { // Termin 10-11 belegt, Leistung 60 Min.
+		if strings.Contains(body, not) {
+			t.Errorf("belegt, aber angeboten: %s", not)
+		}
+	}
+	// Die Formularseite zeigt die Vorschläge direkt (ohne htmx).
+	page := kalDo(t, a, f.cookie, "GET", fmt.Sprintf("/dashboard/termine/neu?leistung=%d&mitarbeiter=%d&tag=2030-03-04", f.service, f.staff), nil).Body.String()
+	if !strings.Contains(page, `id="kal-z-0900"`) {
+		t.Errorf("Formular ohne Vorschläge")
+	}
+}
+
+func TestKalTelefonKunde(t *testing.T) {
+	a := kalTestApp(t)
+	f := kalSeed(t, a, "eins", "Europe/Berlin")
+	a.db.Exec(`UPDATE customers SET phone = '0171 2345678' WHERE id = ?`, f.customer)
+	post := func(zeit string, v url.Values) {
+		t.Helper()
+		v.Set("leistung", fmt.Sprint(f.service))
+		v.Set("mitarbeiter", fmt.Sprint(f.staff))
+		v.Set("tag", "2030-03-04")
+		v.Set("zeit", zeit)
+		if rec := kalDo(t, a, f.cookie, "POST", "/dashboard/termine/neu", v); rec.Code != http.StatusSeeOther {
+			t.Fatalf("Status %d", rec.Code)
+		}
+	}
+	// Gleiche Nummer anders geschrieben, ohne Mail: bestehender Kunde, Name bleibt.
+	post("09:00", url.Values{"name": {"Frau Stamm"}, "telefon": {"0171/234-5678"}})
+	var cust int64
+	a.db.QueryRow(`SELECT customer_id FROM appointments WHERE starts_at = ?`, time.Date(2030, 3, 4, 9, 0, 0, 0, f.loc).Unix()).Scan(&cust)
+	if cust != f.customer {
+		t.Fatalf("Kunde %d, erwartet %d", cust, f.customer)
+	}
+	if n := kalCount(t, a, `SELECT COUNT(*) FROM customers WHERE salon_id = ?`, f.salon); n != 1 {
+		t.Fatalf("%d Kunden, erwartet 1", n)
+	}
+	// Andere Nummer: neuer Kunde. Sehr kurze Nummer: kein Abgleich.
+	post("11:00", url.Values{"name": {"Neu"}, "telefon": {"0171 999999"}})
+	post("13:00", url.Values{"name": {"Kurz"}, "telefon": {"12"}})
+	if n := kalCount(t, a, `SELECT COUNT(*) FROM customers WHERE salon_id = ?`, f.salon); n != 3 {
+		t.Fatalf("%d Kunden, erwartet 3", n)
+	}
+	// Die Nummer eines Kunden in einem anderen Salon zählt nicht.
+	other := kalSeed(t, a, "fremd", "Europe/Berlin")
+	a.db.Exec(`UPDATE customers SET phone = '0160 1111111' WHERE id = ?`, other.customer)
+	post("15:00", url.Values{"name": {"Fremdnummer"}, "telefon": {"0160 1111111"}})
+	if n := kalCount(t, a, `SELECT COUNT(*) FROM appointments WHERE customer_id = ?`, other.customer); n != 0 {
+		t.Fatalf("Termin beim fremden Kunden gelandet")
+	}
+	// Suche auch aus dem Namens- und dem Telefonfeld.
+	for _, q := range []string{"name=Stamm", "telefon=2345678"} {
+		if body := kalDo(t, a, f.cookie, "GET", "/dashboard/termine/kundensuche?"+q, nil).Body.String(); !strings.Contains(body, "Stamm-eins") {
+			t.Errorf("Suche %s findet den Kunden nicht", q)
+		}
+	}
+}
+
+func TestKalErsteSchritte(t *testing.T) {
+	a := kalTestApp(t)
+	f := kalSeed(t, a, "eins", "Europe/Berlin")
+	done := func() []bool {
+		t.Helper()
+		s, err := a.loadSalon(f.salon)
+		if err != nil {
+			t.Fatal(err)
+		}
+		steps, err := a.kalSteps(s)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var out []bool
+		for _, st := range steps {
+			out = append(out, st.Done)
+		}
+		return out
+	}
+	// Wie nach der Registrierung: Mitarbeiter "Team" mit Arbeitszeiten, Beispiel-Leistung inaktiv.
+	a.db.Exec(`UPDATE staff SET name = 'Team' WHERE id = ?`, f.staff)
+	a.db.Exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, 2, 540, 1080)`, f.staff)
+	a.db.Exec(`UPDATE services SET active = 0 WHERE salon_id = ?`, f.salon)
+	if got := fmt.Sprint(done()); got != "[false false false false]" {
+		t.Fatalf("frisch: %s", got)
+	}
+	// Mitarbeiter mit Vornamen (so legt die neue Registrierung ihn an), Leistung aktiv, Adresse + Impressum.
+	a.db.Exec(`UPDATE staff SET name = 'Maria' WHERE id = ?`, f.staff)
+	a.db.Exec(`UPDATE services SET active = 1 WHERE salon_id = ?`, f.salon)
+	a.db.Exec(`UPDATE salons SET address = 'Hauptstr. 1', imprint_url = 'salon.example/impressum' WHERE id = ?`, f.salon)
+	if got := fmt.Sprint(done()); got != "[true true true false]" {
+		t.Fatalf("eingerichtet: %s", got)
+	}
+	// Ohne Arbeitszeiten ist der Team-Schritt offen.
+	a.db.Exec(`DELETE FROM working_hours WHERE staff_id = ?`, f.staff)
+	if got := fmt.Sprint(done()); got != "[true false true false]" {
+		t.Fatalf("ohne Arbeitszeiten: %s", got)
+	}
+	body := kalDo(t, a, f.cookie, "GET", "/dashboard", nil).Body.String()
+	if !strings.Contains(body, "Erste Schritte") || !strings.Contains(body, "2 von 4 erledigt") || !strings.Contains(body, "/dashboard/einstellungen#teilen") {
+		t.Errorf("Karte Erste Schritte fehlt oder falsch")
+	}
+	// Ein manueller Termin reicht nicht, die erste Online-Buchung blendet die Liste aus.
+	id := f.appt(t, a, time.Date(2030, 3, 4, 10, 0, 0, 0, f.loc), "booked")
+	a.db.Exec(`UPDATE appointments SET source = 'manual' WHERE id = ?`, id)
+	if len(done()) != 4 {
+		t.Fatalf("Liste nach manuellem Termin weg")
+	}
+	f.appt(t, a, time.Date(2030, 3, 5, 10, 0, 0, 0, f.loc), "cancelled") // source = online (Standard)
+	if len(done()) != 0 {
+		t.Fatalf("Liste nach Online-Buchung noch da")
+	}
+	if body := kalDo(t, a, f.cookie, "GET", "/dashboard", nil).Body.String(); strings.Contains(body, "Erste Schritte") {
+		t.Errorf("Karte nach Online-Buchung noch sichtbar")
+	}
+}

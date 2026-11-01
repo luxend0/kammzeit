@@ -1,13 +1,24 @@
-/* Dashboard. Schwarz/Weiß + eine Akzentfarbe (--accent, vom Salon gesetzt).
+/* Dashboard. Ruhig, mit Farbakzenten aus der Kammzeit-Palette: Nachtblau als Text,
+   Himmel hell für Flächen, Sonnengelb für Haupt-Buttons, Mint für Erfolg, Koralle dunkel
+   für Fehler. Die Akzentfarbe des Salons gilt nur auf seiner Buchungsseite.
    Komponenten für alle Dashboard-Seiten; seitenspezifisches CSS als <style> im Template. */
 :root {
-  --accent: #3b82f6;
-  --fg: #111;
+  --fg: #13294B;        /* Nachtblau */
   --bg: #fff;
-  --muted: #666;
-  --line: #ddd;
-  --soft: #f5f5f5;
-  --danger: #b00020;
+  --muted: #4F5E75;     /* 6,6:1 auf Weiß, 5,8:1 auf Himmel hell */
+  --line: #D3DEEA;
+  --field: #7A8AA0;     /* Rahmen von Eingabefeldern, 3,5:1 auf Weiß */
+  --soft: #F1F7FD;
+  --sky: #E3F3FF;       /* Himmel hell */
+  --sky-mid: #7CC4FF;   /* Himmel */
+  --accent: #1E6BFF;    /* Blau kräftig: Markierungen */
+  --on-accent: #fff;    /* Schrift auf --accent (4,6:1) */
+  --sun: #FFC93C;       /* Sonnengelb: Haupt-Buttons, Schrift darauf Nachtblau (9,5:1) */
+  --sun-dark: #F2B01E;
+  --mint: #3CCF91;
+  --coral: #FF7A59;
+  --danger: #B3401F;    /* Koralle dunkel, 5,7:1 auf Weiß */
+  --radius: 10px;
 }
 * { box-sizing: border-box; }
 body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--fg); background: var(--bg); }
@@ -19,37 +30,45 @@ h2 { font-size: 1.125rem; margin: 28px 0 10px; }
 .nowrap { white-space: nowrap; }
 
 /* Kopfzeile */
-.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding: 12px 20px; border-bottom: 2px solid var(--fg); }
+.topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding: 12px 20px; background: var(--sky); border-bottom: 1px solid #C9E2F7; }
 .brand { font-weight: 800; text-decoration: none; letter-spacing: -.01em; }
 .salon-name { color: var(--muted); }
 .topbar nav { display: flex; flex-wrap: wrap; gap: 4px 16px; }
-.topbar nav a { text-decoration: none; padding: 2px 0; border-bottom: 2px solid transparent; }
-.topbar nav a:hover { border-bottom-color: var(--line); }
-.topbar nav a[aria-current=page] { border-bottom-color: var(--accent); font-weight: 600; }
+.topbar nav a { text-decoration: none; padding: 2px 0; border-bottom: 3px solid transparent; }
+.topbar nav a:hover { border-bottom-color: var(--sky-mid); }
+.topbar nav a[aria-current=page] { border-bottom-color: var(--accent); font-weight: 700; }
 .topbar-end { margin-left: auto; display: flex; gap: 16px; align-items: center; }
 .topbar-end form { margin: 0; }
 .dash-main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 64px; }
+.dash-main:focus { outline: none; box-shadow: none; }
+.skip { position: absolute; left: -9999px; top: 8px; z-index: 10; padding: 8px 12px; background: var(--bg); color: var(--fg);
+  border: 2px solid var(--fg); border-radius: 8px; font-weight: 700; }
+.skip:focus { left: 8px; }
 
 /* Hinweise */
-.flash { padding: 10px 14px; border-left: 4px solid var(--accent); background: var(--soft); margin: 0 0 20px; }
-.error { padding: 10px 14px; border-left: 4px solid var(--danger); background: #fdf0f2; margin: 0 0 20px; }
-.empty { padding: 32px; text-align: center; color: var(--muted); border: 1px dashed var(--line); }
+.flash { padding: 10px 14px; border-left: 4px solid var(--mint); background: #E6F8F0; border-radius: 8px; margin: 0 0 20px; }
+.error { padding: 10px 14px; border-left: 4px solid var(--danger); background: #FFEDE8; border-radius: 8px; margin: 0 0 20px; }
+.empty { padding: 32px; text-align: center; color: var(--muted); border: 1px dashed var(--field); border-radius: 14px; }
 
 /* Werkzeugleiste über Listen/Kalender */
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin: 0 0 16px; }
 .toolbar .spacer { flex: 1; }
 
-/* Buttons */
-.btn { display: inline-block; padding: 9px 16px; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
-  color: #fff; background: var(--fg); border: 1px solid var(--fg); border-radius: 0; }
-.btn:hover, .btn:focus-visible { background: var(--accent); border-color: var(--accent); }
-.btn-secondary { color: var(--fg); background: var(--bg); }
-.btn-secondary:hover, .btn-secondary:focus-visible { color: #fff; }
-.btn-danger { background: var(--danger); border-color: var(--danger); }
-.btn-danger:hover, .btn-danger:focus-visible { background: #7a0016; border-color: #7a0016; }
-.btn-small { padding: 4px 10px; font-size: .8125rem; }
+/* Buttons: Haupt-Button gelb, Sekundär weiß mit blauem Rand */
+.btn { display: inline-block; padding: 9px 18px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer;
+  color: var(--fg); background: var(--sun); border: 1px solid var(--sun-dark); border-radius: var(--radius); }
+.btn:hover, .btn:focus-visible { color: var(--fg); background: var(--sun-dark); }
+.btn-secondary { color: var(--fg); background: var(--bg); border-color: var(--accent); }
+.btn-secondary:hover, .btn-secondary:focus-visible { background: var(--sky); }
+.btn-danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+.btn-danger:hover, .btn-danger:focus-visible { color: #fff; background: #8C3016; border-color: #8C3016; }
+.btn-small { padding: 4px 12px; font-size: .8125rem; border-radius: 8px; }
+.btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
+summary.btn { list-style: none; }
+summary.btn::-webkit-details-marker { display: none; }
 button.link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Fokus nie in einer hellen Farbe: Nachtblau-Rahmen mit weißem Abstand, sichtbar auf Hell und Dunkel. */
+:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; box-shadow: 0 0 0 4px var(--bg); }
 
 /* Formulare */
 .form { max-width: 560px; }
@@ -58,10 +77,12 @@ button.link { background: none; border: 0; padding: 0; font: inherit; color: inh
 .field .hint { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
 input[type=text], input[type=email], input[type=tel], input[type=url], input[type=number], input[type=date], input[type=time],
 input[type=search], select, textarea {
-  display: block; width: 100%; margin-top: 4px; padding: 8px 10px; font: inherit; font-weight: 400;
-  border: 1px solid var(--fg); border-radius: 0; background: var(--bg); color: var(--fg);
+  display: block; width: 100%; margin-top: 4px; padding: 8px 10px; font: inherit; font-size: 16px; font-weight: 400;
+  border: 1px solid var(--field); border-radius: 8px; background: var(--bg); color: var(--fg);
 }
-input[type=color] { display: block; margin-top: 4px; width: 64px; height: 36px; padding: 2px; border: 1px solid var(--fg); background: var(--bg); }
+[aria-invalid=true] { border: 2px solid var(--danger); }
+.field-error { display: block; margin-top: 4px; color: var(--danger); font-weight: 600; }
+input[type=color] { display: block; margin-top: 4px; width: 64px; height: 36px; padding: 2px; border: 1px solid var(--field); border-radius: 8px; background: var(--bg); }
 textarea { min-height: 90px; resize: vertical; }
 .check { display: flex; gap: 8px; align-items: baseline; font-weight: 400; margin: 6px 0; }
 .check input { accent-color: var(--accent); }
@@ -75,24 +96,38 @@ textarea { min-height: 90px; resize: vertical; }
 .table tr:hover td { background: var(--soft); }
 .table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .table-wrap { overflow-x: auto; }
+/* Mehrere Tabellen untereinander mit gleichen Spalten: .table-fixed plus <colgroup> mit Breiten. */
+.table-fixed { table-layout: fixed; }
 
 /* Karten / Raster */
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-.card { border: 1px solid var(--fg); padding: 16px; }
+.card { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; background: var(--bg); }
 .card h2 { margin-top: 0; }
 .stat { font-size: 1.75rem; font-weight: 800; font-variant-numeric: tabular-nums; }
 
-/* Status-Markierungen */
-.badge { display: inline-block; padding: 1px 8px; font-size: .75rem; font-weight: 600; border: 1px solid var(--fg); white-space: nowrap; }
-.badge-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
-.badge-muted { color: var(--muted); border-color: var(--line); }
-.badge-danger { color: var(--danger); border-color: var(--danger); }
+/* Status-Markierungen: Nachtblau-Schrift auf heller Fläche, Rand in der Palettenfarbe */
+.badge { display: inline-block; padding: 1px 8px; font-size: .75rem; font-weight: 600; color: var(--fg); border: 1px solid var(--fg);
+  border-radius: 6px; white-space: nowrap; }
+.badge-accent { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.badge-info { background: #E1EBFF; border-color: var(--accent); }
+.badge-ok { background: #DDF7EB; border-color: var(--mint); }
+.badge-muted { color: var(--muted); background: #F1F3F6; border-color: var(--line); }
+.badge-danger { color: var(--danger); background: #FFEDE8; border-color: var(--coral); }
 
 dl.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 16px; }
 dl.kv dt { color: var(--muted); }
 dl.kv dd { margin: 0; }
 
+/* Handy: Marke und Abmelden in Zeile 1, Menü darunter in einer waagerecht scrollbaren Zeile. */
 @media (max-width: 700px) {
-  .topbar-end { margin-left: 0; width: 100%; }
-  .dash-main { padding-top: 20px; }
+  .topbar { padding: 8px 16px 0; gap: 4px 16px; }
+  .salon-name { display: none; }
+  .topbar nav { order: 3; width: 100%; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 0 16px; padding-bottom: 4px; }
+  .dash-main { padding: 20px 16px 48px; }
+}
+/* Touch: Tippflächen mindestens 44 px hoch. */
+@media (pointer: coarse) {
+  .btn, .topbar nav a, .topbar-end a, .topbar-end button.link { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+  .check { min-height: 44px; align-items: center; }
+  .check input { width: 20px; height: 20px; flex: none; }
 }

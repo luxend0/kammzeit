@@ -146,6 +146,7 @@ func (a *app) dash(h func(http.ResponseWriter, *http.Request, *dctx)) http.Handl
 
 // dashPage füllt die Felder für das Dashboard-Layout (dash-top/dash-bottom).
 // nav = aktiver Menüpunkt: kalender, kunden, leistungen, team, einstellungen, abo.
+// Nach ?gespeichert zeigt das Layout d["SavedMsg"] (vom Handler gesetzt) oder "Gespeichert.".
 func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]any {
 	return map[string]any{
 		"Title":      title + " - Kammzeit",
@@ -154,6 +155,7 @@ func (a *app) dashPage(c *dctx, r *http.Request, nav, title string) map[string]a
 		"Salon":      c.Salon,
 		"User":       c.User,
 		"Accent":     c.Salon.Accent,
+		"OnAccent":   onAccent(c.Salon.Accent),
 		"BookingURL": a.link(c.Salon.Slug, "/"),
 		"Saved":      r.URL.Query().Has("gespeichert"),
 		"Dashboard":  true,

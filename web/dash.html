@@ -1,5 +1,6 @@
 {{/* Gemeinsames Dashboard-Layout. Seiten: {{template "dash-top" .}} ... {{template "dash-bottom" .}}
-     Daten kommen aus a.dashPage(): Title, Heading, Nav, Salon, User, Accent, BookingURL, Saved. */}}
+     Daten kommen aus a.dashPage(): Title, Heading, Nav, Salon, User, Accent, OnAccent, BookingURL, Saved.
+     SavedMsg setzt der Handler selbst (konkrete Erfolgsmeldung nach ?gespeichert), sonst "Gespeichert.". */}}
 {{define "dash-top"}}<!doctype html>
 <html lang="de">
 <head>
@@ -10,7 +11,10 @@
 <link rel="stylesheet" href="/static/dash.css">
 <script src="/static/htmx.min.js" defer></script>
 </head>
-<body class="dash"{{with .Accent}} style="--accent: {{.}}"{{end}}>
+{{/* Bewusst ohne die Akzentfarbe des Salons: das Dashboard nutzt die Kammzeit-Palette aus dash.css.
+     Accent/OnAccent stehen für Vorschauen bereit (z. B. Einstellungen). */}}
+<body class="dash">
+<a class="skip" href="#inhalt">Zum Inhalt</a>
 <header class="topbar">
   <a class="brand" href="/dashboard">Kammzeit</a>
   <span class="salon-name">{{.Salon.Name}}</span>
@@ -20,16 +24,16 @@
     <a href="/dashboard/leistungen"{{if eq .Nav "leistungen"}} aria-current="page"{{end}}>Leistungen</a>
     <a href="/dashboard/team"{{if eq .Nav "team"}} aria-current="page"{{end}}>Team</a>
     <a href="/dashboard/einstellungen"{{if eq .Nav "einstellungen"}} aria-current="page"{{end}}>Einstellungen</a>
-    <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>{{if .Salon.Pro}}Pro{{else}}Abo{{end}}</a>
+    <a href="/dashboard/abo"{{if eq .Nav "abo"}} aria-current="page"{{end}}>Abo</a>
   </nav>
   <div class="topbar-end">
     <a href="{{.BookingURL}}" target="_blank" rel="noopener">Buchungsseite</a>
     <form method="post" action="/logout"><button class="link" type="submit">Abmelden</button></form>
   </div>
 </header>
-<main class="dash-main">
+<main class="dash-main" id="inhalt" tabindex="-1">
 {{if .Heading}}<h1>{{.Heading}}</h1>{{end}}
-{{if .Saved}}<p class="flash" role="status">Gespeichert.</p>{{end}}
+{{if .Saved}}<p class="flash" role="status">{{or .SavedMsg "Gespeichert."}}</p>{{end}}
 {{end}}
 
 {{define "dash-bottom"}}</main>
