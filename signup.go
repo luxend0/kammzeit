@@ -127,8 +127,12 @@ func (a *app) signupForm(w http.ResponseWriter, r *http.Request, status int, err
 	if a.cfg.SingleTenant {
 		title = "Ersteinrichtung"
 	}
-	d := a.page(nil, title+" - Kammzeit")
-	d["Heading"], d["Error"], d["Errors"], d["Single"], d["Domain"] = title, msg, errs, a.cfg.SingleTenant, a.cfg.BaseDomain
+	d := a.authPage(title, "/registrieren")
+	if !a.cfg.SingleTenant { // steht in der Sitemap, darf in die Suche
+		d["Index"], d["Canonical"] = true, a.siteURL()+"/registrieren"
+		d["Description"] = "Salon bei Kammzeit registrieren: eigene Buchungsseite, gratis für einen Mitarbeiter, ohne Zahlungsdaten."
+	}
+	d["Heading"], d["Error"], d["Errors"], d["Domain"] = title, msg, errs, a.cfg.BaseDomain
 	d["Name"], d["Slug"], d["SlugAuto"] = r.PostFormValue("name"), r.PostFormValue("slug"), r.PostFormValue("slug_auto")
 	d["Vorname"], d["Email"], d["AGB"] = r.PostFormValue("vorname"), r.PostFormValue("email"), r.PostFormValue("agb") == "1"
 	a.render(w, status, "signup", d)
@@ -318,7 +322,7 @@ func (a *app) signupCreate(name, first, slug, email string) (userID int64, taken
 }
 
 func (a *app) signupDone(w http.ResponseWriter, email string, mailFailed bool) {
-	d := a.page(nil, "Fast geschafft - Kammzeit")
+	d := a.authPage("Fast geschafft", "/registrieren")
 	d["Email"], d["MailFailed"] = email, mailFailed
 	a.render(w, http.StatusOK, "signup-done", d)
 }

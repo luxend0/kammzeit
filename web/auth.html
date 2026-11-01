@@ -1,61 +1,89 @@
-{{/* Login per Magic-Link. Eigenes schlichtes Layout auf Basis von style.css. */}}
+{{/* Login per Magic-Link und gemeinsames Layout für Login und Registrierung (signup.html).
+     Website-Look: Kopf und Fuß aus site.html, Stil in static/site.css + static/site-konto.css.
+     Daten aus a.authPage(): Title, Path, Single; bei indexierbaren Seiten Index, Description, Canonical.
+     Eigenes Gerüst statt "site-top", weil Login noindex bleibt und der Einzelbetrieb (.Single)
+     keine Website hat: dort nur Logo und Impressum/Datenschutz statt Menü und großem Fuß. */}}
 {{define "auth-top"}}<!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>{{.Title}} - Kammzeit</title>
-<link rel="stylesheet" href="/static/style.css">
-<style>
-.auth-brand { display: inline-block; margin: 0 0 48px; font-weight: 800; text-decoration: none; letter-spacing: -.01em; border-bottom: 2px solid var(--fg); }
-.auth-note { margin: 20px 0; padding: 10px 14px; border-left: 4px solid var(--accent); background: #f5f5f5; }
-.auth-alt { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); }
-@media (pointer: coarse) { .auth-alt a { display: inline-flex; align-items: center; min-height: 44px; } }
-</style>
+<title>{{.Title}}</title>
+{{if .Index}}{{with .Description}}<meta name="description" content="{{.}}">
+<meta property="og:description" content="{{.}}">{{end}}
+{{with .Canonical}}<link rel="canonical" href="{{.}}">
+<meta property="og:url" content="{{.}}">{{end}}
+<meta property="og:title" content="{{.Title}}">
+{{else}}<meta name="robots" content="noindex">
+{{end}}{{template "site-assets"}}
+<link rel="stylesheet" href="/static/site-konto.css">
 </head>
-<body>
-<main>
-<a class="auth-brand" href="/">Kammzeit</a>
+<body class="site">
+{{if .Single}}<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+<header class="site-head">
+  <div class="wrap site-head-in"><a class="site-logo" href="/"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34">Kammzeit</a></div>
+</header>
+{{else}}{{template "site-header" .}}{{end}}
+<main id="inhalt" class="konto">
+<span class="deco deco-ring" style="top:16%;left:46%" aria-hidden="true"></span>
+<span class="deco deco-dot" style="bottom:20%;left:47%" aria-hidden="true"></span>
+<span class="deco deco-cross" style="bottom:22%;right:4%" aria-hidden="true"></span>
 {{end}}
 
 {{define "auth-bottom"}}</main>
-<footer><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></footer>
+{{if .Single}}<footer class="konto-foot"><a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></footer>
+{{else}}{{template "site-footer" .}}{{end}}
 </body>
 </html>{{end}}
 
 {{define "auth-login"}}{{template "auth-top" .}}
-<h1>Anmelden</h1>
-<p class="lead">Wir schicken dir einen Login-Link per E-Mail. Ein Passwort brauchst du nicht.</p>
-{{if .LoggedOut}}<p class="auth-note" role="status">Du bist abgemeldet.</p>{{end}}
+<div class="wrap konto-in">
+  <div class="konto-media"><div class="blob" aria-hidden="true"></div>{{if .Sent}}<img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="">{{else}}<img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="">{{end}}</div>
+  <div class="konto-card">
 {{if .Sent}}
-<p class="auth-note" role="status">Wenn es ein Konto mit dieser Adresse gibt, ist ein Login-Link unterwegs. Er ist 15 Minuten gültig.</p>
-<p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
-<p class="muted small">Nichts angekommen? Schau im Spam-Ordner nach oder <a href="/login">fordere einen neuen Link an</a>.</p>
+    <h1>Link ist unterwegs</h1>
+    <p class="konto-lead" role="status">Wenn es ein Konto mit dieser Adresse gibt, ist ein Login-Link unterwegs. Er ist 15 Minuten gültig.</p>
+    <p>Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.</p>
+    <p class="note">Nichts angekommen? Schau im Spam-Ordner nach oder <a href="/login">fordere einen neuen Link an</a>.</p>
 {{else}}
-<form method="post" action="/login">
-  <input type="hidden" name="weiter" value="{{.Next}}">
-  <div class="field">
-    <label>E-Mail<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus{{if .Error}} aria-invalid="true" aria-describedby="auth-err-email"{{end}}></label>
-    {{with .Error}}<span class="field-error" id="auth-err-email">{{.}}</span>{{end}}
-  </div>
-  <button type="submit">Login-Link schicken</button>
-</form>
+    <h1>Anmelden</h1>
+    <p class="konto-lead">Wir schicken dir einen Login-Link per E-Mail. Ein Passwort brauchst du nicht.</p>
+    {{if .LoggedOut}}<p class="konto-note" role="status">Du bist abgemeldet.</p>{{end}}
+    <form class="konto-form" method="post" action="/login">
+      <input type="hidden" name="weiter" value="{{.Next}}">
+      <div class="field">
+        <label>E-Mail<input type="email" name="email" value="{{.Email}}" autocomplete="email" maxlength="200" required autofocus{{if .Error}} aria-invalid="true" aria-describedby="auth-err-email"{{end}}></label>
+        {{with .Error}}<span class="field-error" id="auth-err-email">{{.}}</span>{{end}}
+      </div>
+      <button class="btn" type="submit">Login-Link schicken</button>
+    </form>
 {{end}}
-<p class="auth-alt"><a href="/registrieren">Noch kein Konto? Kostenlos registrieren</a></p>
+    {{if not .Single}}<p class="konto-alt">Noch kein Konto? <a href="/registrieren">Kostenlos registrieren</a></p>{{end}}
+  </div>
+</div>
 {{template "auth-bottom" .}}{{end}}
 
 {{define "auth-confirm"}}{{template "auth-top" .}}
-<h1>Anmelden</h1>
-<p class="lead">Ein Klick noch, dann bist du im Dashboard.</p>
-<form method="post" action="/login/{{.Token}}">
-  <input type="hidden" name="weiter" value="{{.Next}}">
-  <button type="submit">Jetzt anmelden</button>
-</form>
+<div class="wrap konto-in">
+  <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-kalender.webp" width="800" height="800" alt=""></div>
+  <div class="konto-card">
+    <h1>Anmelden</h1>
+    <p class="konto-lead">Ein Klick noch, dann bist du im Dashboard.</p>
+    <form class="konto-form" method="post" action="/login/{{.Token}}">
+      <input type="hidden" name="weiter" value="{{.Next}}">
+      <button class="btn" type="submit">Jetzt anmelden</button>
+    </form>
+  </div>
+</div>
 {{template "auth-bottom" .}}{{end}}
 
 {{define "auth-message"}}{{template "auth-top" .}}
-<h1>{{.Heading}}</h1>
-<p>{{.Message}}</p>
-<p><a href="/login">{{.LinkText}}</a></p>
+<div class="wrap konto-in">
+  <div class="konto-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-schlaeft.webp" width="800" height="800" alt=""></div>
+  <div class="konto-card">
+    <h1>{{.Heading}}</h1>
+    <p class="konto-lead">{{.Message}}</p>
+    <p class="konto-actions"><a class="btn" href="/login">{{.LinkText}}</a></p>
+  </div>
+</div>
 {{template "auth-bottom" .}}{{end}}
