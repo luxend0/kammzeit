@@ -290,7 +290,7 @@ func seedDemo(db *sql.DB) error {
 	}
 	defer tx.Rollback()
 	res, err := tx.Exec(`INSERT INTO salons (slug, name, plan, address, phone, about)
-		VALUES ('demo', 'Salon Demo', 'pro', 'Musterstraße 1' || char(10) || '55469 Simmern', '06761 000000', 'Dies ist ein Beispiel-Salon zum Ausprobieren.')`)
+		VALUES ('demo', 'Salon Demo', 'pro', 'Musterstraße 1' || char(10) || '12345 Musterstadt', '01234 567890', 'Dies ist ein Beispiel-Salon zum Ausprobieren.')`)
 	if err != nil {
 		return err
 	}
