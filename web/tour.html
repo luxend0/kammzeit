@@ -1,0 +1,59 @@
+{{/* Geführte Tour durchs Dashboard. Eingebunden am Ende von dash-bottom ({{template "tour" .}}),
+     Start-Knopf [data-tour-start] in der Kopfzeile (dash.html). Ablauf: static/tour.js, Aussehen:
+     static/tour.css, englische Texte: i18n_tour.go. Daten aus a.dashPage(): .User, .Lang.
+     Jeder Schritt ist ein <template data-tour-step>, Inhalt <h2> + <p> (+ Links):
+       data-target = CSS-Selektor des hervorgehobenen Elements. Fehlt es auf der Seite, fällt der
+                     Schritt weg (z. B. Warteschlange, solange es den Menüpunkt nicht gibt).
+       data-soft   = Schritt bleibt auch ohne Ziel, dann mittig ohne Hervorhebung.
+       data-ill    = Illustration /static/img/ill/<name>.webp
+     Alle Ziele liegen in der Kopfzeile, deshalb läuft die Tour auf jeder Dashboard-Seite.
+     Mitarbeiter-Logins (tourStaff) bekommen keine Schritte zu Leistungen, Team, Einstellungen, Abo. */}}
+{{define "tour"}}{{with .User}}{{$owner := not (tourStaff .)}}{{$l := $.Lang}}
+<link rel="stylesheet" href="/static/tour.css">
+<div id="kz-tour" hidden data-key="kz-tour-{{.ID}}" data-label="{{t $l "Tour durchs Dashboard"}}" data-count="{{t $l "Schritt %d von %d"}}"
+  data-next="{{t $l "Weiter"}}" data-back="{{t $l "Zurück"}}" data-skip="{{t $l "Überspringen"}}" data-done="{{t $l "Fertig"}}">
+<template data-tour-step="willkommen" data-ill="kammi-winkt">
+  <h2>{{t $l "Willkommen bei Kammzeit"}}</h2>
+  <p>{{t $l "In zwei Minuten zeigen wir dir, wo du was findest. Über das Fragezeichen oben startest du die Tour jederzeit neu."}}</p>
+</template>
+<template data-tour-step="kalender" data-target=".topnav a[href='/dashboard']" data-ill="kammi-kalender">
+  <h2>{{t $l "Kalender"}}</h2>
+  <p>{{t $l "Hier siehst du alle Termine, online gebucht und selbst eingetragen. Ruft jemand an, trägst du den Termin über „Neuer Termin“ ein."}}</p>
+</template>
+{{if $owner}}<template data-tour-step="leistungen" data-target=".topnav a[href='/dashboard/leistungen']" data-ill="kammi-schere">
+  <h2>{{t $l "Leistungen"}}</h2>
+  <p>{{t $l "Prüf Preise und Dauer. Die Beispiel-Leistungen sind anfangs inaktiv: Stell sie auf aktiv, damit sie online buchbar sind."}}</p>
+</template>
+<template data-tour-step="team" data-target=".topnav a[href='/dashboard/team']" data-ill="team">
+  <h2>{{t $l "Team"}}</h2>
+  <p>{{t $l "Trag für jeden Mitarbeiter die Arbeitszeiten ein. Eine Mittagspause sind einfach zwei Blöcke, z. B. 9:00-12:00 und 13:00-18:00."}}</p>
+</template>
+<template data-tour-step="einstellungen" data-target=".topnav a[href='/dashboard/einstellungen']" data-ill="schritt-entdecken">
+  <h2>{{t $l "Einstellungen"}}</h2>
+  <p>{{t $l "Trag Adresse und den Link zu deinem Impressum ein. Unter „Aussehen“ wählst du Akzentfarbe und Sprache der Buchungsseite."}}</p>
+</template>{{end}}
+<template data-tour-step="buchungsseite" data-target=".topbar-end a[target='_blank']" data-ill="schritt-buchen">
+  <h2>{{t $l "Deine Buchungsseite"}}</h2>
+  <p>{{t $l "Hier öffnest du deine Buchungsseite. Teil den Link in der Instagram-Bio, im Google-Unternehmensprofil und im WhatsApp-Status, dann buchen Kunden rund um die Uhr."}}</p>
+</template>
+<template data-tour-step="kunden" data-target=".topnav a[href='/dashboard/kunden']" data-ill="kartei">
+  <h2>{{t $l "Kunden"}}</h2>
+  <p>{{t $l "Die Kundenkartei füllt sich mit jeder Buchung von selbst. Auf der Karteikarte notierst du z. B. Farbrezepturen und siehst alle bisherigen Termine."}}</p>
+</template>
+<template data-tour-step="warteschlange" data-target=".topnav a[href='/dashboard/warteschlange']" data-ill="schritt-termin">
+  <h2>{{t $l "Warteschlange"}}</h2>
+  <p>{{t $l "Für Laufkundschaft: Kunden ohne Termin stellen sich per QR-Code an, und du rufst sie der Reihe nach auf. Gehört zu Pro."}}</p>
+</template>
+{{if $owner}}<template data-tour-step="abo" data-target=".topnav a[href='/dashboard/abo']" data-ill="kammi-handy">
+  <h2>{{t $l "Abo"}}</h2>
+  <p>{{t $l "Gratis ist ein aktiver Mitarbeiter dabei. Mit Pro für 14,90 € im Monat sind es beliebig viele, und der Kammzeit-Hinweis auf der Buchungsseite fällt weg."}}</p>
+</template>{{end}}
+<template data-tour-step="fertig" data-soft{{if $owner}} data-target=".kal-steps"{{end}} data-ill="kammi-winkt">
+  <h2>{{t $l "Das war's schon"}}</h2>
+  {{if $owner}}<p>{{t $l "Was noch fehlt, zeigt dir die Liste „Erste Schritte“ im Kalender. Im Hilfe-Center ist jede Funktion Schritt für Schritt erklärt."}}</p>
+  {{else}}<p>{{t $l "Im Hilfe-Center ist jede Funktion Schritt für Schritt erklärt. Die Tour startest du jederzeit über das Fragezeichen oben neu."}}</p>{{end}}
+  <p class="tour-links">{{if $owner}}<a href="/dashboard#kal-steps-titel">{{t $l "Erste Schritte"}}</a>{{end}}<a href="{{sitePath $l "/hilfe"}}">{{t $l "Hilfe-Center"}}</a></p>
+</template>
+</div>
+<script src="/static/tour.js" defer></script>
+{{end}}{{end}}

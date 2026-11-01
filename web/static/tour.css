@@ -1,0 +1,68 @@
+/* Dashboard-Tour (web/tour.html, tour.js). Farben und Knöpfe aus dash.css.
+   Das <dialog> deckt den ganzen Bildschirm durchsichtig ab (fängt Klicks), .tour-spot ist das Loch
+   über dem hervorgehobenen Element: sein riesiger Schatten dunkelt den Rest ab, gelber Ring drumherum.
+   Ab 36rem eine Sprechblase am Element (Spitze per data-side, Lage per --arrow), darunter eine Karte unten. */
+
+dialog.tour {
+  position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0; overflow: hidden; background: none; color: var(--night);
+}
+dialog.tour::backdrop { background: none; }
+
+.tour-spot {
+  position: fixed; border-radius: 12px; pointer-events: none;
+  box-shadow: 0 0 0 4px var(--sun), 0 0 0 200vmax rgb(19 41 75 / .62);
+}
+.tour-spot.tour-spot-none { box-shadow: 0 0 0 200vmax rgb(19 41 75 / .62); }
+
+.tour-pop {
+  position: fixed; top: 0; left: 0; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 0 1rem;
+  width: min(25rem, calc(100vw - 24px)); padding: 1.1rem 1.2rem 1rem;
+  border-radius: var(--radius); background: #fff; box-shadow: 0 12px 40px rgb(19 41 75 / .28);
+}
+.tour-pop[data-side]::before {
+  content: ""; position: absolute; left: var(--arrow, 50%); width: 18px; height: 18px; margin-left: -9px;
+  border-radius: 3px; background: #fff; transform: rotate(45deg);
+}
+.tour-pop[data-side="below"]::before { top: -8px; }
+.tour-pop[data-side="above"]::before { bottom: -8px; }
+
+.tour-ill { position: relative; width: 88px; height: 88px; margin-top: .1rem; border-radius: 50%; background: var(--sky-50); }
+.tour-live { position: relative; min-width: 0; }
+.tour-body h2 { margin: .15rem 0 .35rem; font-size: 1.1875rem; color: var(--blue); }
+.tour-body p { margin: 0 0 .5rem; font-size: .9375rem; line-height: 1.5; }
+.tour-links { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; font-weight: 700; }
+
+.tour-foot { position: relative; grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: .6rem; }
+.tour-dots { display: flex; flex: 1 0 100%; gap: 6px; margin: 0 0 .35rem; padding: 0; list-style: none; }
+.tour-dots li { width: 8px; height: 8px; border-radius: 99px; background: var(--sky-100); }
+.tour-dots li.done { background: var(--sky); }
+.tour-dots li.on { width: 24px; background: var(--blue); }
+.tour-foot .tour-skip { min-height: 2.75rem; margin-right: auto; padding-inline: .1rem; font-weight: 700; color: var(--muted); }
+.tour-foot .btn-secondary { margin-left: auto; } /* Knöpfe rechts, auch wenn „Überspringen“ im letzten Schritt fehlt */
+.tour-foot [hidden] { display: none; }
+
+@media (max-width: 35.99rem) {
+  .tour-pop {
+    top: auto; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); left: 12px; width: auto;
+    grid-template-columns: 64px minmax(0, 1fr); gap: 0 .85rem; padding: 1rem;
+  }
+  .tour-ill { width: 64px; height: 64px; }
+  .tour-body h2 { font-size: 1.0625rem; }
+}
+
+/* Kopfzeile: der Fragezeichen-Knopf (dash.html) braucht rund 50px. Zwischen 80rem (Menü in der ersten
+   Zeile) und 86rem etwas enger, damit „Buchungsseite“ und „Abmelden“ nicht in eine zweite Zeile rutschen. */
+@media (min-width: 80rem) and (max-width: 85.99rem) {
+  .topbar-in { column-gap: 1rem; }
+  .topbar-end a, .topbar-end button.link { padding-inline: .55rem; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  dialog.tour[open] .tour-pop { animation: tour-in .25s ease-out; }
+  .tour-body > * { animation: tour-in .2s ease-out; }
+  .tour-move .tour-spot { transition: left .3s ease, top .3s ease, width .3s ease, height .3s ease; }
+  .tour-move .tour-pop { transition: left .3s ease, top .3s ease; }
+  .tour-dots li { transition: width .2s, background-color .2s; }
+}
+@keyframes tour-in { from { opacity: 0; transform: translateY(6px); } }
