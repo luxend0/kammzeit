@@ -291,8 +291,7 @@ func (a *app) sendReminders(now time.Time) {
 		if _, err := mail.ParseAddress(b.Email); err != nil {
 			continue // von Hand eingetragene, unbrauchbare Adresse: kein Header-Einschleusen
 		}
-		body := a.customerMail(s, b, "wir erinnern dich an deinen Termin bei "+s.Name+":")
-		if err := a.mail.send(b.Email, "Erinnerung: dein Termin bei "+s.Name, body); err != nil {
+		if err := a.mailT(b.Email, s.Lang, "reminder", a.customerMailData(s, b, now)); err != nil { // web/mail.html
 			log.Printf("Erinnerung %d: %v", d.id, err) // nächster Versuch in einer Minute
 			continue
 		}

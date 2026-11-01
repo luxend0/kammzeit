@@ -592,13 +592,9 @@ func (a *app) kalCancel(w http.ResponseWriter, r *http.Request, c *dctx, t *kalT
 	}
 	code := "abgesagt"
 	if r.PostFormValue("informieren") == "1" && t.Email != "" && t.Start.After(time.Now()) {
-		s := c.Salon
-		body := fmt.Sprintf("Hallo %s,\n\nleider müssen wir deinen Termin bei %s absagen:\n\n%s\n%s bei %s\n\nNeuen Termin buchen: %s\n",
-			t.Customer, s.Name, deDate(t.Start), t.Service, t.Staff, a.link(s.Slug, "/"))
-		if s.Phone != "" {
-			body += "Fragen? Ruf uns an: " + s.Phone + "\n"
-		}
-		a.kalMail(t.Email, "Termin abgesagt: "+s.Name, body)
+		b := &booking{ID: t.ID, Start: t.Start, End: t.End, Status: "cancelled", Service: t.Service, Staff: t.Staff,
+			Customer: t.Customer, Email: t.Email, Phone: t.Phone}
+		a.kalMail(t.Email, c.Salon.Lang, "cancelled-by-salon", a.customerMailData(c.Salon, b, time.Now()))
 		code = "abgesagt-mail"
 	}
 	kalSaved(w, r, t.ID, code)
@@ -631,18 +627,10 @@ func kalSaved(w http.ResponseWriter, r *http.Request, id int64, code string) {
 	http.Redirect(w, r, fmt.Sprintf("/dashboard/termine/%d?gespeichert=%s", id, code), http.StatusSeeOther)
 }
 
-// kalMail verschickt im Hintergrund wie die Buchungsseite. Adresse wird vorher geprüft.
-func (a *app) kalMail(to, subject, body string) {
-	addr, err := mail.ParseAddress(to)
-	if err != nil {
-		log.Printf("Mail an %q: %v", to, err)
-		return
-	}
-	go func() {
-		if err := a.mail.send(addr.Address, subject, body); err != nil {
-			log.Printf("Mail an %s: %v", addr.Address, err)
-		}
-	}()
+// kalMail verschickt eine Mail aus web/mail.html im Hintergrund wie die
+// Buchungsseite (mailTo prüft die Adresse, Fehler ins Log).
+func (a *app) kalMail(to, lang, name string, d map[string]any) {
+	go a.mailTo(to, lang, name, d)
 }
 
 // --- Freie Zeiten als Vorschläge unter dem Feld Uhrzeit ---
@@ -816,8 +804,9 @@ func (a *app) kalMove(w http.ResponseWriter, r *http.Request, c *dctx, t *kalTer
 		if b, err := a.findBooking(s, token); err != nil {
 			log.Printf("Verschieben %d: %v", t.ID, err)
 		} else {
-			intro := fmt.Sprintf("dein Termin bei %s wurde verschoben. Bisher: %s. Neu:", s.Name, deDate(t.Start))
-			a.kalMail(b.Email, "Termin verschoben: "+s.Name, a.customerMail(s, b, intro))
+			d := a.customerMailData(s, b, now)
+			d["Old"] = t.Start
+			a.kalMail(b.Email, s.Lang, "moved", d)
 			code = "verschoben-mail"
 		}
 	}
@@ -1093,10 +1082,14 @@ func (a *app) kalCreate(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	code := "eingetragen"
 	if f.Confirm && n.email != "" {
-		body := fmt.Sprintf("Hallo %s,\n\ndein Termin bei %s ist eingetragen:\n\n%s\n%s bei %s\n\nAbsagen: %s\n",
-			n.customer, s.Name, deDate(start), n.service, n.staff, a.link(s.Slug, "/storno/"+n.token))
-		a.kalMail(n.email, "Termin bestätigt: "+s.Name, body)
-		code = "eingetragen-mail"
+		if b, err := a.findBooking(s, n.token); err != nil {
+			log.Printf("Bestätigung %d: %v", n.id, err)
+		} else {
+			d := a.customerMailData(s, b, time.Now())
+			d["BySalon"] = true
+			a.kalMail(n.email, s.Lang, "booking-confirm", d)
+			code = "eingetragen-mail"
+		}
 	}
 	http.Redirect(w, r, fmt.Sprintf("/dashboard?tag=%s&gespeichert=%s&termin=%d", start.Format(time.DateOnly), code, n.id), http.StatusSeeOther)
 }
