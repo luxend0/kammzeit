@@ -203,3 +203,62 @@ func TestLoginRateLimit(t *testing.T) {
 		}
 	}
 }
+
+// Login auf kammzeit.com: englische Seiten; eine Anforderung über eine Domain
+// setzt die Sprache des Kontos, damit der Link auf diese Domain geht.
+func TestLoginEnglish(t *testing.T) {
+	a, userID := newAuthTestApp(t)
+	a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
+	h := a.routes()
+	do := func(method, host, path string, form url.Values) *httptest.ResponseRecorder {
+		var body io.Reader
+		if form != nil {
+			body = strings.NewReader(form.Encode())
+		}
+		r := httptest.NewRequest(method, "http://"+host+path, body)
+		r.RemoteAddr = "198.51.100.70:1234"
+		if method == http.MethodPost {
+			r.Header.Set("Origin", "http://"+host)
+			r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		return w
+	}
+	body := do("GET", "kammzeit-en.test", "/login", nil).Body.String()
+	for _, want := range []string{`<html lang="en">`, "Send login link", "Sign up for free", "<title>Log in - Kammzeit</title>"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("Login en: %q fehlt", want)
+		}
+	}
+	if w := do("POST", "kammzeit-en.test", "/login", url.Values{"email": {"kaputt"}}); !strings.Contains(w.Body.String(), "Please enter a valid email address.") {
+		t.Errorf("Fehler en: %s", w.Body)
+	}
+	// Sprache des Kontos, sobald der Token (im Hintergrund) angelegt ist.
+	langAfter := func(host string) string {
+		a.db.Exec(`DELETE FROM login_tokens`)
+		if w := do("POST", host, "/login", url.Values{"email": {"inhaber@example.com"}}); w.Code != http.StatusOK {
+			t.Fatalf("Anfordern über %s: %d", host, w.Code)
+		}
+		var n int
+		for i := 0; i < 100 && n == 0; i++ {
+			time.Sleep(10 * time.Millisecond)
+			a.db.QueryRow(`SELECT COUNT(*) FROM login_tokens WHERE user_id = ?`, userID).Scan(&n)
+		}
+		var l string
+		if err := a.db.QueryRow(`SELECT lang FROM users WHERE id = ?`, userID).Scan(&l); err != nil {
+			t.Fatal(err)
+		}
+		return l
+	}
+	if l := langAfter("kammzeit-en.test"); l != "en" || a.siteURLLang(l) != "https://kammzeit-en.test" {
+		t.Fatalf("Sprache nach Anforderung über .com: %q", l)
+	}
+	if l := langAfter("kammzeit.test"); l != "de" {
+		t.Fatalf("Sprache nach Anforderung über .de: %q", l)
+	}
+	// Ungültiger Link: Meldung englisch.
+	if w := do("GET", "kammzeit-en.test", "/login/"+randomToken(), nil); w.Code != http.StatusGone || !strings.Contains(w.Body.String(), "Link no longer valid") {
+		t.Errorf("ungültiger Link en: %d", w.Code)
+	}
+}

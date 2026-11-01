@@ -438,3 +438,71 @@ func TestOnAccent(t *testing.T) {
 		}
 	}
 }
+
+// Buchungsseite in der Sprache des Salons (salons.lang), egal über welche
+// Domain: Texte, Preise, Daten, Fehler, Storno und Kalendereintrag englisch.
+func TestBookingEnglish(t *testing.T) {
+	ts := newTestSalon(t)
+	ts.a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
+	log.SetOutput(&syncBuf{})
+	defer log.SetOutput(os.Stderr)
+	ts.exec(t, `UPDATE salons SET lang = 'en', plan = 'free', cancel_notice_min = 1440, booking_horizon_days = 30 WHERE id = ?`, ts.salon)
+	host := "test.kammzeit-en.test"
+	contains := func(what, body string, want ...string) {
+		t.Helper()
+		for _, w := range want {
+			if !strings.Contains(body, w) {
+				t.Errorf("%s: %q fehlt", what, w)
+			}
+		}
+	}
+	body := ts.do("GET", host, "/", nil).Body.String()
+	contains("Buchungsseite", body, `<html lang="en">`, "<title>Salon Test - Book an appointment</title>", "1. Service", "30 min",
+		"25.00 €", "4. Your details", "Confirm booking", "You can cancel online up to 1 day before the appointment.",
+		`Online booking by <a href="https://kammzeit.com">Kammzeit</a>`)
+	if strings.Contains(body, "Leistung") || strings.Contains(body, "Verbindlich") {
+		t.Error("deutsche Reste auf der englischen Buchungsseite")
+	}
+	// Dieselbe Seite über die deutsche Domain bleibt englisch (Sprache gehört dem Salon).
+	contains("über .de", ts.do("GET", "test.kammzeit.test", "/", nil).Body.String(), "1. Service")
+
+	s, _ := ts.a.loadSalon(ts.salon)
+	start := dayAfterTomorrow10(s.Loc)
+	sv := strconv.FormatInt(ts.schnitt, 10)
+	far := start.AddDate(0, 0, 60).Format(time.DateOnly)
+	_, last := bookingDays(s, time.Now())
+	contains("Slots", ts.do("GET", host, "/slots?service="+sv+"&staff=egal&date="+far, nil).Body.String(),
+		"Online booking is available until "+dayFor("en", last)+".")
+	contains("Mitarbeiter", ts.do("GET", host, "/mitarbeiter?service="+sv, nil).Body.String(), "Anyone available")
+
+	f := bookForm(ts.schnitt, 0, start)
+	f.Set("name", "")
+	if w := ts.do("POST", host, "/book", f); w.Code != http.StatusBadRequest {
+		t.Fatalf("ohne Namen: %d", w.Code)
+	} else {
+		contains("Fehler", w.Body.String(), "Please enter your name.", "Back to booking", "<h1>Notice</h1>")
+	}
+	w := ts.do("POST", host, "/book", bookForm(ts.schnitt, 0, start))
+	if w.Code != http.StatusOK {
+		t.Fatalf("Buchung: %d %s", w.Code, w.Body)
+	}
+	contains("Bestätigung", w.Body.String(), "Appointment booked", "Thank you, Eva!", dateFor("en", start),
+		"The confirmation is on its way to <strong>eva@example.com</strong>.", "Add to my calendar",
+		"(online until "+dateFor("en", start.Add(-24*time.Hour))+")")
+	var tok string
+	if err := ts.a.db.QueryRow(`SELECT cancel_token FROM appointments WHERE starts_at = ?`, start.Unix()).Scan(&tok); err != nil {
+		t.Fatal(err)
+	}
+	contains("Storno", ts.do("GET", host, "/storno/"+tok, nil).Body.String(), "Cancel appointment", "When",
+		"You can cancel online until "+dateFor("en", start.Add(-24*time.Hour))+".")
+	ics := strings.ReplaceAll(ts.do("GET", host, "/termin/"+tok+".ics", nil).Body.String(), "\r\n ", "")
+	contains("Kalendereintrag", ics, "SUMMARY:Schnitt at Salon Test", `DESCRIPTION:With Anna\nPhone: 06761 123 45\nCancel: https://test.kammzeit-en.test/storno/`+tok)
+	if w := ts.do("POST", host, "/storno/"+tok, nil); w.Code != http.StatusOK {
+		t.Fatalf("Absagen: %d", w.Code)
+	} else {
+		contains("Abgesagt", w.Body.String(), "Appointment cancelled", "Thanks for letting us know. Salon Test has been notified.")
+	}
+	contains("unbekannter Salon", ts.do("GET", "gibtsnicht.kammzeit-en.test", "/", nil).Body.String(), "This salon does not exist.")
+	contains("unbekannter Salon .de", ts.do("GET", "gibtsnicht.kammzeit.test", "/", nil).Body.String(), "Diesen Salon gibt es nicht.")
+	contains("Datum", dayFor("en", time.Date(2026, 11, 3, 0, 0, 0, 0, time.UTC))+"|"+noticeFor("en", 90)+"|"+noticeFor("en", 120), "3 Nov 2026|90 minutes|2 hours")
+}

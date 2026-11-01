@@ -318,3 +318,71 @@ func TestSignupStoresTermsAcceptance(t *testing.T) {
 		t.Fatalf("terms = %q %v (%v)", ver, at, err)
 	}
 }
+
+// Registrierung auf kammzeit.com: englisch, Adresse unter .kammzeit.com (hier
+// kammzeit-en.test), Salon und Konto bekommen die Sprache der Domain. Das
+// Häkchen für Kammzeit-News ist auf beiden Domains nicht vorausgewählt.
+func TestSignupEnglish(t *testing.T) {
+	a := newSignupApp(t, false)
+	a.cfg.Domains = parseDomains("kammzeit.test=de,kammzeit-en.test=en", "")
+	h := a.routes()
+	newsBox := regexp.MustCompile(`<input type="checkbox" name="marketing" value="1"[^>]*>`)
+	for host, want := range map[string][]string{
+		"kammzeit.test": {`<html lang="de">`, "Salon anlegen", `<span>.kammzeit.test</span>`, marketingConsentDE, `href="/agb"`},
+		"kammzeit-en.test": {`<html lang="en">`, "Create salon", `<span>.kammzeit-en.test</span>`, template.HTMLEscapeString(tr("en", marketingConsentDE)),
+			`href="/terms"`, `href="/dpa"`, "at yoursalon.kammzeit-en.test", `hreflang="de" href="https://kammzeit.test/registrieren"`},
+	} {
+		req := httptest.NewRequest("GET", "/registrieren", nil)
+		req.Host = host
+		body := signupDo(h, req).Body.String()
+		for _, w := range want {
+			if !strings.Contains(body, w) {
+				t.Errorf("%s: %q fehlt", host, w)
+			}
+		}
+		if box := newsBox.FindString(body); box == "" || strings.Contains(box, "checked") {
+			t.Errorf("%s: Häkchen Kammzeit-News fehlt oder ist vorausgewählt: %q", host, box)
+		}
+	}
+	if tr("en", marketingConsentDE) == marketingConsentDE {
+		t.Fatal("englischer Einwilligungstext fehlt")
+	}
+
+	// Live-Prüfung englisch.
+	req := httptest.NewRequest("GET", "/registrieren/adresse?slug=a_b", nil)
+	req.Host = "kammzeit-en.test"
+	if body := signupDo(h, req).Body.String(); !strings.Contains(body, "Invalid address: only a-z") {
+		t.Errorf("Live-Prüfung en: %s", body)
+	}
+
+	form := url.Values{"name": {"Salon London"}, "vorname": {"Liz"}, "slug": {"salon-london"}, "email": {"liz@example.com"}, "agb": {"1"}}
+	post := func(f url.Values, ip string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest("POST", "/registrieren", strings.NewReader(f.Encode()))
+		req.Host = "kammzeit-en.test"
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Origin", "https://kammzeit-en.test")
+		req.RemoteAddr = ip + ":1234"
+		return signupDo(h, req)
+	}
+	if rec := post(form, "198.51.100.60"); rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), "Almost there") {
+		t.Fatalf("Registrierung en: %d %s", rec.Code, rec.Body)
+	}
+	signupCounts(t, a, map[string]int{
+		`SELECT COUNT(*) FROM salons WHERE slug = 'salon-london' AND lang = 'en'`:                          1,
+		`SELECT COUNT(*) FROM users WHERE email = 'liz@example.com' AND lang = 'en'`:                       1,
+		`SELECT COUNT(*) FROM services WHERE name IN ('Haircut', 'Wash, cut and blow-dry') AND active = 0`: 2,
+		// ohne Häkchen keine Einwilligung, auch keine ausstehende
+		`SELECT COUNT(*) FROM users WHERE email = 'liz@example.com' AND marketing_pending_hash = '' AND marketing_at IS NULL`: 1,
+	})
+	// Fehler englisch, mit der .com-Adresse.
+	form.Set("email", "other@example.com")
+	rec := post(form, "198.51.100.61")
+	if rec.Code != http.StatusConflict || !strings.Contains(rec.Body.String(), "Sorry, the address salon-london.kammzeit-en.test is already taken.") {
+		t.Fatalf("vergeben en: %d %s", rec.Code, rec.Body)
+	}
+	form.Del("agb")
+	form.Set("slug", "salon-london-2")
+	if rec := post(form, "198.51.100.62"); rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "Please confirm that you are acting as a business") {
+		t.Fatalf("AGB en: %d %s", rec.Code, rec.Body)
+	}
+}

@@ -83,12 +83,17 @@ func (a *app) startMarketingDOI(userID int64, source string) error {
 		hashToken(token), time.Now().Unix(), tr(lang, marketingConsentDE), userID); err != nil {
 		return err
 	}
-	return a.mailT(email, lang, "marketing-confirm", map[string]any{
+	err = a.mailT(email, lang, "marketing-confirm", map[string]any{
 		"ConfirmURL": a.siteURLLang(lang) + "/newsletter/bestaetigen/" + token,
 		"Salon":      salonName,
 		"Email":      email,
 		"Days":       int(marketingTTL / (24 * time.Hour)),
 	})
+	if err != nil { // keine Mail, kein "ausstehend" (sonst wartet die Anzeige auf eine Mail, die nie kam)
+		a.db.Exec(`UPDATE users SET marketing_pending_hash = '', marketing_pending_at = NULL WHERE id = ? AND marketing_pending_hash = ?`,
+			userID, hashToken(token))
+	}
+	return err
 }
 
 // withdrawMarketing widerruft eine Einwilligung (oder eine ausstehende).

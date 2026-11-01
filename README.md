@@ -107,7 +107,7 @@ Alles über Umgebungsvariablen. Für einen einzelnen Salon reichen `KAMMZEIT_SIN
 | `SMTP_USER` | leer | Benutzername am Mailserver, leer = ohne Anmeldung |
 | `SMTP_PASS` | leer | Passwort am Mailserver |
 | `SMTP_FROM` | `Kammzeit <noreply@localhost>` | Absender aller Mails |
-| `MARKETING_SECRET` | leer | Geheimer Schlüssel für die Bestätigungs- und Abmeldelinks der Kammzeit-News (Double-Opt-in). Einen langen Zufallswert setzen, z. B. aus `openssl rand -hex 32` |
+| `MARKETING_SECRET` | leer | Geheimer Schlüssel (mindestens 16 Zeichen) für die Abmeldelinks der Kammzeit-News: der Link in jeder Marketing-Mail meldet ohne Anmeldung ab (HMAC über die Konto-ID). Leer: der Link führt in die Einstellungen, Abmelden nur angemeldet. Die Bestätigungslinks (Double-Opt-in) brauchen ihn nicht. Langen Zufallswert setzen, z. B. aus `openssl rand -hex 32`, und nicht mehr ändern (alte Abmeldelinks werden sonst ungültig) |
 
 ### Abo über Stripe (nur gehostete Version)
 
