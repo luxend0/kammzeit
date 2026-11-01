@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"html/template"
 	"image"
 	"image/color"
@@ -601,5 +602,29 @@ func TestQueueQR(t *testing.T) {
 		if err != nil || strings.TrimRight(string(out), "\n") != text {
 			t.Fatalf("Version %d (%d Byte) nicht lesbar: %q %v", (q.size-17)/4, len(text), out, err)
 		}
+	}
+}
+
+// Einträge vergangener Tage verschwinden auch ohne Dashboard-Besuch (Hintergrund-Lauf).
+func TestPurgeOldQueue(t *testing.T) {
+	db, err := openDB(t.TempDir() + "/purge.db")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO salons (slug, name) VALUES ('p', 'P')`); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 11, 3, 10, 0, 0, 0, time.UTC)
+	for i, day := range []string{"2026-11-01", "2026-11-02", "2026-11-03"} {
+		if _, err := db.Exec(`INSERT INTO queue_entries (salon_id, number, day, name, token) VALUES (1, 1, ?, 'X', ?)`, day, fmt.Sprint("t", i)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a := &app{db: db}
+	a.purgeOldQueue(now)
+	var n int
+	db.QueryRow(`SELECT COUNT(*) FROM queue_entries`).Scan(&n)
+	if n != 1 {
+		t.Fatalf("nach dem Aufräumen %d Einträge, want 1 (nur heute)", n)
 	}
 }
