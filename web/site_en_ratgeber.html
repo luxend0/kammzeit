@@ -1,0 +1,735 @@
+{{/* Englische Guides für kammzeit.com (site_en_ratgeber.go), Gegenstück zum Ratgeber. Präfix "enguide-".
+     Ein Template pro Artikel ("enguide-<slug>"), dazu Übersicht, Artikelkarten, Deko und Abschluss.
+     Gestaltung wie der Ratgeber: Bausteine aus site.css, Rest aus site-ratgeber.css (Klassen rg-*).
+     Die Texte sind für Salons in der ganzen EU geschrieben, keine Übersetzung des Ratgebers.
+     Lesezeiten stehen in den Karten UND im Artikelkopf, site_en_ratgeber_test.go prüft beide gegen
+     die Wortzahl (200 Wörter/Minute, aufgerundet). */}}
+
+{{define "enguide-list"}}<ol class="rg-cards">
+{{if ne .Path "/guides/online-booking-for-salons"}}<li class="rg-card rg-blau"><a class="card" href="/guides/online-booking-for-salons">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Booking</span>
+    <h3>Online booking for salons</h3>
+    <span class="rg-card-teaser">What a booking link changes day to day, when the phone is still better and how to bring your regular clients along.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="online-booking-for-salons">6 min</span> read</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/guides/reduce-no-shows"}}<li class="rg-card rg-koralle"><a class="card" href="/guides/reduce-no-shows">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">No-shows</span>
+    <h3>Reducing no-shows in your salon</h3>
+    <span class="rg-card-teaser">Reminders, one-click cancellations, sensible deadlines and a clear way to handle clients who keep missing appointments.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="reduce-no-shows">6 min</span> read</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/guides/booking-link-instagram-google-whatsapp"}}<li class="rg-card rg-gelb"><a class="card" href="/guides/booking-link-instagram-google-whatsapp">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Visibility</span>
+    <h3>Your booking link on Instagram, Google and WhatsApp</h3>
+    <span class="rg-card-teaser">Where your link belongs, what to look for in each app and how to check at the end that everything works.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="booking-link-instagram-google-whatsapp">6 min</span> read</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/guides/services-and-durations"}}<li class="rg-card rg-mint"><a class="card" href="/guides/services-and-durations">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/kalender.webp" width="1000" height="800" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Planning</span>
+    <h3>Planning services and durations</h3>
+    <span class="rg-card-teaser">Buffers, processing time for colour and protected breaks: realistic durations take the stress out of every day.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="services-and-durations">6 min</span> read</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/guides/client-records-gdpr"}}<li class="rg-card rg-himmel"><a class="card" href="/guides/client-records-gdpr">
+  <span class="rg-card-fig"><span class="blob" aria-hidden="true"></span><img class="ill" src="/static/img/ill/kartei.webp" width="1000" height="800" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Data protection</span>
+    <h3>Client records and the GDPR</h3>
+    <span class="rg-card-teaser">What you may write down, why allergies count as special category data and what applies to access requests, erasure and processors.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="client-records-gdpr">6 min</span> read</span>
+  </span>
+</a></li>{{end}}
+</ol>{{end}}
+
+{{/* Verspielte Deko aus site.css im Seitenkopf, nur im zweispaltigen Kopf (ab 64rem, site-ratgeber.css). */}}
+{{define "enguide-deco"}}<span class="deco deco-ring" style="top:14%;right:5%" aria-hidden="true"></span><span class="deco deco-cross" style="bottom:15%;right:33%" aria-hidden="true"></span><span class="deco deco-dot" style="top:9%;left:44%" aria-hidden="true"></span><span class="deco deco-dots" style="bottom:22%;right:36%" aria-hidden="true"></span>{{end}}
+
+{{define "enguide-cta"}}<section class="cta-band" aria-labelledby="rg-cta-h">
+  <div class="wrap cta-band-in">
+    <div>
+      <h2 id="rg-cta-h">Take a look at Kammzeit</h2>
+      <p>Online booking for salons: a booking page without an app, email reminders and customer records. Free for one staff member.</p>
+      <p class="actions"><a class="btn" href="/registrieren">Start for free</a> <a class="btn-ghost" href="https://demo.kammzeit.com">View the demo salon</a></p>
+    </div>
+    <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy"></div>
+  </div>
+</section>{{end}}
+
+{{define "enguide-more"}}<section class="section section-alt wave-top rg-more" aria-labelledby="rg-more-h">
+<div class="wrap">
+  <div class="section-head"><h2 id="rg-more-h">Keep reading</h2></div>
+  {{template "enguide-list" .}}
+</div>
+</section>{{end}}
+
+{{define "enguide-index"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-blau rg-index" lang="en">
+<header class="page-head">
+{{template "enguide-deco"}}
+<div class="wrap page-head-in">
+<div>
+  <nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li aria-current="page">Guides</li></ol></nav>
+  <h1>Guides for <span class="hl">salons</span></h1>
+  <p class="lead">Practical know-how for everyday salon life: appointments, no-shows, services and data protection. Written for salons across Europe, in plain language, and honest about where an online system won't help.</p>
+</div>
+<div class="page-head-media rg-kammi"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt="" fetchpriority="high"></div>
+</div>
+</header>
+<section class="section" aria-labelledby="rg-alle-h">
+<div class="wrap">
+  <div class="section-head"><h2 id="rg-alle-h">All guides</h2></div>
+  {{template "enguide-list" .}}
+</div>
+</section>
+{{template "enguide-cta"}}
+</div>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 01 Online booking ============ */}}
+{{define "enguide-online-booking-for-salons"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-blau" lang="en">
+<header class="page-head rg-head">
+{{template "enguide-deco"}}
+<div class="wrap page-head-in">
+<div>
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides">Guides</a></li><li aria-current="page">Online booking</li></ol></nav>
+    <p class="rg-kicker">Booking</p>
+    <h1>Online booking for salons: what it changes and what to look for</h1>
+    <p class="lead">A booking link takes calls off your hands while you're cutting. For that to work, a few things matter: data protection, costs, clear cancellation rules and a good introduction for your regular clients.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1 Nov 2026</time><span class="rg-read">6 min read</span></p>
+</div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt=""></div>
+</div>
+</header>
+<section class="section rg-article">
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Contents</h2>
+  <ol>
+    <li><a href="#what-changes">What changes day to day</a></li>
+    <li><a href="#phone">When the phone is better</a></li>
+    <li><a href="#choosing">What to look for</a></li>
+    <li><a href="#introducing">How to introduce it</a></li>
+    <li><a href="#regulars">Telling your regulars</a></li>
+    <li><a href="#one-calendar">One calendar for everything</a></li>
+    <li><a href="#summary">Summary</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="what-changes">What online booking changes day to day</h2>
+<p>The phone tends to ring just as you pick up the scissors. Either you interrupt the cut, or the call goes unanswered and the client tries again later, or tries another salon. A booking page steps in right there: clients see free times, choose a service and book themselves, even at eleven at night or on a Sunday.</p>
+<p>For you, that mainly means three things:</p>
+<ul>
+  <li><strong>Fewer interruptions.</strong> Appointments booked online don't need to be arranged over the phone. They appear in your calendar and you get an email.</li>
+  <li><strong>Fewer questions.</strong> Anyone booking online sees the duration and price of a service in advance. “How much is a men's cut?” is answered by the page.</li>
+  <li><strong>Confirmations and reminders run by themselves.</strong> The client gets a confirmation by email and a reminder before the appointment. If they can't make it, they cancel with a link instead of simply not turning up.</li>
+</ul>
+<p>What online booking won't do is fill an empty calendar. New clients still find you through recommendations, walk-ins, Instagram or your Google profile. The booking page simply turns interest into an appointment faster.</p>
+
+<h2 id="phone">When the phone is still the better choice</h2>
+<p>Online booking doesn't suit every service or every salon. Be honest about where a conversation is needed first:</p>
+<ul>
+  <li><strong>Colour corrections, bleaching, extensions.</strong> How long these take depends heavily on the starting point. Without a consultation, a fixed time slot is often a guess. Either leave them off the booking page or offer them only as a consultation appointment.</li>
+  <li><strong>Bridal hair and appointments outside opening hours.</strong> These are individual arrangements, not standard appointments.</li>
+  <li><strong>New clients who want complex colour.</strong> If you'd like to do a strand test or a skin allergy test first, that belongs in a conversation.</li>
+  <li><strong>Regulars who prefer to call.</strong> Some people simply don't want to book online. Don't force them. The phone stays a way to book, and the booking page is an extra.</li>
+</ul>
+<p>A small salon where nearly every client books the next visit while paying may not need an online system at all. If the phone rarely gets in the way and hardly anyone misses an appointment, that's perfectly fine.</p>
+
+<h2 id="choosing">What to look for when choosing a system</h2>
+<h3>Data protection and where the servers are</h3>
+<p>A booking system stores your clients' names, email addresses, phone numbers and appointments. Under the GDPR you are responsible for that data, and the provider processes it on your behalf. That requires a data processing agreement under Art.&nbsp;28 GDPR. A trustworthy provider offers one without being asked. Also ask where the servers are: hosting inside the EU makes a lot of things simpler. There is more on this in the guide <a href="/guides/client-records-gdpr">Client records and the GDPR</a>.</p>
+<h3>No app, no client account</h3>
+<p>Every hurdle costs bookings. If a client first has to install an app or create a password, they will call instead or give up. Make sure booking works in an ordinary mobile browser and only asks for what you really need: name, email address and, if you like, a phone number.</p>
+<h3>Compare costs honestly</h3>
+<p>Pricing models vary a lot: a fixed monthly fee, a fee per staff member, commission per booking or extra charges for text messages. Work out what a normal month would cost using your own numbers. Commission per appointment looks cheap at first and becomes expensive once many clients book online. Also check how long you are tied in and how you cancel.</p>
+<h3>Cancellation rules and notice</h3>
+<p>You should be able to decide for yourself how late clients can cancel online, how short-notice a booking can be and how far ahead people can book. Without a minimum notice, someone books the 9:00 slot at 8:55, and you only find out when they walk through the door.</p>
+<h3>Languages</h3>
+<p>In many European towns, a salon's clients don't all speak the same language. Check which languages the booking page and the emails to clients are available in. In Kammzeit you choose English or German for your booking page.</p>
+<h3>Taking your data with you</h3>
+<p>Ask beforehand whether you can export your customer records and appointments, for example as a CSV file. If you ever want to switch, your data shouldn't be stuck with the provider.</p>
+
+<h2 id="introducing">How to introduce online booking</h2>
+<ol>
+  <li><strong>Add your services, but not all of them.</strong> Start with the standard ones: cuts, wash and blow-dry, simple colour. Complex treatments stay on the phone for now.</li>
+  <li><strong>Enter realistic durations.</strong> Allow time for the consultation and for tidying up. The guide <a href="/guides/services-and-durations">Planning services and durations</a> explains how.</li>
+  <li><strong>Keep working hours and breaks up to date.</strong> Enter your lunch break, or someone will book right into it.</li>
+  <li><strong>Test it yourself.</strong> Book an appointment on your own phone, read the confirmation email and cancel the appointment again using the link. That way you know exactly what your clients experience.</li>
+  <li><strong>Put the link everywhere.</strong> Instagram bio, Google Business Profile, WhatsApp, your website. The guide <a href="/guides/booking-link-instagram-google-whatsapp">Your booking link on Instagram, Google and WhatsApp</a> walks you through it.</li>
+</ol>
+
+<h2 id="regulars">Telling your regular clients</h2>
+<p>Your regulars are best told in person, at the till or as they leave. One sentence is enough: “By the way, you can book online now. The link is on our Instagram and on this card.”</p>
+<p>These also help:</p>
+<ul>
+  <li>a small card or stand at the till with the link and a QR code,</li>
+  <li>a line in your voicemail greeting: “You can also book online at …”,</li>
+  <li>a short post or story showing what booking looks like.</li>
+</ul>
+<p>The tone matters: online booking is an extra option, not an obligation. Anyone who wants to keep calling can do so.</p>
+
+<h2 id="one-calendar">Phone and online bookings in one calendar</h2>
+<p>A common mistake when switching: online appointments live in the system while phone bookings stay in the paper diary. Then someone books online exactly the slot you already gave away on the phone. So enter every appointment in the same calendar, wherever it comes from. In Kammzeit you add it in the calendar with “New appointment”, and the time can no longer be booked online.</p>
+<p>If you want to keep the paper diary going for a while, that's fine. Just follow one simple rule: the digital calendar is the truth, the paper is the copy.</p>
+
+<h2 id="summary">Summary</h2>
+<p>Online booking pays off when your phone often rings at the wrong moment and many appointments are standard services. Look for a data processing agreement and servers in the EU, booking without an app or account, a transparent pricing model and cancellation rules you set yourself. Introduce it step by step, talk to your regulars in person and keep all appointments in one calendar.</p>
+<p>Kammzeit is one such booking page for salons, with a free plan for one staff member. The quickest way to see whether it suits your salon is the <a href="https://demo.kammzeit.com">demo salon</a>.</p>
+</article>
+<aside class="card rg-help" aria-label="Related help article">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
+  <p>Related article in the Help Centre: <a href="/help/getting-started">Getting started with Kammzeit</a></p>
+</aside>
+</div>
+</div>
+</section>
+{{template "enguide-more" .}}
+{{template "enguide-cta"}}
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Online booking for salons: what it changes and what to look for","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"en","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.com/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://kammzeit.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://kammzeit.com/guides"},{"@type":"ListItem","position":3,"name":"Online booking for salons","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 02 No-shows ============ */}}
+{{define "enguide-reduce-no-shows"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-koralle" lang="en">
+<header class="page-head rg-head">
+{{template "enguide-deco"}}
+<div class="wrap page-head-in">
+<div>
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides">Guides</a></li><li aria-current="page">Reducing no-shows</li></ol></nav>
+    <p class="rg-kicker">No-shows</p>
+    <h1>Reducing no-shows in your salon: what actually helps</h1>
+    <p class="lead">An empty chair costs you time you'll never get back. What helps most against missed appointments are reminders, easy cancellations and clear rules. Here's how to put them in place, and where their limits are.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1 Nov 2026</time><span class="rg-read">6 min read</span></p>
+</div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt=""></div>
+</div>
+</header>
+<section class="section rg-article">
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Contents</h2>
+  <ol>
+    <li><a href="#why">Why appointments get missed</a></li>
+    <li><a href="#reminders">Reminders</a></li>
+    <li><a href="#cancelling">Make cancelling easy</a></li>
+    <li><a href="#deadlines">Deadline and notice</a></li>
+    <li><a href="#repeat">Repeat no-shows</a></li>
+    <li><a href="#deposits">Deposits</a></li>
+    <li><a href="#fees">No-show fees</a></li>
+    <li><a href="#gaps">Filling gaps</a></li>
+    <li><a href="#summary">In short</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="why">Why appointments get missed</h2>
+<p>Very few clients stay away because they don't care. Usually there's something mundane behind it:</p>
+<ul>
+  <li><strong>Forgotten.</strong> The appointment was made six weeks ago and isn't in any calendar.</li>
+  <li><strong>Cancelling is a hassle.</strong> The salon can't be reached in the evening, the line is busy in the morning, and at some point it feels too late and too awkward.</li>
+  <li><strong>Mixed up.</strong> Wrong day, wrong time, or they thought the appointment was next week.</li>
+  <li><strong>Something came up.</strong> A sick child, a traffic jam, a changed shift.</li>
+</ul>
+<p>You can do a lot about the first three. You'll never get rid of the fourth entirely, but you can make sure you at least hear about it in time.</p>
+
+<h2 id="reminders">Reminders before it's too late</h2>
+<p>A reminder the day before is the simplest remedy for forgetting. It arrives early enough for the client to cancel and late enough that the appointment is really on their mind.</p>
+<p>What matters:</p>
+<ul>
+  <li><strong>It contains everything important:</strong> date, time, service, address and a link to cancel.</li>
+  <li><strong>It's sent automatically.</strong> If you have to write each reminder yourself, it gets forgotten on busy days.</li>
+  <li><strong>A calendar entry helps too.</strong> Anyone who has the appointment in their phone calendar gets a reminder from there as well.</li>
+</ul>
+<p>Kammzeit emails the reminder 24 hours before the appointment, and clients can add the appointment to their own calendar straight from the confirmation. Kammzeit doesn't send text messages. For long appointments and clients who rarely read email, a quick call the day before can still make sense.</p>
+
+<h2 id="cancelling">Make cancelling easy</h2>
+<p>It sounds contradictory, but it's the most important point: the easier it is to cancel, the fewer people simply don't turn up. A cancellation the day before is annoying; a no-show is worse. With a cancellation you know in advance and can still give the slot to someone else.</p>
+<ul>
+  <li><strong>Let clients cancel without calling.</strong> A link in the confirmation and in the reminder is enough. One click and it's done, even at 23:00.</li>
+  <li><strong>Don't make people feel guilty.</strong> “Please let us know in good time so someone else can have the slot” works better than any threat.</li>
+  <li><strong>Keep your phone number visible.</strong> Anyone who is too late to cancel online should at least know where to call.</li>
+</ul>
+<p>In Kammzeit the salon gets an email for every cancellation, and the time becomes available on the booking page again straight away.</p>
+
+<h2 id="deadlines">Setting a cancellation deadline and notice</h2>
+<p>The cancellation deadline decides how late clients can still cancel online. After that, they have to call. This has two advantages: short-notice cancellations reach you personally, and you can ask straight away whether another time would suit.</p>
+<p>How long the deadline should be depends on your appointments. For example:</p>
+<ul>
+  <li><strong>Short appointments such as men's cuts:</strong> a few hours is often enough, because gaps like these are easier to fill.</li>
+  <li><strong>Long appointments such as colour or highlights:</strong> 24 hours or more, because a free two-hour block on the same day is hard to fill.</li>
+</ul>
+<p>Kammzeit has one cancellation deadline per salon, not per service, so choose the value that suits your longer appointments. Once it's set, the deadline is shown below the booking form automatically. If you want to say more, for instance what applies after the deadline, add it to the “About us” text on your booking page. That way the rule is visible before anyone books.</p>
+<p>Two more settings help:</p>
+<ul>
+  <li><strong>Booking window.</strong> If appointments can only be booked a few weeks ahead, there's less time between booking and appointment in which to forget.</li>
+  <li><strong>Minimum notice.</strong> It prevents bookings five minutes before the start that you would never notice in time.</li>
+</ul>
+
+<h2 id="repeat">Repeat no-shows: friendly and clear</h2>
+<p>Most missed appointments are one-offs. But if the same person misses an appointment for the third time, you should respond. To notice it at all, mark no-shows consistently. In Kammzeit you set the appointment to “no-show”, and the appointment history on the customer card shows how often it has happened.</p>
+<p>One possible approach:</p>
+<ol>
+  <li><strong>The first time:</strong> do nothing, or ask briefly and kindly whether everything is all right.</li>
+  <li><strong>The second time:</strong> mention it at the next visit, calmly and without blame: “Your last two appointments didn't happen. Please let me know if you can't make it, then I can give the slot to someone else.”</li>
+  <li><strong>After that:</strong> only arrange appointments with this person directly, for example at short notice on the day if something is free.</li>
+</ol>
+<p>Kammzeit doesn't block anyone automatically, and you can't exclude individual people from online booking. A personal conversation is the more effective tool here anyway.</p>
+
+<h2 id="deposits">Deposits: effective, but with side effects</h2>
+<p>People who have already paid something when booking are less likely to simply stay away. But a deposit has downsides too:</p>
+<ul>
+  <li>Some clients won't book at all, especially new ones.</li>
+  <li>Payment providers charge fees.</li>
+  <li>You need clear rules on when a deposit is kept and when you refund it, and then you have to handle those cases.</li>
+</ul>
+<p>A deposit makes most sense for long, expensive appointments. For a men's cut it's usually overkill.</p>
+<p>Online deposits are planned for Kammzeit but not available yet. Until then, you can agree a deposit in person for long appointments, for example during a consultation in the salon.</p>
+
+<h2 id="fees">No-show fees: only if agreed beforehand</h2>
+<p>You may be thinking about charging a fee for missed appointments. Whether and how you can do that depends on the contract and consumer law of the country your salon is in, and the rules differ across the EU. One principle applies almost everywhere: a fee only works if it was agreed beforehand, clearly and visibly, before the client books. A sign they never saw, or a rule you only mention after the missed appointment, is not enough.</p>
+<p>The amount and the wording matter as well. Consumer law generally doesn't allow unreasonably high flat fees in standard terms, and many countries have their own rules on what a business may charge when a booked service doesn't take place. Whether a particular rule holds up depends on the details.</p>
+<p class="rg-note"><strong>Note:</strong> This section is general information, not legal advice. Before you introduce a no-show fee, have the wording checked by a lawyer or ask your trade association or chamber.</p>
+<p>In practice, chasing a regular client for a fee often brings more trouble than money. A clear cancellation rule and an open conversation are often the better way.</p>
+
+<h2 id="gaps">Filling gaps again</h2>
+<p>When an appointment is cancelled, the time is immediately bookable online again in Kammzeit. To make sure someone actually books it:</p>
+<ul>
+  <li>Keep a short list of clients who like to come in at short notice, and call them. A note on paper or on your phone is enough.</li>
+  <li>Post free slots at short notice as a story, with your booking link.</li>
+  <li>Don't expect to fill every gap. A cancellation the day before is still better than a no-show.</li>
+</ul>
+
+<h2 id="summary">In short</h2>
+<ul class="rg-check">
+  <li>A reminder the day before with a cancellation link, sent automatically.</li>
+  <li>Cancelling with one click, without a phone call.</li>
+  <li>Cancellation deadline, minimum notice and booking window set to suit your appointments.</li>
+  <li>No-shows marked, and repeat no-shows addressed in person.</li>
+  <li>Deposits and no-show fees only with clear rules agreed in advance.</li>
+</ul>
+</article>
+<aside class="card rg-help" aria-label="Related help article">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
+  <p>Related article in the Help Centre: <a href="/help/cancellations-and-no-shows">Cancellations and no-shows in Kammzeit</a></p>
+</aside>
+</div>
+</div>
+</section>
+{{template "enguide-more" .}}
+{{template "enguide-cta"}}
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Reducing no-shows in your salon: what actually helps","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"en","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.com/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://kammzeit.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://kammzeit.com/guides"},{"@type":"ListItem","position":3,"name":"Reducing no-shows in your salon","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 03 Booking link ============ */}}
+{{define "enguide-booking-link-instagram-google-whatsapp"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-gelb" lang="en">
+<header class="page-head rg-head">
+{{template "enguide-deco"}}
+<div class="wrap page-head-in">
+<div>
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides">Guides</a></li><li aria-current="page">Booking link</li></ol></nav>
+    <p class="rg-kicker">Visibility</p>
+    <h1>Adding your booking link to Instagram, Google Business Profile and WhatsApp</h1>
+    <p class="lead">A booking link only helps if your clients can find it. Here's where it belongs, step by step. Because app menus change often, we describe what to look for rather than every single tap.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1 Nov 2026</time><span class="rg-read">6 min read</span></p>
+</div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt=""></div>
+</div>
+</header>
+<section class="section rg-article">
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Contents</h2>
+  <ol>
+    <li><a href="#before">First: check your link</a></li>
+    <li><a href="#instagram">Instagram</a></li>
+    <li><a href="#google">Google Business Profile</a></li>
+    <li><a href="#whatsapp">WhatsApp Business</a></li>
+    <li><a href="#more">Website, Facebook and more</a></li>
+    <li><a href="#in-salon">QR code in the salon</a></li>
+    <li><a href="#announce">Announcing the link</a></li>
+    <li><a href="#test">Test it at the end</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="before">First: check your link</h2>
+<p>In Kammzeit every salon has its own booking page at an address like <code>yoursalon.kammzeit.com</code>. You open it from the dashboard via “Booking page” at the top. Before you share the link:</p>
+<ol>
+  <li><strong>Open it on your phone in a private window.</strong> That way you see the page as a new client would, without being logged in.</li>
+  <li><strong>Check your name, address, phone number and services.</strong> Everyone who arrives via Instagram or Google sees what's there.</li>
+  <li><strong>Copy the full link,</strong> including <code>https://</code> at the start. Some apps don't reliably recognise links without it.</li>
+</ol>
+<p>Use the same link everywhere and write down where you have put it. If something changes later, you'll know exactly what to update.</p>
+
+<h2 id="instagram">Instagram</h2>
+<p>Instagram has two good places for your link: your profile and your stories.</p>
+<h3>In your profile</h3>
+<ol>
+  <li>Open your profile and tap the button to edit it.</li>
+  <li>Look for the links section and add an external link.</li>
+  <li>Paste your booking link and give it a short title such as “Book an appointment”.</li>
+  <li>Add a sentence to your bio saying what the link is for: “Book online any time, link below.”</li>
+</ol>
+<p>If you add several links, put the booking link first. On the profile, usually only the first link is visible straight away.</p>
+<h3>In stories</h3>
+<p>Stories have a link sticker. It works well for last-minute free slots: a photo of the empty chair, “Free today at 15:00” and the sticker with your booking link. Also save a story with the link as a highlight on your profile, for example under “Book”. That way it's still there after 24 hours.</p>
+
+<h2 id="google">Google Business Profile</h2>
+<p>Many people look for a salon through Google Search or Google Maps, which makes your Business Profile one of the most important places for the link.</p>
+<ol>
+  <li>Sign in with the Google account you use to manage your Business Profile and open the option to edit it. You can also do this straight from Google Search by searching for your salon's name.</li>
+  <li>In the contact details, look for a field for appointment or booking links. Depending on the view, it may be labelled slightly differently.</li>
+  <li>Enter your booking link there and save.</li>
+  <li>If you don't have a website of your own, you can also enter the booking link as your website. Your address, phone number and services are on the booking page anyway.</li>
+</ol>
+<p>Google reviews some profile changes before they go live, so it can take a while for the link to appear. Check back after a few days.</p>
+<p>While you're there, update your opening hours. If Google shows different hours from your booking page, clients get confused.</p>
+<p>You can also publish posts through your profile, for example about new services or free slots before the holidays. Depending on the type of post, you can add a button. Choose the booking option and add your link there too.</p>
+
+<h2 id="whatsapp">WhatsApp Business</h2>
+<p>If clients message you on WhatsApp, use that for the link. The WhatsApp Business app offers several ways to do it:</p>
+<ul>
+  <li><strong>In your business profile:</strong> you can add a website address there. Enter your booking link and it appears in your profile.</li>
+  <li><strong>As an automatic message:</strong> look for greeting or away messages in the business tools. Outside opening hours, the reply could be: “Thanks for your message! We're not in the salon right now. You can book any time here: yoursalon.kammzeit.com. We'll get back to you tomorrow.”</li>
+  <li><strong>As a quick reply:</strong> save a prepared answer with the link. Then you don't have to type it out every time someone asks “Do you have anything free next week?”</li>
+</ul>
+<p>The standard WhatsApp app doesn't have these tools; there you simply send the link yourself. Whether your salon uses WhatsApp in a way that complies with data protection rules is a separate question; it doesn't change anything about the link.</p>
+
+<h2 id="more">Website, Facebook and more</h2>
+<ul>
+  <li><strong>Your own website:</strong> put a clear “Book an appointment” button on the home page, not just a text link far down. It also fits well next to your price list.</li>
+  <li><strong>Facebook page:</strong> pages can have an action button that points to an address. Look for it in your page settings and add your booking link.</li>
+  <li><strong>Email signature:</strong> one line under every email, such as “Book online: yoursalon.kammzeit.com”.</li>
+  <li><strong>Voicemail:</strong> mention the link briefly in your greeting, so people who call outside opening hours can still book. Spell out your salon's name if it's written in an unusual way.</li>
+</ul>
+
+<h2 id="in-salon">In the salon: QR code and cards</h2>
+<p>Your regulars are sitting right in front of you. A QR code at the till or on your business card is the shortest route to their next appointment.</p>
+<ul>
+  <li>Create the QR code so that it contains your booking link directly. Some services redirect through their own addresses and later switch the code off or show ads. Use a static QR code without a redirect.</li>
+  <li>Also print the link as text below the code, for anyone who doesn't want to scan.</li>
+  <li>Test the printed code with two different phones before you order a hundred cards.</li>
+</ul>
+
+<h2 id="announce">Announcing the link</h2>
+<p>A link on its own is easy to overlook. Say what happens when someone taps it and what they get out of it:</p>
+<ul>
+  <li><strong>Specific rather than vague.</strong> “Book online, even in the evening” says more than “link in bio”.</li>
+  <li><strong>Remove doubts.</strong> A short line such as “no app, no account needed” takes away the fear of a long form.</li>
+  <li><strong>In your clients' languages.</strong> If your clients speak different languages, write the line in two of them. It costs you one extra sentence.</li>
+  <li><strong>Repeat it.</strong> A pinned post on your Instagram profile that shows booking in three pictures still helps new followers weeks later.</li>
+</ul>
+<p>And keep giving out your phone number. Anyone who prefers to call should still be able to.</p>
+
+<h2 id="test">Test it at the end</h2>
+<p>Go through every place once, the way your clients would:</p>
+<ol>
+  <li>Open your Instagram profile on someone else's phone and tap the link.</li>
+  <li>Search for your salon on Google and check whether the booking link appears.</li>
+  <li>Send yourself a WhatsApp message from another number and check whether the automatic reply arrives.</li>
+  <li>Book a test appointment and cancel it again using the link in the email.</li>
+</ol>
+<p>After that, your link is where your clients are already looking. The booking page does the rest.</p>
+</article>
+<aside class="card rg-help" aria-label="Related help article">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
+  <p>Related article in the Help Centre: <a href="/help/share-link">Sharing your booking link</a></p>
+</aside>
+</div>
+</div>
+</section>
+{{template "enguide-more" .}}
+{{template "enguide-cta"}}
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Adding your booking link to Instagram, Google Business Profile and WhatsApp","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"en","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.com/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://kammzeit.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://kammzeit.com/guides"},{"@type":"ListItem","position":3,"name":"Your booking link on Instagram, Google and WhatsApp","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 04 Services and durations ============ */}}
+{{define "enguide-services-and-durations"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-mint" lang="en">
+<header class="page-head rg-head">
+{{template "enguide-deco"}}
+<div class="wrap page-head-in">
+<div>
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides">Guides</a></li><li aria-current="page">Services and durations</li></ol></nav>
+    <p class="rg-kicker">Planning</p>
+    <h1>Planning services and durations: buffers, processing time, breaks</h1>
+    <p class="lead">Appointments planned too tightly make the whole day stressful: you fall behind, the next client waits, your break disappears. Realistic durations, built-in buffers and a clear list of services make things calmer.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1 Nov 2026</time><span class="rg-read">6 min read</span></p>
+</div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kalender.webp" width="1000" height="800" alt=""></div>
+</div>
+</header>
+<section class="section rg-article">
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Contents</h2>
+  <ol>
+    <li><a href="#why">Why duration matters</a></li>
+    <li><a href="#measure">Measure your own times</a></li>
+    <li><a href="#buffer">Build in buffers</a></li>
+    <li><a href="#processing">Processing time for colour</a></li>
+    <li><a href="#variants">Variants instead of one duration</a></li>
+    <li><a href="#breaks">Protect your breaks</a></li>
+    <li><a href="#example">Example list of services</a></li>
+    <li><a href="#prices">Show prices clearly</a></li>
+    <li><a href="#adjust">Adjust as you go</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="why">Why realistic durations make such a difference</h2>
+<p>On the phone you plan by feel: “I know her, that takes an hour.” With online booking, the duration you entered for the service decides. If it's too short, the next appointment lands right after it, and every small delay carries through the rest of the day.</p>
+<p>If the duration is a little generous, not much happens: now and then you finish five minutes early, sweep up calmly or have a coffee. When in doubt, plan slightly too long rather than too short.</p>
+
+<h2 id="measure">Measure your own times</h2>
+<p>Estimates tend to be optimistic, because you remember the appointments that went smoothly. A better approach: for one week, note how long your main services really take, from greeting the client to taking payment. A sheet of paper next to the till is enough.</p>
+<p>Then don't take the fastest time but one you can manage on most days. If a men's cut usually takes 25 minutes and sometimes 35, plan with 30 rather than 25.</p>
+<p>When several people work in a team, their times often differ. In Kammzeit a service has one duration for everyone who offers it. Choose it so that the slowest person on the team can manage it too.</p>
+
+<h2 id="buffer">Build in buffers</h2>
+<p>An appointment is more than the cut itself. There's also:</p>
+<ul>
+  <li>greeting, taking the coat, a short consultation,</li>
+  <li>washing the hair,</li>
+  <li>taking payment and booking the next appointment,</li>
+  <li>tidying the station, sweeping up hair, cleaning tools.</li>
+</ul>
+<p>These minutes come with every appointment, even if they feel small. Include them in the duration of the service. Five to ten minutes per appointment is a useful starting point that you adjust after a few weeks.</p>
+<p>Kammzeit has no separate buffer field; the buffer is part of the duration. The client then sees 45 minutes, for example, even if you only cut for 35 of them. That's fine, because the time belongs to the appointment.</p>
+
+<h2 id="processing">Processing time for colour</h2>
+<p>For colour, toners or perms, there's also processing time. It depends on the product, meaning the manufacturer's instructions, and on the hair. A root colour with a cut could look like this:</p>
+<div class="rg-table">
+<table>
+  <caption>Example with assumed values, not a recommendation</caption>
+  <thead><tr><th scope="col">Step</th><th scope="col" class="num">Duration</th></tr></thead>
+  <tbody>
+    <tr><td>Greeting and consultation</td><td class="num">10 min</td></tr>
+    <tr><td>Mixing and applying the colour</td><td class="num">20 min</td></tr>
+    <tr><td>Processing time</td><td class="num">35 min</td></tr>
+    <tr><td>Rinsing and conditioning</td><td class="num">10 min</td></tr>
+    <tr><td>Cutting and blow-drying</td><td class="num">35 min</td></tr>
+    <tr><td>Payment and tidying up</td><td class="num">10 min</td></tr>
+  </tbody>
+  <tfoot><tr><th scope="row">Total</th><td class="num">120 min</td></tr></tfoot>
+</table>
+</div>
+<p>Use your own values for each step. Processing time is the only part you can't speed up.</p>
+<p>While the colour processes, your hands are free, and it's tempting to fit in a second client. Kammzeit, however, plans one appointment after another for each staff member. The calendar doesn't allow overlapping appointments for the same person, not even when you add them yourself. So the processing time blocks the whole slot. Use it for preparation, returning calls or a short break. If working on other clients during processing time is essential for your salon, you should know that Kammzeit doesn't currently support it.</p>
+
+<h2 id="variants">Variants instead of one duration for everything</h2>
+<p>A cut on a chin-length bob takes a different amount of time from one on waist-length hair. If you create just one service called “Women's cut” with a single duration, the time will often be wrong. Create variants instead:</p>
+<ul>
+  <li>by hair length: short, medium, long,</li>
+  <li>by scope: “cut only” or “wash, cut and blow-dry”,</li>
+  <li>frequent combinations as a service of their own, such as “Root colour with cut”.</li>
+</ul>
+<p>The last point matters in Kammzeit: clients book one service per appointment. So anything that's often booked together becomes its own service with the total duration.</p>
+<p>Use the description to explain what's included and who the variant is for: “For hair up to shoulder length, including wash and blow-dry.” That helps people choose. Still, keep the list manageable. Anyone who has to scroll through thirty entries will end up calling anyway. Combine services that take about as long and cost about the same.</p>
+
+<h2 id="breaks">Protect your breaks</h2>
+<p>If every free minute can be booked, sooner or later it will be. So make your breaks a fixed part of your working hours. In Kammzeit each staff member can have two time blocks per day, for example 9:00 to 13:00 and 13:45 to 18:00. Nothing can be booked in between.</p>
+<ul>
+  <li><strong>Minimum notice:</strong> if clients have to book at least an hour ahead, no appointment will surprise you while you're eating.</li>
+  <li><strong>End of the day:</strong> let your working hours end when the last appointment should be finished at the latest. Kammzeit only offers times at which the whole service still fits within working hours.</li>
+</ul>
+
+<h2 id="example">Example: a list of services</h2>
+<p>This is what a small list of services for a hair salon might look like. The prices are made up and only for illustration. Your prices depend on your location, costs, training and products.</p>
+<div class="rg-table">
+<table>
+  <caption>Example price list with made-up prices, not a price recommendation</caption>
+  <thead><tr><th scope="col">Service</th><th scope="col" class="num">Duration</th><th scope="col" class="num">Price</th></tr></thead>
+  <tbody>
+    <tr><td>Men's cut</td><td class="num">30 min</td><td class="num">28&nbsp;€</td></tr>
+    <tr><td>Men's cut with beard trim</td><td class="num">45 min</td><td class="num">38&nbsp;€</td></tr>
+    <tr><td>Women's cut, short, with wash and blow-dry</td><td class="num">45 min</td><td class="num">42&nbsp;€</td></tr>
+    <tr><td>Women's cut, long, with wash and blow-dry</td><td class="num">60 min</td><td class="num">52&nbsp;€</td></tr>
+    <tr><td>Wash and blow-dry</td><td class="num">30 min</td><td class="num">25&nbsp;€</td></tr>
+    <tr><td>Root colour with blow-dry</td><td class="num">90 min</td><td class="num">65&nbsp;€</td></tr>
+    <tr><td>Root colour with cut</td><td class="num">120 min</td><td class="num">89&nbsp;€</td></tr>
+    <tr><td>Children's cut, up to age 10</td><td class="num">20 min</td><td class="num">16&nbsp;€</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="prices">Show prices clearly</h2>
+<ul>
+  <li><strong>Show final prices.</strong> Private clients should see the price they will actually pay, including any VAT.</li>
+  <li><strong>Use “from” prices sparingly.</strong> If the price depends heavily on the work involved, a “from” price is honest. Say what it depends on. Variants with fixed prices are better still. In Kammzeit you enter a fixed amount; if you need a “from”, put it in the name or the description.</li>
+  <li><strong>A price list in the salon.</strong> Regardless of your booking page, many EU countries require service prices to be displayed in the salon or made available before the service. Check what applies where you work.</li>
+  <li><strong>Check price and duration together.</strong> If a service regularly takes longer than planned, the price is often too low as well. Work out what an hour at your station costs you.</li>
+</ul>
+
+<h2 id="adjust">Adjust after four weeks</h2>
+<p>Your first values are a draft. After a few weeks, look at your calendar: for which services do you regularly fall behind? Make those longer. Where are you almost always finished early? Make those shorter. After two or three rounds like this, your calendar matches your real working day.</p>
+</article>
+<aside class="card rg-help" aria-label="Related help article">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
+  <p>Related article in the Help Centre: <a href="/help/services">Setting up services</a></p>
+</aside>
+</div>
+</div>
+</section>
+{{template "enguide-more" .}}
+{{template "enguide-cta"}}
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Planning services and durations: buffers, processing time, breaks","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"en","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.com/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://kammzeit.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://kammzeit.com/guides"},{"@type":"ListItem","position":3,"name":"Planning services and durations","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 05 Client records and the GDPR ============ */}}
+{{define "enguide-client-records-gdpr"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-himmel" lang="en">
+<header class="page-head rg-head">
+{{template "enguide-deco"}}
+<div class="wrap page-head-in">
+<div>
+<nav class="breadcrumb" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/guides">Guides</a></li><li aria-current="page">Client records and the GDPR</li></ol></nav>
+    <p class="rg-kicker">Data protection</p>
+    <h1>Client records and the GDPR: what your salon may write down</h1>
+    <p class="lead">Colour formula, favourite cut, phone number: good client records make your work easier. To keep them on the right side of data protection law, you should know a few ground rules. This guide gives an overview, but it is not legal advice.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1 Nov 2026</time><span class="rg-read">6 min read</span></p>
+</div>
+<div class="page-head-media"><div class="blob" aria-hidden="true"></div><img class="ill" src="/static/img/ill/kartei.webp" width="1000" height="800" alt=""></div>
+</div>
+</header>
+<section class="section rg-article">
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Contents</h2>
+  <ol>
+    <li><a href="#scope">Paper records count too</a></li>
+    <li><a href="#allowed">What you may write down</a></li>
+    <li><a href="#not">What doesn't belong</a></li>
+    <li><a href="#health">Allergies and health data</a></li>
+    <li><a href="#inform">Informing your clients</a></li>
+    <li><a href="#access-erasure">Access and erasure</a></li>
+    <li><a href="#processor">Software and DPAs</a></li>
+    <li><a href="#checklist">Checklist</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="scope">The GDPR applies to paper records too</h2>
+<p>The General Data Protection Regulation doesn't only apply to software. A paper card file is covered as well if it's kept in an ordered way, for example alphabetically in a card box (Art.&nbsp;2(1) GDPR). Whether you work with paper, a spreadsheet or a program makes no difference: the rules are the same. And because the GDPR is an EU regulation, its core rules are the same in every EU country. National laws can add details, for example on how long certain documents must be kept.</p>
+<p>As a salon, you are the “controller” of your clients' data under the GDPR. That means you decide what is stored, and you must be able to explain why.</p>
+
+<h2 id="allowed">What you may write down</h2>
+<p>Every piece of stored data needs a legal basis. For ordinary client records, two are the most important:</p>
+<ul>
+  <li><strong>Contract (Art.&nbsp;6(1)(b) GDPR):</strong> you need a client's name and contact details to arrange appointments, confirm them and let them know about changes.</li>
+  <li><strong>Legitimate interests (Art.&nbsp;6(1)(f) GDPR):</strong> notes that serve your work and that the client would expect, such as last time's colour formula or the length they like to wear.</li>
+</ul>
+<p>Typically unproblematic:</p>
+<ul>
+  <li>name, phone number, email address,</li>
+  <li>appointments and the services booked,</li>
+  <li>colour formula, mixing ratio, processing time,</li>
+  <li>hair type, cutting preferences, preferred length,</li>
+  <li>practical notes such as “prefers mornings”.</li>
+</ul>
+<p>The rule of thumb: only note what you really need for the next treatment. Less data means less risk, and less work when someone asks for access or erasure.</p>
+
+<h2 id="not">What doesn't belong in your records</h2>
+<ul>
+  <li><strong>Judgements about people</strong> such as “difficult”, “annoying” or “reluctant to pay”. Your client can request access and will then see every entry. Only write what you would also show them.</li>
+  <li><strong>Private details unrelated to the treatment,</strong> such as relationships, employer or family arguments, even if they came up in conversation.</li>
+  <li><strong>ID or bank details,</strong> unless you need them for a specific purpose.</li>
+  <li><strong>Health information without consent.</strong> More on that below.</li>
+</ul>
+<p>Factual information, such as an appointment marked as a no-show, is different from a judgement about a person.</p>
+
+<h2 id="health">Allergies and health data: special category data</h2>
+<p>Allergies matter, especially for colour: you should know about a known reaction to certain dyes before you start mixing. Legally, though, this is health data, and under Art.&nbsp;9 GDPR health data is one of the special categories of personal data. Processing it is prohibited in principle unless an exception applies. In a salon, that exception is usually the client's explicit consent (Art.&nbsp;9(2)(a) GDPR).</p>
+<p>In practice, that means:</p>
+<ol>
+  <li><strong>Ask before you write it down:</strong> “May I note that you react to this dye? Then my colleague will know next time too.”</li>
+  <li><strong>Record the consent,</strong> ideally in writing, or at least with the date in the record. You must be able to prove it later.</li>
+  <li><strong>Only note what's necessary.</strong> “No colour with PPD” is enough. A medical history doesn't belong in your records.</li>
+  <li><strong>Mention that consent can be withdrawn at any time.</strong> If it is, you delete the entry.</li>
+</ol>
+<p>The same applies to other health information, such as a scalp condition or a pregnancy, if it's relevant to the treatment.</p>
+<p>If you use software, think about who can see such notes. Kammzeit has one login per salon; there are no separate logins for staff members. Anyone with access to the dashboard sees all of the customer records.</p>
+
+<h2 id="inform">Informing your clients</h2>
+<p>Under Art.&nbsp;13 GDPR you must inform people when you collect their data: who is responsible, what the data is used for, how long it's kept and what rights they have. In the salon, a notice or a sheet at the till works well, alongside the privacy policy on your website.</p>
+<p>Online booking needs this information too. Kammzeit's booking page links to a privacy notice explaining that the salon is responsible for the bookings and that Kammzeit processes the data on its behalf. Mention online booking and Kammzeit as a service provider in your own privacy policy as well.</p>
+
+<h2 id="access-erasure">Access and erasure</h2>
+<h3>Access</h3>
+<p>Under Art.&nbsp;15 GDPR, every client can ask what data you hold about them. You generally have to respond within one month; for complex requests, this can be extended by up to two further months if you tell the client. Access is normally free of charge. First check that the request really comes from your client, especially if it arrives from an unknown email address.</p>
+<p>In Kammzeit, a person's contact details, notes and appointments are on their customer card. You can print or copy this information and hand it over, including the notes.</p>
+<h3>Erasure</h3>
+<p>When you no longer need data, or the client asks for erasure (Art.&nbsp;17 GDPR), you delete it unless a legal obligation to keep it applies. Tax and accounting rules, for instance for invoices and receipts, still apply, and they differ from country to country. If in doubt, ask your accountant which records you need to keep and for how long.</p>
+<p>In Kammzeit you delete a client from their customer card, together with their appointments. Even without requests, it's worth tidying up once a year. Someone who hasn't been in for years doesn't need a customer card any more. Set yourself a period and stick to it.</p>
+
+<h2 id="processor">Software providers and data processing agreements</h2>
+<p>When a provider stores your clients' data for you, such as a booking system or records in the cloud, this is usually processing on your behalf. Art.&nbsp;28 GDPR requires a contract for it, the data processing agreement (DPA). It sets out, among other things, that the provider only processes the data on your instructions, how it protects the data and which sub-processors are involved.</p>
+<p>What to check:</p>
+<ul>
+  <li>Is there a DPA, and can you read it before you sign up?</li>
+  <li>Where is the data stored? Are the servers in the EU?</li>
+  <li>Which sub-processors are there?</li>
+  <li>Can you export your data and have it fully deleted at the end?</li>
+</ul>
+<p>With Kammzeit, the <a href="/dpa">DPA</a> applies from the moment you sign up. The data is stored on servers in a data centre in Eygelshoven in the Netherlands. You can export your customer records as CSV and all of your salon's data as JSON, and you can delete your account yourself.</p>
+
+<h2 id="checklist">Checklist</h2>
+<ul class="rg-check">
+  <li>Only note what you need for the treatment.</li>
+  <li>No judgements, and nothing you wouldn't show the client.</li>
+  <li>Allergies and other health data only with explicit consent, and keep a record of that consent.</li>
+  <li>A privacy notice in the salon and on your website.</li>
+  <li>Answer access requests within one month.</li>
+  <li>Delete old records regularly.</li>
+  <li>A DPA with every provider that stores client data for you.</li>
+  <li>Access to the records only for people who need it.</li>
+</ul>
+<p class="rg-note"><strong>Note:</strong> This guide is general information, not legal advice. For specific questions, contact a lawyer, your trade association or the data protection authority in your country.</p>
+</article>
+<aside class="card rg-help" aria-label="Related help article">
+  <img class="icon-lg" src="/static/img/icons/hilfe.svg" width="48" height="48" alt="">
+  <p>Related article in the Help Centre: <a href="/help/customer-records">Customer records in Kammzeit</a></p>
+</aside>
+</div>
+</div>
+</section>
+{{template "enguide-more" .}}
+{{template "enguide-cta"}}
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Client records and the GDPR: what your salon may write down","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"en","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.com/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.com/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://kammzeit.com/"},{"@type":"ListItem","position":2,"name":"Guides","item":"https://kammzeit.com/guides"},{"@type":"ListItem","position":3,"name":"Client records and the GDPR","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
