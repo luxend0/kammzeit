@@ -54,3 +54,48 @@ func overlapsAny(start, end time.Time, busy []Busy) bool {
 	}
 	return false
 }
+
+// bookingDays: erster (heute) und letzter online buchbarer Tag, jeweils
+// Mitternacht in der Zeitzone des Salons.
+func bookingDays(s *salon, now time.Time) (first, last time.Time) {
+	y, m, d := now.In(s.Loc).Date()
+	first = time.Date(y, m, d, 0, 0, 0, 0, s.Loc)
+	return first, first.AddDate(0, 0, max(s.HorizonDays, 0))
+}
+
+// slotsFor: freie Startzeiten am Tag `day`, vereinigt über alle Mitarbeiter in
+// staff. Frühestens now + Vorlauf (min_notice_min), nur innerhalb des Horizonts.
+func slotsFor(q querier, s *salon, staff []staffMember, dur time.Duration, day, now time.Time) ([]time.Time, error) {
+	first, last := bookingDays(s, now)
+	y, m, d := day.In(s.Loc).Date()
+	day = time.Date(y, m, d, 0, 0, 0, 0, s.Loc)
+	if day.Before(first) || day.After(last) {
+		return nil, nil
+	}
+	earliest := now.Add(time.Duration(s.MinNoticeMin) * time.Minute)
+	var all []time.Time
+	for _, st := range staff {
+		free, err := freeSlotsFor(q, st.ID, dur, day, earliest)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, free...)
+	}
+	slices.SortFunc(all, func(a, b time.Time) int { return a.Compare(b) })
+	return slices.CompactFunc(all, func(a, b time.Time) bool { return a.Equal(b) }), nil
+}
+
+// pickStaff: der erste Mitarbeiter (Reihenfolge von staff), bei dem `start`
+// unter allen Buchungsregeln frei ist, sonst nil.
+func pickStaff(q querier, s *salon, staff []staffMember, dur time.Duration, start, now time.Time) (*staffMember, error) {
+	for i := range staff {
+		free, err := slotsFor(q, s, staff[i:i+1], dur, start, now)
+		if err != nil {
+			return nil, err
+		}
+		if slices.ContainsFunc(free, start.Equal) {
+			return &staff[i], nil
+		}
+	}
+	return nil, nil
+}

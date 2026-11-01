@@ -23,13 +23,13 @@ func (a *app) routesCatalog(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dashboard/leistungen/{id}", a.dash(a.leistEdit))
 	mux.HandleFunc("POST /dashboard/leistungen/{id}", a.dash(a.leistSave))
 	mux.HandleFunc("POST /dashboard/leistungen/{id}/verschieben", a.dash(a.leistMove))
-	mux.HandleFunc("POST /dashboard/leistungen/{id}/loeschen", a.dash(a.catalogDelete("services", "/dashboard/leistungen")))
+	mux.HandleFunc("POST /dashboard/leistungen/{id}/loeschen", a.dash(a.catalogDelete("services", "/dashboard/leistungen?gespeichert=leistung")))
 	mux.HandleFunc("GET /dashboard/team", a.dash(a.teamList))
 	mux.HandleFunc("GET /dashboard/team/neu", a.dash(a.teamEdit))
 	mux.HandleFunc("POST /dashboard/team/neu", a.dash(a.teamSave))
 	mux.HandleFunc("GET /dashboard/team/{id}", a.dash(a.teamEdit))
 	mux.HandleFunc("POST /dashboard/team/{id}", a.dash(a.teamSave))
-	mux.HandleFunc("POST /dashboard/team/{id}/loeschen", a.dash(a.catalogDelete("staff", "/dashboard/team")))
+	mux.HandleFunc("POST /dashboard/team/{id}/loeschen", a.dash(a.catalogDelete("staff", "/dashboard/team?gespeichert=mitarbeiter")))
 }
 
 // catalogID ist die ID aus dem Pfad, 0 wenn ungültig (findet dann nichts).
@@ -42,9 +42,34 @@ func catalogNotFound(a *app, w http.ResponseWriter, r *http.Request, c *dctx) {
 	a.dashError(w, r, c, http.StatusNotFound, "Diesen Eintrag gibt es nicht.")
 }
 
+// catalogInvalid steht über dem Formular, die Einzelheiten stehen an den Feldern.
+const catalogInvalid = "Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert."
+
+// catalogSaved: Erfolgsmeldung zu ?gespeichert=<code>. Nur feste Texte, nie etwas aus der URL.
+var catalogSaved = map[string]string{
+	"leistung":                "Leistung gespeichert.",
+	"leistung-neu":            "Leistung angelegt. Alle aktiven Mitarbeiter bieten sie an, ändern kannst du das unter Team.",
+	"leistung-geloescht":      "Leistung gelöscht.",
+	"leistung-deaktiviert":    "Die Leistung hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.",
+	"reihenfolge":             "Reihenfolge geändert. So stehen die Leistungen auch auf der Buchungsseite.",
+	"mitarbeiter":             "Mitarbeiter gespeichert.",
+	"mitarbeiter-neu":         "Mitarbeiter angelegt.",
+	"mitarbeiter-geloescht":   "Mitarbeiter gelöscht.",
+	"mitarbeiter-deaktiviert": "Der Mitarbeiter hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.",
+}
+
+// catalogAppts zählt alle Termine (auch vergangene und abgesagte) an einer Leistung
+// (col = "service_id") oder einem Mitarbeiter ("staff_id"). col ist nie Nutzereingabe.
+func catalogAppts(q querier, salonID int64, col string, id int64) (int, error) {
+	var n int
+	err := q.QueryRow(`SELECT COUNT(*) FROM appointments WHERE salon_id = ? AND `+col+` = ?`, salonID, id).Scan(&n)
+	return n, err
+}
+
 // catalogDelete löscht eine Leistung oder einen Mitarbeiter. Hängen Termine daran,
 // wird nur deaktiviert, damit die Termine nicht per ON DELETE CASCADE mit verschwinden.
-// table ist eine Konstante aus routesCatalog, nie Nutzereingabe.
+// table ist eine Konstante aus routesCatalog, nie Nutzereingabe; an back wird
+// "-geloescht" oder "-deaktiviert" gehängt (Codes in catalogSaved).
 func (a *app) catalogDelete(table, back string) func(http.ResponseWriter, *http.Request, *dctx) {
 	col := map[string]string{"services": "service_id", "staff": "staff_id"}[table]
 	return func(w http.ResponseWriter, r *http.Request, c *dctx) {
@@ -55,14 +80,14 @@ func (a *app) catalogDelete(table, back string) func(http.ResponseWriter, *http.
 			return
 		}
 		defer tx.Rollback()
-		var n int
-		if err := tx.QueryRow(`SELECT COUNT(*) FROM appointments WHERE salon_id = ? AND `+col+` = ?`, c.Salon.ID, id).Scan(&n); err != nil {
+		n, err := catalogAppts(tx, c.Salon.ID, col, id)
+		if err != nil {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		q, done := `DELETE FROM `+table+` WHERE id = ? AND salon_id = ?`, "geloescht"
+		q, done := `DELETE FROM `+table+` WHERE id = ? AND salon_id = ?`, "-geloescht"
 		if n > 0 {
-			q, done = `UPDATE `+table+` SET active = 0 WHERE id = ? AND salon_id = ?`, "deaktiviert"
+			q, done = `UPDATE `+table+` SET active = 0 WHERE id = ? AND salon_id = ?`, "-deaktiviert"
 		}
 		res, err := tx.Exec(q, id, c.Salon.ID)
 		if err != nil {
@@ -77,7 +102,7 @@ func (a *app) catalogDelete(table, back string) func(http.ResponseWriter, *http.
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		http.Redirect(w, r, back+"?"+done, http.StatusSeeOther)
+		http.Redirect(w, r, back+done, http.StatusSeeOther)
 	}
 }
 
@@ -95,6 +120,8 @@ type leistForm struct {
 	ID                                 int64
 	Name, Description, Duration, Price string
 	Active                             bool
+	Errs                               map[string]string // Feldname -> Fehler
+	Appts                              int               // Termine an der Leistung, für den Löschen-Hinweis
 }
 
 func (a *app) leistList(w http.ResponseWriter, r *http.Request, c *dctx) {
@@ -123,8 +150,7 @@ func (a *app) leistList(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	d := a.dashPage(c, r, "leistungen", "Leistungen")
 	d["Services"] = list
-	d["Deactivated"] = r.URL.Query().Has("deaktiviert")
-	d["Deleted"] = r.URL.Query().Has("geloescht")
+	d["SavedMsg"] = catalogSaved[r.URL.Query().Get("gespeichert")]
 	a.render(w, http.StatusOK, "leist-liste", d)
 }
 
@@ -152,6 +178,11 @@ func (a *app) leistRender(w http.ResponseWriter, r *http.Request, c *dctx, statu
 	title := "Neue Leistung"
 	if f.ID != 0 {
 		title = "Leistung bearbeiten"
+		var err error
+		if f.Appts, err = catalogAppts(a.db, c.Salon.ID, "service_id", f.ID); err != nil {
+			a.dashServerError(w, r, c, err)
+			return
+		}
 	}
 	d := a.dashPage(c, r, "leistungen", title)
 	d["F"], d["Error"] = f, msg
@@ -177,19 +208,21 @@ func (a *app) leistSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	dur, durErr := strconv.Atoi(f.Duration)
 	cents, priceErr := leistParsePrice(f.Price)
-	msg := ""
-	switch {
-	case f.Name == "" || utf8.RuneCountInString(f.Name) > 80:
-		msg = "Bitte einen Namen mit höchstens 80 Zeichen angeben."
-	case utf8.RuneCountInString(f.Description) > 300:
-		msg = "Die Beschreibung darf höchstens 300 Zeichen lang sein."
-	case durErr != nil || dur < 5 || dur > 480 || dur%5 != 0:
-		msg = "Die Dauer muss zwischen 5 und 480 Minuten liegen, in 5-Minuten-Schritten."
-	case priceErr != nil:
-		msg = "Bitte einen gültigen Preis angeben, z. B. 25 oder 25,50."
+	f.Errs = map[string]string{}
+	if f.Name == "" || utf8.RuneCountInString(f.Name) > 80 {
+		f.Errs["name"] = "Bitte einen Namen mit höchstens 80 Zeichen angeben."
 	}
-	if msg != "" {
-		a.leistRender(w, r, c, http.StatusUnprocessableEntity, f, msg)
+	if utf8.RuneCountInString(f.Description) > 300 {
+		f.Errs["beschreibung"] = "Die Beschreibung darf höchstens 300 Zeichen lang sein."
+	}
+	if durErr != nil || dur < 5 || dur > 480 || dur%5 != 0 {
+		f.Errs["dauer"] = "Die Dauer muss zwischen 5 und 480 Minuten liegen, in 5-Minuten-Schritten."
+	}
+	if priceErr != nil {
+		f.Errs["preis"] = "Bitte einen gültigen Preis angeben, z. B. 25 oder 25,50."
+	}
+	if len(f.Errs) > 0 {
+		a.leistRender(w, r, c, http.StatusUnprocessableEntity, f, catalogInvalid)
 		return
 	}
 	tx, err := a.db.BeginTx(r.Context(), nil)
@@ -224,7 +257,11 @@ func (a *app) leistSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 		a.dashServerError(w, r, c, err)
 		return
 	}
-	http.Redirect(w, r, "/dashboard/leistungen?gespeichert", http.StatusSeeOther)
+	code := "leistung"
+	if isNew {
+		code = "leistung-neu"
+	}
+	http.Redirect(w, r, "/dashboard/leistungen?gespeichert="+code, http.StatusSeeOther)
 }
 
 // leistMove schiebt eine Leistung eine Position hoch oder runter und nummeriert neu.
@@ -277,7 +314,8 @@ func (a *app) leistMove(w http.ResponseWriter, r *http.Request, c *dctx) {
 			return
 		}
 	}
-	http.Redirect(w, r, "/dashboard/leistungen", http.StatusSeeOther)
+	// Anker: die Seite springt zurück zur verschobenen Zeile.
+	http.Redirect(w, r, fmt.Sprintf("/dashboard/leistungen?gespeichert=reihenfolge#leist-%d", id), http.StatusSeeOther)
 }
 
 // leistParsePrice liest Euro-Beträge wie "25", "25,5", "25,50" oder "25.50" als Cent.
@@ -315,18 +353,26 @@ type teamService struct {
 }
 
 // teamDay: Arbeitszeiten eines Wochentags im Formular, bis zu zwei Blöcke als "HH:MM".
+// Err und Bad setzt teamParseHours (Fehlertext des Tages, welcher Block falsch ist).
 type teamDay struct {
 	WD       int // wie time.Weekday, 0 = Sonntag
 	Label    string
 	From, To [2]string
+	Err      string
+	Bad      [2]bool
 }
 
 type teamForm struct {
-	ID       int64
-	Name     string
-	Active   bool
-	Services []teamService
-	Days     []teamDay
+	ID        int64
+	Name      string
+	Active    bool
+	Services  []teamService
+	Days      []teamDay
+	Errs      map[string]string // Feldname -> Fehler
+	Notice    string            // nach "Zeiten übertragen"
+	CopyFrom  int               // Vorlage für den Übertragen-Knopf, siehe teamCopySource
+	CopyLabel string
+	Appts     int // Termine des Mitarbeiters, für den Löschen-Hinweis
 }
 
 // Anzeige Mo..So.
@@ -373,8 +419,7 @@ func (a *app) teamList(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	d := a.dashPage(c, r, "team", "Team")
 	d["Staff"] = list
-	d["Deactivated"] = r.URL.Query().Has("deaktiviert")
-	d["Deleted"] = r.URL.Query().Has("geloescht")
+	d["SavedMsg"] = catalogSaved[r.URL.Query().Get("gespeichert")]
 	d["ShowLimit"] = !c.Salon.Pro() && !a.cfg.SingleTenant
 	d["Limit"] = freeStaffLimit
 	a.render(w, http.StatusOK, "team-liste", d)
@@ -512,8 +557,16 @@ func (a *app) teamLimitReached(q querier, s *salon, exceptID int64) (bool, error
 // teamRender zeigt das Mitarbeiter-Formular. f == nil zusammen mit limit: nur der Hinweis auf Pro.
 func (a *app) teamRender(w http.ResponseWriter, r *http.Request, c *dctx, status int, f *teamForm, msg string, limit bool) {
 	title := "Neuer Mitarbeiter"
+	if f != nil {
+		f.CopyFrom, f.CopyLabel = teamCopySource(f.Days)
+	}
 	if f != nil && f.ID != 0 {
 		title = "Mitarbeiter bearbeiten"
+		var err error
+		if f.Appts, err = catalogAppts(a.db, c.Salon.ID, "staff_id", f.ID); err != nil {
+			a.dashServerError(w, r, c, err)
+			return
+		}
 	}
 	d := a.dashPage(c, r, "team", title)
 	d["F"], d["Error"], d["LimitHit"], d["Limit"] = f, msg, limit, freeStaffLimit
@@ -554,12 +607,30 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 		svcs[i].Checked = slices.Contains(r.PostForm["leistung"], strconv.FormatInt(svcs[i].ID, 10))
 	}
 	f.Services = svcs
-	hours, msg := teamParseHours(f.Days)
-	if f.Name == "" || utf8.RuneCountInString(f.Name) > 60 {
-		msg = "Bitte einen Namen mit höchstens 60 Zeichen angeben."
+	// "Zeiten übertragen" speichert nicht, sondern zeigt das Formular mit den kopierten Zeiten.
+	if src, err := strconv.Atoi(r.PostFormValue("uebertragen")); err == nil && src >= 1 && src <= 4 {
+		var from teamDay
+		for _, d := range f.Days {
+			if d.WD == src {
+				from = d
+			}
+		}
+		for i := range f.Days {
+			if f.Days[i].WD > src && f.Days[i].WD <= 5 { // bis Freitag
+				f.Days[i].From, f.Days[i].To = from.From, from.To
+			}
+		}
+		f.Notice = "Zeiten übertragen: " + teamCopyRange(src) + ". Noch nicht gespeichert."
+		a.teamRender(w, r, c, http.StatusOK, &f, "", false)
+		return
 	}
-	if msg != "" {
-		a.teamRender(w, r, c, http.StatusUnprocessableEntity, &f, msg, false)
+	hours, ok := teamParseHours(f.Days)
+	f.Errs = map[string]string{}
+	if f.Name == "" || utf8.RuneCountInString(f.Name) > 60 {
+		f.Errs["name"] = "Bitte einen Namen mit höchstens 60 Zeichen angeben."
+	}
+	if !ok || len(f.Errs) > 0 {
+		a.teamRender(w, r, c, http.StatusUnprocessableEntity, &f, catalogInvalid, false)
 		return
 	}
 
@@ -582,6 +653,7 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 			if isNew {
 				fp = nil
 			}
+			tx.Rollback() // teamRender fragt die DB ab, es gibt nur eine Verbindung
 			a.teamRender(w, r, c, http.StatusForbidden, fp, "", true)
 			return
 		}
@@ -617,7 +689,31 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 		a.dashServerError(w, r, c, err)
 		return
 	}
-	http.Redirect(w, r, "/dashboard/team?gespeichert", http.StatusSeeOther)
+	code := "mitarbeiter"
+	if isNew {
+		code = "mitarbeiter-neu"
+	}
+	http.Redirect(w, r, "/dashboard/team?gespeichert="+code, http.StatusSeeOther)
+}
+
+// teamCopySource wählt die Vorlage für den Knopf "... auf ... bis Freitag übertragen":
+// den ersten Tag Mo-Do mit Zeiten (viele Salons haben montags zu). 0 = kein Knopf.
+// days ist wie teamOrder sortiert (Mo zuerst).
+func teamCopySource(days []teamDay) (int, string) {
+	for _, d := range days[:4] {
+		if d.From != [2]string{} || d.To != [2]string{} {
+			return d.WD, teamCopyRange(d.WD) + " übertragen"
+		}
+	}
+	return 0, ""
+}
+
+// teamCopyRange: "Dienstag auf Mittwoch bis Freitag", für Donnerstag nur "Donnerstag auf Freitag".
+func teamCopyRange(src int) string {
+	if src == int(time.Thursday) {
+		return "Donnerstag auf Freitag"
+	}
+	return weekdaysDE[src] + " auf " + weekdaysDE[src+1] + " bis Freitag"
 }
 
 // teamDaysFromForm liest die Felder von-<wd>-<i> / bis-<wd>-<i> (i = 0, 1) roh ein.
@@ -636,10 +732,15 @@ func teamDaysFromForm(f url.Values) []teamDay {
 
 // teamParseHours prüft die Arbeitszeiten: beide Felder leer = frei, sonst
 // Beginn und Ende im 5-Minuten-Raster, Ende nach Beginn, Blöcke ohne Überschneidung.
-// Liefert die Blöcke oder eine Fehlermeldung für den Nutzer.
-func teamParseHours(days []teamDay) ([]WorkingHours, string) {
-	var out []WorkingHours
-	for _, d := range days {
+// Fehler schreibt es an den Tag (Err, Bad) und liefert dann ok = false.
+func teamParseHours(days []teamDay) (out []WorkingHours, ok bool) {
+	ok = true
+	for k := range days {
+		d := &days[k]
+		fail := func(i int, msg string) {
+			d.Bad[i], ok = true, false
+			d.Err = strings.TrimSpace(fmt.Sprintf("%s %s Block %d: %s", d.Err, d.Label, i+1, msg))
+		}
 		var blocks []WorkingHours
 		for i := range 2 {
 			if d.From[i] == "" && d.To[i] == "" {
@@ -647,20 +748,24 @@ func teamParseHours(days []teamDay) ([]WorkingHours, string) {
 			}
 			s, okS := teamParseClock(d.From[i])
 			e, okE := teamParseClock(d.To[i])
-			if !okS || !okE {
-				return nil, d.Label + ": Bitte Beginn und Ende angeben, im 5-Minuten-Raster (z. B. 09:00)."
+			switch {
+			case !okS || !okE:
+				fail(i, "Bitte Beginn und Ende angeben, im 5-Minuten-Raster (z. B. 09:00).")
+			case e <= s:
+				fail(i, "Das Ende muss nach dem Beginn liegen.")
+			default:
+				blocks = append(blocks, WorkingHours{time.Weekday(d.WD), s, e})
 			}
-			if e <= s {
-				return nil, d.Label + ": Das Ende muss nach dem Beginn liegen."
-			}
-			blocks = append(blocks, WorkingHours{time.Weekday(d.WD), s, e})
 		}
 		if len(blocks) == 2 && blocks[0].StartMin < blocks[1].EndMin && blocks[1].StartMin < blocks[0].EndMin {
-			return nil, d.Label + ": Die beiden Blöcke überschneiden sich."
+			d.Bad, d.Err, ok = [2]bool{true, true}, d.Label+": Die beiden Blöcke überschneiden sich.", false
 		}
 		out = append(out, blocks...)
 	}
-	return out, ""
+	if !ok {
+		return nil, false
+	}
+	return out, true
 }
 
 // teamParseClock liest "HH:MM" als Minuten ab Mitternacht, nur im 5-Minuten-Raster.

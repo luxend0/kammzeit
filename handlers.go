@@ -4,14 +4,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"html/template"
+	"io"
 	"io/fs"
 	"log"
+	"math"
 	"net/http"
 	"net/mail"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -19,9 +24,9 @@ import (
 const slotStep = 15 * time.Minute
 
 type service struct {
-	ID, PriceCents int64
-	Name           string
-	Duration       int
+	ID, PriceCents    int64
+	Name, Description string
+	Duration          int
 }
 
 type staffMember struct {
@@ -35,15 +40,28 @@ type querier interface {
 	QueryRow(string, ...any) *sql.Row
 }
 
+// Spam-Schutz der öffentlichen Buchungsseite. Pro Anschluss (clientKey) zählt
+// jeder Versuch, pro Salon und pro Empfänger-Mail nur Buchungen, die sonst
+// gespeichert und gemailt würden: wechselnde Adressen können so weder einen
+// Salon fluten noch eine fremde Mail-Adresse mit Bestätigungen zuschütten.
+var (
+	bookLimit      = newLimiter(10, time.Hour)    // Buchungsversuche pro Anschluss
+	slotLimit      = newLimiter(120, time.Minute) // Abfragen freier Zeiten pro Anschluss
+	bookSalonLimit = newLimiter(30, time.Hour)    // Buchungen pro Salon
+	bookMailLimit  = newLimiter(3, time.Hour)     // Buchungen pro Empfänger-Mail
+)
+
 func (a *app) routes() http.Handler {
 	mux := http.NewServeMux()
 	static, _ := fs.Sub(webFS, "web/static")
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServerFS(static)))
 	mux.HandleFunc("GET /{$}", a.home)
 	mux.HandleFunc("GET /slots", a.slots)
+	mux.HandleFunc("GET /mitarbeiter", a.bookStaff)
 	mux.HandleFunc("POST /book", a.book)
 	mux.HandleFunc("GET /storno/{token}", a.cancelPage)
 	mux.HandleFunc("POST /storno/{token}", a.cancel)
+	mux.HandleFunc("GET /termin/{file}", a.bookingICS) // {token}.ics, ServeMux erlaubt keine Endung am Platzhalter
 	mux.HandleFunc("GET /impressum", a.static("impressum", "Impressum"))
 	mux.HandleFunc("GET /datenschutz", a.static("datenschutz", "Datenschutz"))
 	mux.HandleFunc("GET /_tls/allow", a.tlsAllow)
@@ -69,8 +87,9 @@ func (a *app) static(name, title string) http.HandlerFunc {
 }
 
 // tlsAllow beantwortet Caddys on_demand-"ask": 200 nur für die Basis-Domain,
-// www und Subdomains existierender Salons. Sonst könnte jeder beliebige
-// Subdomains aufrufen und Zertifikate (Let's-Encrypt-Limits) verbrennen.
+// www und Subdomains existierender Salons, deren Inhaber sich schon einmal
+// angemeldet hat. Sonst könnte jeder beliebige Subdomains aufrufen und
+// Zertifikate (Let's-Encrypt-Limits) verbrennen.
 func (a *app) tlsAllow(w http.ResponseWriter, r *http.Request) {
 	if !a.tlsAllowed(r.URL.Query().Get("domain")) {
 		http.Error(w, "nein", http.StatusForbidden)
@@ -79,6 +98,9 @@ func (a *app) tlsAllow(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// Ein Salon zählt erst, wenn sein Inhaber den Login-Link einmal eingelöst hat
+// (last_login_at): sonst ließe sich über die Registrierung mit erfundenen
+// Mail-Adressen trotzdem ein Zertifikat nach dem anderen anfordern.
 func (a *app) tlsAllowed(domain string) bool {
 	domain = strings.ToLower(domain)
 	if domain == "www."+a.cfg.BaseDomain {
@@ -92,15 +114,21 @@ func (a *app) tlsAllowed(domain string) bool {
 		return false
 	}
 	var one int
-	return a.db.QueryRow(`SELECT 1 FROM salons WHERE slug = ?`, slug).Scan(&one) == nil
+	return a.db.QueryRow(`SELECT 1 FROM salons s JOIN users u ON u.salon_id = s.id
+		WHERE s.slug = ? AND u.last_login_at IS NOT NULL LIMIT 1`, slug).Scan(&one) == nil
 }
 
 func securityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
-		h.Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:")
+		// Kein form-action: das Abo-Formular leitet nach dem POST zu Stripe weiter.
+		h.Set("Content-Security-Policy", "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'")
+		h.Set("X-Frame-Options", "DENY") // für Browser ohne frame-ancestors
 		h.Set("X-Content-Type-Options", "nosniff")
 		h.Set("Referrer-Policy", "same-origin") // Storno-Token steht in der URL
+		if secureRequest(r) {
+			h.Set("Strict-Transport-Security", "max-age=31536000")
+		}
 		next.ServeHTTP(w, r)
 	})
 }
@@ -119,7 +147,10 @@ func (a *app) page(s *salon, title string) map[string]any {
 	if s != nil {
 		d["Salon"] = s
 		d["Accent"] = s.Accent
+		d["OnAccent"] = onAccent(s.Accent)
 		d["Branding"] = !a.cfg.SingleTenant && s.Plan == "free"
+		d["Imprint"] = extURL(s.ImprintURL)
+		d["Tel"] = telURL(s.Phone)
 	}
 	return d
 }
@@ -178,20 +209,33 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, s, err)
 		return
 	}
-	staff, err := a.staff(s.ID)
-	if err != nil {
-		a.serverError(w, s, err)
-		return
-	}
 	d := a.page(s, s.Name+" - Termin buchen")
+	if len(services) > 0 {
+		staff, err := bookableStaff(a.db, s.ID, services[0].ID, a.staffLimit(s))
+		if err != nil {
+			a.serverError(w, s, err)
+			return
+		}
+		d["Staff"] = staff
+	}
+	first, last := bookingDays(s, time.Now())
+	d["Home"] = true
 	d["Services"] = services
-	d["Staff"] = staff
-	d["Today"] = time.Now().In(s.Loc).Format(time.DateOnly)
+	d["Sel"] = int64(0)
+	d["Today"], d["MaxDate"] = first.Format(time.DateOnly), last.Format(time.DateOnly)
+	if web := extURL(s.Website); web != "" {
+		d["Website"] = web
+		d["WebsiteLabel"] = strings.TrimSuffix(web[strings.Index(web, "://")+3:], "/")
+	}
+	if s.CancelNoticeMin > 0 {
+		d["CancelNotice"] = noticeText(s.CancelNoticeMin)
+	}
 	a.render(w, http.StatusOK, "book", d)
 }
 
 func (a *app) services(salonID int64) ([]service, error) {
-	rows, err := a.db.Query(`SELECT id, name, duration_min, price_cents FROM services WHERE salon_id = ? AND active = 1 ORDER BY name`, salonID)
+	rows, err := a.db.Query(`SELECT id, name, description, duration_min, price_cents FROM services
+		WHERE salon_id = ? AND active = 1 ORDER BY sort, name`, salonID)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +243,7 @@ func (a *app) services(salonID int64) ([]service, error) {
 	var out []service
 	for rows.Next() {
 		var s service
-		if err := rows.Scan(&s.ID, &s.Name, &s.Duration, &s.PriceCents); err != nil {
+		if err := rows.Scan(&s.ID, &s.Name, &s.Description, &s.Duration, &s.PriceCents); err != nil {
 			return nil, err
 		}
 		out = append(out, s)
@@ -207,13 +251,17 @@ func (a *app) services(salonID int64) ([]service, error) {
 	return out, rows.Err()
 }
 
-// ponytail: jeder Mitarbeiter kann jede Leistung; Zuordnung (staff_services) erst, wenn Salons danach fragen.
+// staff: alle aktiven Mitarbeiter des Salons. Die Buchungsseite nimmt bookableStaff.
 func (a *app) staff(salonID int64) ([]staffMember, error) {
-	rows, err := a.db.Query(`SELECT id, name FROM staff WHERE salon_id = ? AND active = 1 ORDER BY name`, salonID)
+	rows, err := a.db.Query(`SELECT id, name FROM staff WHERE salon_id = ? AND active = 1 ORDER BY sort, name`, salonID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+	return scanStaff(rows)
+}
+
+func scanStaff(rows *sql.Rows) ([]staffMember, error) {
 	var out []staffMember
 	for rows.Next() {
 		var s staffMember
@@ -225,7 +273,64 @@ func (a *app) staff(salonID int64) ([]staffMember, error) {
 	return out, rows.Err()
 }
 
+// staffLimit: so viele aktive Mitarbeiter (die ersten nach sort, id) sind
+// online buchbar, -1 = alle. Gratis-Plan freeStaffLimit, etwa wenn ein Salon von
+// Pro zurück auf Gratis wechselt; gelöscht oder deaktiviert wird dabei nichts.
+// Der Einzelbetrieb hat keine Grenze.
+func (a *app) staffLimit(s *salon) int {
+	if a.cfg.SingleTenant || s.Pro() {
+		return -1
+	}
+	return freeStaffLimit
+}
+
+// bookableStaff: aktive Mitarbeiter, die die Leistung laut staff_services
+// anbieten, in Buchungsreihenfolge (sort, Name). limit siehe staffLimit.
+func bookableStaff(q querier, salonID, serviceID int64, limit int) ([]staffMember, error) {
+	rows, err := q.Query(`SELECT st.id, st.name FROM staff st
+		JOIN staff_services ss ON ss.staff_id = st.id
+		JOIN services sv ON sv.id = ss.service_id
+		WHERE ss.service_id = ? AND st.salon_id = ? AND sv.salon_id = ? AND st.active = 1
+			AND st.id IN (SELECT id FROM staff WHERE salon_id = ? AND active = 1 ORDER BY sort, id LIMIT ?)
+		ORDER BY st.sort, st.name`, serviceID, salonID, salonID, salonID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return scanStaff(rows)
+}
+
+// pickable wendet die Mitarbeiterwahl an: "egal" (oder leer) = alle, sonst
+// genau der gewählte, falls er dabei ist.
+func pickable(staff []staffMember, choice string) []staffMember {
+	if choice == "" || choice == "egal" {
+		return staff
+	}
+	for _, st := range staff {
+		if strconv.FormatInt(st.ID, 10) == choice {
+			return []staffMember{st}
+		}
+	}
+	return nil
+}
+
+// loadService lädt eine aktive Leistung des Salons.
+func loadService(q querier, salonID int64, id string) (*service, error) {
+	sid, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return nil, sql.ErrNoRows
+	}
+	var sv service
+	err = q.QueryRow(`SELECT id, name, description, duration_min, price_cents FROM services WHERE id = ? AND salon_id = ? AND active = 1`,
+		sid, salonID).Scan(&sv.ID, &sv.Name, &sv.Description, &sv.Duration, &sv.PriceCents)
+	if err != nil {
+		return nil, err
+	}
+	return &sv, nil
+}
+
 // lookup lädt Leistung und Mitarbeiter und prüft, dass beide zum Salon gehören.
+// Prüft staff_services nicht (z. B. für manuelle Termine im Dashboard).
 func lookup(q querier, salonID int64, serviceID, staffID string) (*service, *staffMember, error) {
 	var sv service
 	err := q.QueryRow(`SELECT id, name, duration_min, price_cents FROM services WHERE id = ? AND salon_id = ? AND active = 1`,
@@ -243,7 +348,7 @@ func lookup(q querier, salonID int64, serviceID, staffID string) (*service, *sta
 }
 
 // freeSlotsFor holt Arbeitszeiten und Termine eines Mitarbeiters für einen Tag
-// und gibt die freien Startzeiten nach `now` zurück.
+// und gibt die freien Startzeiten ab `now` (einschließlich) zurück.
 func freeSlotsFor(q querier, staffID int64, dur time.Duration, day, now time.Time) ([]time.Time, error) {
 	rows, err := q.Query(`SELECT weekday, start_min, end_min FROM working_hours WHERE staff_id = ?`, staffID)
 	if err != nil {
@@ -281,11 +386,42 @@ func freeSlotsFor(q querier, staffID int64, dur time.Duration, day, now time.Tim
 
 	var out []time.Time
 	for _, t := range freeSlots(hours, busy, dur, dayStart, slotStep) {
-		if t.After(now) {
+		if !t.Before(now) {
 			out = append(out, t)
 		}
 	}
 	return out, nil
+}
+
+// bookStaff liefert die Mitarbeiterauswahl zur gewählten Leistung (htmx).
+func (a *app) bookStaff(w http.ResponseWriter, r *http.Request) {
+	s := a.salonFor(w, r)
+	if s == nil {
+		return
+	}
+	q := r.URL.Query()
+	d := map[string]any{"Sel": int64(0)}
+	sv, err := loadService(a.db, s.ID, q.Get("service"))
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		a.serverError(w, s, err)
+		return
+	}
+	if sv != nil {
+		staff, err := bookableStaff(a.db, s.ID, sv.ID, a.staffLimit(s))
+		if err != nil {
+			a.serverError(w, s, err)
+			return
+		}
+		d["Staff"] = staff
+		// Auswahl behalten, wenn der Mitarbeiter auch die neue Leistung anbietet.
+		if q.Get("staff") != "egal" {
+			if sel := pickable(staff, q.Get("staff")); len(sel) == 1 {
+				d["Sel"] = sel[0].ID
+			}
+		}
+	}
+	w.Header().Set("HX-Trigger-After-Swap", "staff-loaded") // lädt danach die Uhrzeiten neu
+	a.render(w, http.StatusOK, "book-staff", d)
 }
 
 func (a *app) slots(w http.ResponseWriter, r *http.Request) {
@@ -293,18 +429,38 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 	if s == nil {
 		return
 	}
-	q := r.URL.Query()
 	d := map[string]any{}
-	sv, st, err := lookup(a.db, s.ID, q.Get("service"), q.Get("staff"))
+	if !slotLimit.allow(clientKey(r)) {
+		d["Empty"] = "Zu viele Anfragen. Bitte warte kurz und versuch es dann noch einmal."
+		status := http.StatusTooManyRequests
+		if r.Header.Get("HX-Request") != "" {
+			status = http.StatusOK // htmx zeigt nur 2xx-Antworten an
+		}
+		a.render(w, status, "slots", d)
+		return
+	}
+	q := r.URL.Query()
+	now := time.Now()
+	first, last := bookingDays(s, now)
+	sv, err := loadService(a.db, s.ID, q.Get("service"))
 	day, dayErr := time.ParseInLocation(time.DateOnly, q.Get("date"), s.Loc)
 	switch {
 	case errors.Is(err, sql.ErrNoRows) || dayErr != nil:
-		d["Empty"] = "Bitte Leistung, Mitarbeiter und Tag wählen."
+		d["Empty"] = "Bitte Leistung und Tag wählen."
 	case err != nil:
 		a.serverError(w, s, err)
 		return
+	case day.Before(first):
+		d["Empty"] = "Bitte einen Tag ab heute wählen."
+	case day.After(last):
+		d["Empty"] = "Online buchbar bis " + last.Format("2.1.2006") + ". Für spätere Termine ruf bitte im Salon an."
 	default:
-		free, err := freeSlotsFor(a.db, st.ID, time.Duration(sv.Duration)*time.Minute, day, time.Now())
+		staff, err := bookableStaff(a.db, s.ID, sv.ID, a.staffLimit(s))
+		if err != nil {
+			a.serverError(w, s, err)
+			return
+		}
+		free, err := slotsFor(a.db, s, pickable(staff, q.Get("staff")), time.Duration(sv.Duration)*time.Minute, day, now)
 		if err != nil {
 			a.serverError(w, s, err)
 			return
@@ -318,7 +474,7 @@ func (a *app) slots(w http.ResponseWriter, r *http.Request) {
 			list = append(list, slot{t.Unix(), t.Format("15:04")})
 		}
 		d["Slots"] = list
-		d["Empty"] = "An diesem Tag ist nichts mehr frei. Bitte einen anderen Tag wählen."
+		d["Empty"] = "An diesem Tag ist nichts mehr frei. Bitte wähl einen anderen Tag."
 	}
 	a.render(w, http.StatusOK, "slots", d)
 }
@@ -328,9 +484,20 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	if s == nil {
 		return
 	}
+	if !bookLimit.allow(clientKey(r)) {
+		a.fail(w, s, http.StatusTooManyRequests, "Zu viele Buchungen von deinem Anschluss. Bitte versuch es später noch einmal oder ruf im Salon an.")
+		return
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
 	if err := r.ParseForm(); err != nil {
 		a.fail(w, s, http.StatusBadRequest, "Das Formular war unvollständig.")
+		return
+	}
+	if r.PostFormValue("firma") != "" {
+		// Honeypot: Bots sehen eine Bestätigung, gespeichert und gemailt wird nichts.
+		d := a.page(s, "Termin gebucht")
+		d["Name"], d["Email"] = r.PostFormValue("name"), r.PostFormValue("email")
+		a.render(w, http.StatusOK, "booked", d)
 		return
 	}
 	name := strings.TrimSpace(r.PostFormValue("name"))
@@ -339,30 +506,38 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	start, startErr := strconv.ParseInt(r.PostFormValue("start"), 10, 64)
 	switch {
 	case name == "" || utf8.RuneCountInString(name) > 100:
-		a.fail(w, s, http.StatusBadRequest, "Bitte einen Namen angeben.")
+		a.fail(w, s, http.StatusBadRequest, "Bitte gib deinen Namen an.")
+		return
+	case hasControl(name) || hasControl(phone):
+		// Name und Telefon landen in Mails an Kunde und Salon: keine Zeilenumbrüche einschleusen.
+		a.fail(w, s, http.StatusBadRequest, "Bitte gib Name und Telefonnummer ohne Zeilenumbrüche oder Tabulatoren an.")
 		return
 	case mailErr != nil || len(addr.Address) > 200:
-		a.fail(w, s, http.StatusBadRequest, "Bitte eine gültige E-Mail-Adresse angeben.")
+		a.fail(w, s, http.StatusBadRequest, "Bitte gib eine gültige E-Mail-Adresse an.")
 		return
 	case len(phone) > 40:
 		a.fail(w, s, http.StatusBadRequest, "Die Telefonnummer ist zu lang.")
 		return
 	case startErr != nil:
-		a.fail(w, s, http.StatusBadRequest, "Bitte eine Uhrzeit wählen.")
+		a.fail(w, s, http.StatusBadRequest, "Bitte wähl eine Uhrzeit.")
 		return
 	}
 	email := strings.ToLower(addr.Address)
 
-	// ponytail: kein Spam-/Rate-Limit; kommt, sobald jemand das Formular zumüllt.
 	tx, err := a.db.BeginTx(r.Context(), nil)
 	if err != nil {
 		a.serverError(w, s, err)
 		return
 	}
 	defer tx.Rollback()
-	sv, st, err := lookup(tx, s.ID, r.PostFormValue("service"), r.PostFormValue("staff"))
-	if errors.Is(err, sql.ErrNoRows) {
-		a.fail(w, s, http.StatusBadRequest, "Leistung oder Mitarbeiter gibt es nicht mehr.")
+	sv, err := loadService(tx, s.ID, r.PostFormValue("service"))
+	var staff []staffMember
+	if err == nil {
+		staff, err = bookableStaff(tx, s.ID, sv.ID, a.staffLimit(s))
+		staff = pickable(staff, r.PostFormValue("staff"))
+	}
+	if errors.Is(err, sql.ErrNoRows) || err == nil && len(staff) == 0 {
+		a.fail(w, s, http.StatusBadRequest, "Diese Leistung oder diesen Mitarbeiter gibt es so nicht mehr. Bitte wähl neu.")
 		return
 	} else if err != nil {
 		a.serverError(w, s, err)
@@ -370,25 +545,31 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 	}
 	startT := time.Unix(start, 0).In(s.Loc)
 	dur := time.Duration(sv.Duration) * time.Minute
-	// Erneut in derselben Transaktion prüfen: der Slot muss noch frei sein.
-	free, err := freeSlotsFor(tx, st.ID, dur, startT, time.Now())
+	// Erneut in derselben Transaktion prüfen (Vorlauf, Horizont, frei) und bei
+	// "egal" den ersten freien Mitarbeiter nehmen.
+	st, err := pickStaff(tx, s, staff, dur, startT, time.Now())
 	if err != nil {
 		a.serverError(w, s, err)
 		return
 	}
-	ok := false
-	for _, t := range free {
-		ok = ok || t.Equal(startT)
+	if st == nil {
+		a.fail(w, s, http.StatusConflict, "Dieser Termin ist leider nicht mehr frei. Bitte wähl eine andere Uhrzeit.")
+		return
 	}
-	if !ok {
-		a.fail(w, s, http.StatusConflict, "Dieser Termin ist leider nicht mehr frei. Bitte eine andere Uhrzeit wählen.")
+	// Erst hier zählen: abgelehnte Formulare und vergebene Uhrzeiten kosten nichts.
+	if !bookMailLimit.allow(email) {
+		a.fail(w, s, http.StatusTooManyRequests, "Mit dieser E-Mail-Adresse wurde gerade schon mehrmals gebucht. Bitte versuch es später noch einmal oder ruf im Salon an.")
+		return
+	}
+	if !bookSalonLimit.allow(strconv.FormatInt(s.ID, 10)) {
+		a.fail(w, s, http.StatusTooManyRequests, "Gerade gehen sehr viele Buchungen ein. Bitte versuch es später noch einmal oder ruf im Salon an.")
 		return
 	}
 	// Bestehende Karteikarte behält ihren Namen: wer nur die Mail-Adresse kennt, soll ihn nicht überschreiben.
 	var customerID int64
 	err = tx.QueryRow(`INSERT INTO customers (salon_id, name, email, phone) VALUES (?, ?, ?, ?)
-		ON CONFLICT (salon_id, email) DO UPDATE SET email = excluded.email RETURNING id`,
-		s.ID, name, email, phone).Scan(&customerID)
+		ON CONFLICT (salon_id, email) DO UPDATE SET phone = CASE WHEN customers.phone = '' THEN excluded.phone ELSE customers.phone END
+		RETURNING id`, s.ID, name, email, phone).Scan(&customerID)
 	if err != nil {
 		a.serverError(w, s, err)
 		return
@@ -410,42 +591,70 @@ func (a *app) book(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cancelURL := a.link(s.Slug, "/storno/"+token)
-	when := deDate(startT)
+	b, err := a.findBooking(s, token)
+	if err != nil {
+		a.serverError(w, s, err)
+		return
+	}
 	go func() {
-		body := fmt.Sprintf("Hallo %s,\n\ndein Termin bei %s ist gebucht:\n\n%s\n%s bei %s\n\nAbsagen: %s\n", name, s.Name, when, sv.Name, st.Name, cancelURL)
-		if err := a.mail.send(email, "Termin bestätigt: "+s.Name, body); err != nil {
+		if err := a.mail.send(email, "Termin bestätigt: "+s.Name, a.customerMail(s, b, "danke für deine Buchung! Dein Termin bei "+s.Name+" steht:")); err != nil {
 			log.Printf("Bestätigung an %s: %v", email, err)
 		}
 		if s.Email != "" {
-			body := fmt.Sprintf("Neue Buchung:\n\n%s\n%s bei %s\nKunde: %s, %s %s\n", when, sv.Name, st.Name, name, email, phone)
-			if err := a.mail.send(s.Email, "Neue Buchung: "+when, body); err != nil {
+			body := fmt.Sprintf("Neue Online-Buchung:\n\n%s\nKunde:    %s\nE-Mail:   %s\nTelefon:  %s\n\nAlle Termine: %s/dashboard\n",
+				bookingLines(b), b.Customer, b.Email, orDash(b.Phone), a.siteURL())
+			if err := a.mail.send(s.Email, "Neue Buchung: "+deDate(b.Start), body); err != nil {
 				log.Printf("Salon-Info an %s: %v", s.Email, err)
 			}
 		}
 	}()
 
 	d := a.page(s, "Termin gebucht")
-	d["When"], d["Service"], d["Staff"], d["Email"], d["CancelURL"] = when, sv.Name, st.Name, email, cancelURL
+	d["When"], d["Service"], d["Staff"], d["Name"], d["Email"] = deDate(b.Start), b.Service, b.Staff, name, email
+	d["CancelURL"], d["ICSURL"] = "/storno/"+token, "/termin/"+token+".ics"
+	if s.CancelNoticeMin > 0 {
+		d["Deadline"] = deDate(cancelDeadline(s, b.Start))
+	}
 	a.render(w, http.StatusOK, "booked", d)
 }
 
 type booking struct {
-	Start                  time.Time
+	ID                     int64
+	Token                  string
+	Start, End             time.Time
 	Status, Service, Staff string
+	Customer, Email, Phone string // Email leer = Kunde ohne Mail-Adresse
 }
 
 func (a *app) findBooking(s *salon, token string) (*booking, error) {
-	var b booking
-	var start int64
-	err := a.db.QueryRow(`SELECT a.starts_at, a.status, sv.name, st.name FROM appointments a
-		JOIN services sv ON sv.id = a.service_id JOIN staff st ON st.id = a.staff_id
-		WHERE a.cancel_token = ? AND a.salon_id = ?`, token, s.ID).Scan(&start, &b.Status, &b.Service, &b.Staff)
+	b := booking{Token: token}
+	var start, end int64
+	err := a.db.QueryRow(`SELECT a.id, a.starts_at, a.ends_at, a.status, sv.name, st.name, c.name, COALESCE(c.email, ''), c.phone
+		FROM appointments a
+		JOIN services sv ON sv.id = a.service_id JOIN staff st ON st.id = a.staff_id JOIN customers c ON c.id = a.customer_id
+		WHERE a.cancel_token = ? AND a.salon_id = ?`, token, s.ID).
+		Scan(&b.ID, &start, &end, &b.Status, &b.Service, &b.Staff, &b.Customer, &b.Email, &b.Phone)
 	if err != nil {
 		return nil, err
 	}
-	b.Start = time.Unix(start, 0).In(s.Loc)
+	b.Start, b.End = time.Unix(start, 0).In(s.Loc), time.Unix(end, 0).In(s.Loc)
 	return &b, nil
+}
+
+// cancelDeadline: bis hierhin ist die Online-Absage möglich.
+func cancelDeadline(s *salon, start time.Time) time.Time {
+	return start.Add(-time.Duration(s.CancelNoticeMin) * time.Minute)
+}
+
+func (a *app) cancelData(s *salon, b *booking, now time.Time) map[string]any {
+	d := a.page(s, "Termin absagen")
+	d["When"], d["Service"], d["Staff"] = deDate(b.Start), b.Service, b.Staff
+	deadline := cancelDeadline(s, b.Start)
+	d["Deadline"] = deDate(deadline)
+	d["Cancelled"] = b.Status == "cancelled"
+	d["Past"] = b.Status != "booked" || !b.Start.After(now)
+	d["TooLate"] = !now.Before(deadline)
+	return d
 }
 
 // cancelPage zeigt nur an. Storniert wird per POST, damit Link-Vorschauen in
@@ -463,38 +672,168 @@ func (a *app) cancelPage(w http.ResponseWriter, r *http.Request) {
 		a.serverError(w, s, err)
 		return
 	}
-	d := a.page(s, "Termin absagen")
-	d["When"], d["Service"], d["Staff"] = deDate(b.Start), b.Service, b.Staff
-	d["Cancelled"] = b.Status == "cancelled"
-	d["Past"] = !b.Start.After(time.Now())
-	a.render(w, http.StatusOK, "cancel", d)
+	a.render(w, http.StatusOK, "cancel", a.cancelData(s, b, time.Now()))
 }
 
-// ponytail: Absagen geht bis zum Terminbeginn; eine Frist (z. B. 24 h) wird Salon-Einstellung, wenn gewünscht.
 func (a *app) cancel(w http.ResponseWriter, r *http.Request) {
 	s := a.salonFor(w, r)
 	if s == nil {
 		return
 	}
-	token := r.PathValue("token")
+	b, err := a.findBooking(s, r.PathValue("token"))
+	if errors.Is(err, sql.ErrNoRows) {
+		a.fail(w, s, http.StatusNotFound, "Diesen Termin gibt es nicht.")
+		return
+	} else if err != nil {
+		a.serverError(w, s, err)
+		return
+	}
+	now := time.Now()
 	res, err := a.db.Exec(`UPDATE appointments SET status = 'cancelled'
-		WHERE cancel_token = ? AND salon_id = ? AND status = 'booked' AND starts_at > ?`, token, s.ID, time.Now().Unix())
+		WHERE id = ? AND salon_id = ? AND status = 'booked' AND starts_at > ?`,
+		b.ID, s.ID, now.Add(time.Duration(s.CancelNoticeMin)*time.Minute).Unix())
 	if err != nil {
 		a.serverError(w, s, err)
 		return
 	}
 	if n, _ := res.RowsAffected(); n == 0 {
-		a.fail(w, s, http.StatusConflict, "Dieser Termin kann nicht mehr abgesagt werden.")
+		a.render(w, http.StatusConflict, "cancel", a.cancelData(s, b, now)) // erklärt, warum nicht (mehr)
 		return
 	}
-	if b, err := a.findBooking(s, token); err == nil && s.Email != "" {
-		go func() {
-			if err := a.mail.send(s.Email, "Termin abgesagt: "+deDate(b.Start), fmt.Sprintf("Abgesagt:\n\n%s\n%s bei %s\n", deDate(b.Start), b.Service, b.Staff)); err != nil {
+	go func() {
+		if s.Email != "" {
+			body := fmt.Sprintf("%s hat online abgesagt:\n\n%s\nDer Termin ist im Kalender wieder frei.\n", b.Customer, bookingLines(b))
+			if err := a.mail.send(s.Email, "Termin abgesagt: "+deDate(b.Start), body); err != nil {
 				log.Printf("Absage-Info an %s: %v", s.Email, err)
 			}
-		}()
-	}
+		}
+		if b.Email != "" {
+			body := fmt.Sprintf("Hallo %s,\n\ndeine Absage ist angekommen. Dieser Termin ist storniert:\n\n%s\nNeuen Termin buchen: %s\n\nViele Grüße\n%s\n",
+				b.Customer, bookingLines(b), a.link(s.Slug, "/"), salonContact(s))
+			if err := a.mail.send(b.Email, "Termin abgesagt: "+s.Name, body); err != nil {
+				log.Printf("Absage-Bestätigung an %s: %v", b.Email, err)
+			}
+		}
+	}()
 	a.render(w, http.StatusOK, "cancelled", a.page(s, "Termin abgesagt"))
+}
+
+// bookingICS liefert den Kalendereintrag zu einem gebuchten Termin des Salons.
+func (a *app) bookingICS(w http.ResponseWriter, r *http.Request) {
+	s := a.salonFor(w, r)
+	if s == nil {
+		return
+	}
+	token, ok := strings.CutSuffix(r.PathValue("file"), ".ics")
+	var b *booking
+	err := sql.ErrNoRows
+	if ok {
+		b, err = a.findBooking(s, token)
+	}
+	if errors.Is(err, sql.ErrNoRows) || err == nil && b.Status != "booked" {
+		a.fail(w, s, http.StatusNotFound, "Diesen Termin gibt es nicht (mehr).")
+		return
+	} else if err != nil {
+		a.serverError(w, s, err)
+		return
+	}
+	where := s.Name
+	if addr := oneLine(s.Address); addr != "" {
+		where += ", " + addr
+	}
+	desc := "Bei " + b.Staff + "\n"
+	if s.Phone != "" {
+		desc += "Telefon: " + s.Phone + "\n"
+	}
+	desc += "Absagen: " + a.link(s.Slug, "/storno/"+token)
+	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
+	w.Header().Set("Content-Disposition", `attachment; filename="termin.ics"`)
+	io.WriteString(w, buildICS(hashToken(token)[:32]+"@kammzeit", b.Service+" bei "+s.Name, where, desc, b.Start, b.End, time.Now()))
+}
+
+// buildICS baut ein iCalendar-Dokument (RFC 5545) mit einem Termin, Zeiten in UTC.
+func buildICS(uid, summary, location, description string, start, end, stamp time.Time) string {
+	const utc = "20060102T150405Z"
+	lines := []string{
+		"BEGIN:VCALENDAR",
+		"VERSION:2.0",
+		"PRODID:-//Kammzeit//Terminbuchung//DE",
+		"CALSCALE:GREGORIAN",
+		"METHOD:PUBLISH",
+		"BEGIN:VEVENT",
+		"UID:" + uid,
+		"DTSTAMP:" + stamp.UTC().Format(utc),
+		"DTSTART:" + start.UTC().Format(utc),
+		"DTEND:" + end.UTC().Format(utc),
+		"SUMMARY:" + icsText(summary),
+		"LOCATION:" + icsText(location),
+		"DESCRIPTION:" + icsText(description),
+		"END:VEVENT",
+		"END:VCALENDAR",
+	}
+	var b strings.Builder
+	for _, l := range lines {
+		b.WriteString(icsFold(l))
+		b.WriteString("\r\n")
+	}
+	return b.String()
+}
+
+var icsEscaper = strings.NewReplacer(`\`, `\\`, ";", `\;`, ",", `\,`, "\r\n", `\n`, "\n", `\n`, "\r", `\n`)
+
+// icsText maskiert einen TEXT-Wert (RFC 5545 3.3.11).
+func icsText(s string) string { return icsEscaper.Replace(s) }
+
+// icsFold bricht nach höchstens 75 Bytes um (RFC 5545 3.1), ohne UTF-8-Zeichen zu zerteilen.
+func icsFold(line string) string {
+	var b strings.Builder
+	n := 0
+	for _, r := range line {
+		size := utf8.RuneLen(r)
+		if size < 0 {
+			size = 3 // ungültiges Byte, WriteRune schreibt U+FFFD
+		}
+		if n+size > 75 {
+			b.WriteString("\r\n ")
+			n = 1
+		}
+		b.WriteRune(r)
+		n += size
+	}
+	return b.String()
+}
+
+// --- Mails ---
+
+// bookingLines: Termindaten für Mails.
+func bookingLines(b *booking) string {
+	return fmt.Sprintf("Wann:     %s\nLeistung: %s (%d Min.)\nBei:      %s\n", deDate(b.Start), b.Service, int(b.End.Sub(b.Start).Minutes()), b.Staff)
+}
+
+// salonContact: Name, Adresse und Telefon des Salons für Mails an Kunden.
+func salonContact(s *salon) string {
+	out := s.Name + "\n"
+	if addr := strings.TrimSpace(strings.ReplaceAll(s.Address, "\r", "")); addr != "" {
+		out += addr + "\n"
+	}
+	if s.Phone != "" {
+		out += "Telefon: " + s.Phone + "\n"
+	}
+	return out
+}
+
+// customerMail: Bestätigung und Erinnerung an den Kunden.
+func (a *app) customerMail(s *salon, b *booking, intro string) string {
+	var m strings.Builder
+	fmt.Fprintf(&m, "Hallo %s,\n\n%s\n\n%s\n", b.Customer, intro, bookingLines(b))
+	fmt.Fprintf(&m, "So findest du uns:\n%s\n", salonContact(s))
+	fmt.Fprintf(&m, "In deinen Kalender eintragen:\n%s\n\n", a.link(s.Slug, "/termin/"+b.Token+".ics"))
+	fmt.Fprintf(&m, "Du kannst doch nicht? Bitte sag ab, dann wird der Termin für andere frei:\n%s\n", a.link(s.Slug, "/storno/"+b.Token))
+	if s.CancelNoticeMin > 0 {
+		fmt.Fprintf(&m, "Online-Absage bis %s möglich, danach bitte im Salon anrufen.\n", deDate(cancelDeadline(s, b.Start)))
+	}
+	fmt.Fprintf(&m, "\nBis bald!\n%s\n", s.Name)
+	return m.String()
 }
 
 // --- Formatierung ---
@@ -503,6 +842,97 @@ var weekdaysDE = [...]string{"Sonntag", "Montag", "Dienstag", "Mittwoch", "Donne
 
 func deDate(t time.Time) string {
 	return fmt.Sprintf("%s, %d.%d.%d, %s Uhr", weekdaysDE[t.Weekday()], t.Day(), t.Month(), t.Year(), t.Format("15:04"))
+}
+
+// noticeText: Frist in Minuten als "24 Stunden", "2 Tage", "90 Minuten".
+func noticeText(m int) string {
+	unit := func(n int, one, many string) string {
+		if n == 1 {
+			return "1 " + one
+		}
+		return strconv.Itoa(n) + " " + many
+	}
+	switch {
+	case m%1440 == 0:
+		return unit(m/1440, "Tag", "Tage")
+	case m%60 == 0:
+		return unit(m/60, "Stunde", "Stunden")
+	}
+	return unit(m, "Minute", "Minuten")
+}
+
+// onAccent wählt Schwarz oder Weiß als Textfarbe auf der Akzentfarbe, je
+// nachdem, was nach WCAG den höheren Kontrast hat.
+func onAccent(hex string) string {
+	if !hexColor.MatchString(hex) {
+		return "#000"
+	}
+	lin := func(i int) float64 {
+		v, _ := strconv.ParseUint(hex[i:i+2], 16, 8)
+		c := float64(v) / 255
+		if c <= 0.04045 {
+			return c / 12.92
+		}
+		return math.Pow((c+0.055)/1.055, 2.4)
+	}
+	l := 0.2126*lin(1) + 0.7152*lin(3) + 0.0722*lin(5)
+	// Kontrast zu Weiß 1.05/(l+0.05), zu Schwarz (l+0.05)/0.05
+	if (l+0.05)*(l+0.05) > 1.05*0.05 {
+		return "#000"
+	}
+	return "#fff"
+}
+
+// extURL macht aus einer Salon-Eingabe einen http(s)-Link, sonst "".
+func extURL(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return ""
+	}
+	if !strings.Contains(raw, "://") {
+		raw = "https://" + raw
+	}
+	u, err := url.Parse(raw)
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
+		return ""
+	}
+	return u.String()
+}
+
+// telURL baut einen tel:-Link (nur Ziffern und führendes +). html/template
+// würde tel: sonst als unsicher verwerfen.
+func telURL(phone string) template.URL {
+	var b strings.Builder
+	for i, r := range strings.TrimSpace(phone) {
+		if r >= '0' && r <= '9' || r == '+' && i == 0 {
+			b.WriteRune(r)
+		}
+	}
+	if b.Len() == 0 {
+		return ""
+	}
+	return template.URL("tel:" + b.String())
+}
+
+// oneLine fasst eine mehrzeilige Adresse zu "Straße, Ort" zusammen.
+func oneLine(s string) string {
+	var parts []string
+	for _, l := range strings.Split(s, "\n") {
+		if l = strings.TrimSpace(l); l != "" {
+			parts = append(parts, l)
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
+// hasControl: enthält Steuerzeichen (auch CR, LF, Tab).
+func hasControl(s string) bool { return strings.IndexFunc(s, unicode.IsControl) >= 0 }
+
+func orDash(s string) string {
+	if s == "" {
+		return "-"
+	}
+	return s
 }
 
 var templateFuncs = map[string]any{

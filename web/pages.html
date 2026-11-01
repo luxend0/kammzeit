@@ -1,3 +1,5 @@
+{{/* Öffentliche Seiten: gemeinsames Layout (top/bottom), Buchungsseite eines Salons, Storno.
+     Daten aus a.page(): Title, Salon, Accent, OnAccent, Branding, Imprint, Tel. */}}
 {{define "top"}}<!doctype html>
 <html lang="de">
 <head>
@@ -7,54 +9,73 @@
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/htmx.min.js" defer></script>
 </head>
-<body{{with .Accent}} style="--accent: {{.}}"{{end}}>
+<body{{if .Salon}} class="salon"{{end}}{{with .Accent}} style="--accent: {{.}}{{with $.OnAccent}}; --on-accent: {{.}}{{end}}"{{end}}>
 <main>
+{{if and .Salon (not .Home)}}<p class="crumb"><a href="/">{{.Salon.Name}}</a></p>{{end}}
 {{end}}
 
 {{define "bottom"}}</main>
-<footer>{{if .Branding}}Online-Termine mit <a href="https://kammzeit.de">Kammzeit</a> · {{end}}<a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a></footer>
+<footer>{{if .Salon}}{{if .Branding}}Online-Termine mit <a href="https://kammzeit.de">Kammzeit</a> · {{end}}{{with .Imprint}}<a href="{{.}}" rel="noopener">Impressum</a> · {{end}}<a href="/datenschutz">Datenschutz</a>
+{{- else}}<a href="/impressum">Impressum</a> · <a href="/datenschutz">Datenschutz</a> · <a href="/agb">AGB</a> · <a href="/avv">AVV</a>{{end}}</footer>
 </body>
 </html>{{end}}
 
 {{define "book"}}{{template "top" .}}
-<h1>{{.Salon.Name}}</h1>
-<p class="lead">Termin online buchen</p>
-{{if and .Services .Staff}}
+<header class="salon-head">
+  <h1>{{.Salon.Name}}</h1>
+  {{with .Salon.About}}<p class="about">{{.}}</p>{{end}}
+  <address class="contact">
+    {{with .Salon.Address}}<span class="addr">{{.}}</span>{{end}}
+    <span class="contact-links">
+      {{if .Tel}}<a href="{{.Tel}}">{{.Salon.Phone}}</a>{{end}}
+      {{with .Website}}<a href="{{.}}" rel="noopener">{{$.WebsiteLabel}}</a>{{end}}
+      {{with .Imprint}}<a href="{{.}}" rel="noopener">Impressum</a>{{end}}
+    </span>
+  </address>
+</header>
+{{if .Services}}
 <form method="post" action="/book">
-  <div hx-get="/slots" hx-trigger="load, change" hx-include="closest form" hx-target="#slots">
-    <fieldset>
-      <legend>1. Leistung</legend>
-      {{range $i, $s := .Services}}
-      <label class="opt"><input type="radio" name="service" value="{{$s.ID}}" required{{if eq $i 0}} checked{{end}}>
-        <span>{{$s.Name}}</span><small>{{$s.Duration}} Min., {{euro $s.PriceCents}}</small></label>
-      {{end}}
-    </fieldset>
-    <fieldset>
-      <legend>2. Bei wem?</legend>
-      {{range $i, $s := .Staff}}
-      <label class="opt"><input type="radio" name="staff" value="{{$s.ID}}" required{{if eq $i 0}} checked{{end}}>
-        <span>{{$s.Name}}</span></label>
-      {{end}}
-    </fieldset>
-    <fieldset>
-      <legend>3. Tag und Uhrzeit</legend>
-      <input type="date" name="date" value="{{.Today}}" min="{{.Today}}" required aria-label="Tag">
-    </fieldset>
-  </div>
-  <div id="slots" aria-live="polite"><noscript><p class="muted">Für die Uhrzeitauswahl bitte JavaScript aktivieren.</p></noscript></div>
+  <fieldset hx-get="/mitarbeiter" hx-trigger="change" hx-target="#staff" hx-include="[name=service],[name=staff]">
+    <legend>1. Leistung</legend>
+    {{range $i, $s := .Services}}
+    <label class="opt"><input type="radio" name="service" value="{{$s.ID}}" required{{if eq $i 0}} checked{{end}}>
+      <span class="opt-text"><span class="opt-name">{{$s.Name}}</span>{{with $s.Description}}<span class="opt-desc">{{.}}</span>{{end}}</span>
+      <span class="opt-meta">{{$s.Duration}} Min.<strong>{{euro $s.PriceCents}}</strong></span></label>
+    {{end}}
+  </fieldset>
+  <fieldset>
+    <legend>2. Bei wem?</legend>
+    <div id="staff" aria-live="polite">{{template "book-staff" .}}</div>
+  </fieldset>
+  <fieldset>
+    <legend>3. Tag und Uhrzeit</legend>
+    <label class="field">Tag<input type="date" id="date" name="date" value="{{.Today}}" min="{{.Today}}" max="{{.MaxDate}}" required></label>
+    <p class="field" id="slots-label">Freie Uhrzeiten</p>
+    <div id="slots" role="group" aria-labelledby="slots-label" aria-live="polite"
+      hx-get="/slots" hx-trigger="load, change from:#staff, change from:#date, staff-loaded from:body"
+      hx-include="[name=service],[name=staff],[name=date]">
+      <noscript><p class="muted">Für die Uhrzeitauswahl bitte JavaScript aktivieren oder im Salon anrufen.</p></noscript>
+    </div>
+  </fieldset>
   <fieldset>
     <legend>4. Deine Daten</legend>
     <label class="field">Name<input type="text" name="name" autocomplete="name" maxlength="100" required></label>
     <label class="field">E-Mail<input type="email" name="email" autocomplete="email" maxlength="200" required></label>
-    <label class="field">Telefon (optional)<input type="tel" name="phone" autocomplete="tel" maxlength="40"></label>
+    <label class="field">Telefon <span class="optional">(optional)</span><input type="tel" name="phone" autocomplete="tel" maxlength="40"></label>
+    <div class="hp" aria-hidden="true"><label>Firma, bitte leer lassen<input type="text" name="firma" tabindex="-1" autocomplete="off"></label></div>
   </fieldset>
   <button type="submit">Verbindlich buchen</button>
-  <p class="muted small">Du bekommst eine Bestätigung per E-Mail mit einem Link zum Absagen.</p>
+  <p class="muted small">Du bekommst eine Bestätigung per E-Mail mit Kalendereintrag und Link zum Absagen.{{with .CancelNotice}} Online absagen kannst du bis {{.}} vor dem Termin.{{end}} <a href="/datenschutz">Hinweise zum Datenschutz</a></p>
 </form>
 {{else}}
-<p>Für diesen Salon sind noch keine Termine buchbar.</p>
+<p>Für diesen Salon sind noch keine Termine online buchbar.{{if .Tel}} Ruf gern an: <a href="{{.Tel}}">{{.Salon.Phone}}</a>{{end}}</p>
 {{end}}
 {{template "bottom" .}}{{end}}
+
+{{define "book-staff"}}{{if .Staff}}
+<label class="opt"><input type="radio" name="staff" value="egal"{{if eq .Sel 0}} checked{{end}}><span class="opt-text"><span class="opt-name">Egal, wer frei ist</span></span></label>
+{{range .Staff}}<label class="opt"><input type="radio" name="staff" value="{{.ID}}"{{if eq .ID $.Sel}} checked{{end}}><span class="opt-text"><span class="opt-name">{{.Name}}</span></span></label>
+{{end}}{{else}}<p class="muted">Diese Leistung bietet gerade niemand an.</p>{{end}}{{end}}
 
 {{define "slots"}}{{if .Slots}}<div class="slots">
 {{range .Slots}}<label class="slot"><input type="radio" name="start" value="{{.Unix}}" required><span>{{.Label}}</span></label>
@@ -62,13 +83,17 @@
 
 {{define "booked"}}{{template "top" .}}
 <h1>Termin gebucht</h1>
-<dl>
+<p class="lead">Danke{{with .Name}}, {{.}}{{end}}! Wir freuen uns auf dich.</p>
+{{if .When}}<dl>
   <dt>Wann</dt><dd>{{.When}}</dd>
   <dt>Leistung</dt><dd>{{.Service}}</dd>
   <dt>Bei</dt><dd>{{.Staff}}</dd>
-  <dt>Salon</dt><dd>{{.Salon.Name}}</dd>
-</dl>
-<p>Die Bestätigung geht an {{.Email}}. Absagen kannst du über den Link in der Mail oder <a href="{{.CancelURL}}">hier</a>.</p>
+  <dt>Wo</dt><dd class="addr">{{.Salon.Name}}{{with .Salon.Address}}
+{{.}}{{end}}</dd>
+</dl>{{end}}
+<p>Die Bestätigung geht an <strong>{{.Email}}</strong>.</p>
+{{if .ICSURL}}<a class="btn" href="{{.ICSURL}}">In meinen Kalender eintragen</a>
+<p>Du kannst doch nicht? <a href="{{.CancelURL}}">Termin absagen</a>{{with .Deadline}} (online bis {{.}}){{end}}.</p>{{end}}
 {{template "bottom" .}}{{end}}
 
 {{define "cancel"}}{{template "top" .}}
@@ -80,13 +105,15 @@
 </dl>
 {{if .Cancelled}}<p>Dieser Termin ist bereits abgesagt.</p>
 {{else if .Past}}<p>Dieser Termin liegt in der Vergangenheit.</p>
-{{else}}<form method="post"><button type="submit">Termin absagen</button></form>{{end}}
+{{else if .TooLate}}<p class="notice">Online-Absage war bis {{.Deadline}} möglich. {{if .Tel}}Bitte ruf den Salon an: <a href="{{.Tel}}">{{.Salon.Phone}}</a>{{else}}Bitte melde dich direkt beim Salon.{{end}}</p>
+{{else}}<p>Online-Absage bis {{.Deadline}} möglich.</p>
+<form method="post"><button type="submit">Termin absagen</button></form>{{end}}
 {{template "bottom" .}}{{end}}
 
 {{define "cancelled"}}{{template "top" .}}
 <h1>Termin abgesagt</h1>
 <p>Danke für die Absage. {{.Salon.Name}} ist informiert.</p>
-<p><a href="/">Neuen Termin buchen</a></p>
+<a class="btn" href="/">Neuen Termin buchen</a>
 {{template "bottom" .}}{{end}}
 
 {{define "error"}}{{template "top" .}}

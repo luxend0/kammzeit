@@ -158,12 +158,33 @@ func TestLoginSameAnswer(t *testing.T) {
 	if known.Code != http.StatusOK || unknown.Code != known.Code || unknown.Body.String() != known.Body.String() {
 		t.Fatalf("Antworten unterscheiden sich: %d vs. %d", known.Code, unknown.Code)
 	}
-	if !strings.Contains(known.Body.String(), "Wenn es ein Konto mit dieser Adresse gibt") {
-		t.Fatalf("Hinweis fehlt: %s", known.Body)
+	for _, want := range []string{"Wenn es ein Konto mit dieser Adresse gibt", "Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst."} {
+		if !strings.Contains(known.Body.String(), want) {
+			t.Fatalf("Hinweis %q fehlt: %s", want, known.Body)
+		}
 	}
+	// Token und Mail entstehen im Hintergrund (gleiche Antwortzeit): kurz warten.
 	var n int
-	if err := a.db.QueryRow(`SELECT COUNT(*) FROM login_tokens`).Scan(&n); err != nil || n != 1 {
-		t.Fatalf("login_tokens = %d (%v), want 1", n, err)
+	for i := 0; i < 100 && n == 0; i++ {
+		time.Sleep(20 * time.Millisecond)
+		if err := a.db.QueryRow(`SELECT COUNT(*) FROM login_tokens`).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if n != 1 {
+		t.Fatalf("login_tokens = %d, want 1", n)
+	}
+}
+
+// Ungültige Adresse: Fehler steht am Feld, nicht nur oben.
+func TestLoginFieldError(t *testing.T) {
+	a, _ := newAuthTestApp(t)
+	w := authRequest(a, "POST", "/login", "198.51.100.8", url.Values{"email": {"keine-mail"}})
+	body := w.Body.String()
+	if w.Code != http.StatusBadRequest || !strings.Contains(body, `aria-invalid="true" aria-describedby="auth-err-email"`) ||
+		!strings.Contains(body, `<span class="field-error" id="auth-err-email">Bitte eine gültige E-Mail-Adresse angeben.</span>`) ||
+		!strings.Contains(body, `value="keine-mail"`) {
+		t.Fatalf("Fehler nicht am Feld: %d %s", w.Code, body)
 	}
 }
 

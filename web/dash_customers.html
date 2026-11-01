@@ -2,31 +2,36 @@
      kunden-neu, kunden-karte, kunden-loeschen. */}}
 
 {{define "kunden-liste"}}{{template "dash-top" .}}
+<style>
+.kunden-suche { flex: 1 1 200px; max-width: 340px; margin-top: 0; }
+.kunden-neu { margin-left: auto; }
+.kunden-kontakt { overflow-wrap: anywhere; }
+@media (max-width: 560px) { .kunden-mobil-aus { display: none; } }
+</style>
 {{if .Deleted}}<p class="flash" role="status">Kunde gelöscht.</p>{{end}}
 <form class="toolbar" method="get" action="/dashboard/kunden" role="search">
-  <input type="search" name="q" value="{{.Q}}" maxlength="100" autocomplete="off" aria-label="Kunden suchen"
-    placeholder="Name, E-Mail oder Telefon" style="max-width: 340px; margin-top: 0"
+  <input class="kunden-suche" type="search" name="q" value="{{.Q}}" maxlength="100" autocomplete="off" aria-label="Kunden suchen"
+    placeholder="Name, E-Mail oder Telefon"
     hx-get="/dashboard/kunden" hx-trigger="input changed delay:300ms, search" hx-target="#kunden-tabelle" hx-push-url="true">
-  <button class="btn btn-secondary" type="submit">Suchen</button>
-  <span class="spacer"></span>
-  <a class="btn btn-secondary" href="/dashboard/kunden.csv">CSV-Export</a>
-  <a class="btn" href="/dashboard/kunden/neu">Kunde anlegen</a>
+  <noscript><button class="btn btn-secondary" type="submit">Suchen</button></noscript>
+  <a class="btn kunden-neu" href="/dashboard/kunden/neu">Neuer Kunde</a>
 </form>
 <div id="kunden-tabelle">{{template "kunden-tabelle" .}}</div>
+{{if or .Customers .Q .PrevURL}}<p class="small" style="margin-top: 24px"><a href="/dashboard/kunden.csv">Alle Kunden als CSV-Datei herunterladen</a> <span class="muted">(für Excel oder LibreOffice)</span></p>{{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "kunden-tabelle"}}
 {{if .Customers}}
 <div class="table-wrap">
 <table class="table">
-  <thead><tr><th>Name</th><th>Kontakt</th><th class="num">Besuche</th><th>Letzter Besuch</th><th>Nächster Termin</th></tr></thead>
+  <thead><tr><th>Name</th><th>Kontakt</th><th class="num kunden-mobil-aus">Besuche</th><th class="kunden-mobil-aus">Letzter Besuch</th><th>Nächster Termin</th></tr></thead>
   <tbody>
   {{range .Customers}}<tr>
     <td><a href="/dashboard/kunden/{{.ID}}"><strong>{{.Name}}</strong></a></td>
-    <td>{{if or .Email .Phone}}{{.Email}}{{if and .Email .Phone}}<br>{{end}}{{.Phone}}{{else}}<span class="muted">-</span>{{end}}</td>
-    <td class="num">{{.Visits}}</td>
-    <td class="nowrap">{{or .LastVisit "-"}}</td>
-    <td class="nowrap">{{or .NextAppt "-"}}</td>
+    <td class="kunden-kontakt">{{if or .Email .Phone}}{{.Email}}{{if and .Email .Phone}}<br>{{end}}{{.Phone}}{{else}}<span class="muted">-</span>{{end}}</td>
+    <td class="num kunden-mobil-aus">{{.Visits}}</td>
+    <td class="nowrap kunden-mobil-aus">{{or .LastVisit "-"}}</td>
+    <td>{{or .NextAppt "-"}}</td>
   </tr>{{end}}
   </tbody>
 </table>
@@ -39,7 +44,7 @@
 <div class="empty">
   <p><strong>Noch keine Kunden.</strong></p>
   <p>Kunden landen automatisch hier, sobald sie online buchen. Stammkunden ohne Online-Buchung kannst du selbst anlegen.</p>
-  <p><a class="btn" href="/dashboard/kunden/neu">Kunde anlegen</a></p>
+  <p><a class="btn" href="/dashboard/kunden/neu">Neuer Kunde</a></p>
 </div>
 {{end}}
 {{if or .PrevURL .NextURL}}<nav class="actions" aria-label="Seiten">
@@ -48,42 +53,55 @@
 </nav>{{end}}
 {{end}}
 
+{{/* Felder für Neu und Bearbeiten. Daten: .Form (kunde), .Errors (Feldname -> Fehler). */}}
 {{define "kunden-felder"}}
-<label class="field">Name
-  <input type="text" name="name" value="{{.Name}}" required maxlength="100" autocomplete="off">
-</label>
-<div class="row">
-  <label class="field">E-Mail <span class="hint">Optional. Bucht der Kunde online mit dieser Adresse, landet der Termin hier.</span>
-    <input type="email" name="email" value="{{.Email}}" maxlength="200" autocomplete="off">
-  </label>
-  <label class="field">Telefon <span class="hint">Optional.</span>
-    <input type="tel" name="phone" value="{{.Phone}}" maxlength="40" autocomplete="off">
-  </label>
+<div class="field">
+  <label>Name<input type="text" name="name" value="{{.Form.Name}}" required maxlength="100" autocomplete="off"{{if .Errors.name}} aria-invalid="true" aria-describedby="kunde-err-name"{{end}}></label>
+  {{with .Errors.name}}<span class="field-error" id="kunde-err-name">{{.}}</span>{{end}}
 </div>
-<label class="field">Notizen <span class="hint">Nur im Dashboard sichtbar, z. B. Farbrezeptur „7/1 + 20 Vol.“ oder Lieblingsschnitt.</span>
-  <textarea name="notes" maxlength="2000" rows="5">{{.Notes}}</textarea>
-</label>
+<div class="row">
+  <div class="field">
+    <label>E-Mail (optional)<input type="email" name="email" value="{{.Form.Email}}" maxlength="200" autocomplete="off"
+      aria-describedby="kunde-hint-email{{if .Errors.email}} kunde-err-email{{end}}"{{if .Errors.email}} aria-invalid="true"{{end}}></label>
+    <span class="hint" id="kunde-hint-email">Bucht der Kunde online mit dieser Adresse, landet der Termin hier.</span>
+    {{with .Errors.email}}<span class="field-error" id="kunde-err-email">{{.}}</span>{{end}}
+  </div>
+  <div class="field">
+    <label>Telefon (optional)<input type="tel" name="phone" value="{{.Form.Phone}}" maxlength="40" autocomplete="off"{{if .Errors.phone}} aria-invalid="true" aria-describedby="kunde-err-phone"{{end}}></label>
+    {{with .Errors.phone}}<span class="field-error" id="kunde-err-phone">{{.}}</span>{{end}}
+  </div>
+</div>
+<div class="field">
+  <label>Notizen<textarea name="notes" maxlength="2000" rows="5"
+    aria-describedby="kunde-hint-notes{{if .Errors.notes}} kunde-err-notes{{end}}"{{if .Errors.notes}} aria-invalid="true"{{end}}>{{.Form.Notes}}</textarea></label>
+  <span class="hint" id="kunde-hint-notes">Nur im Dashboard sichtbar, z. B. Farbrezeptur „7/1 + 20 Vol.“ oder Lieblingsschnitt.</span>
+  {{with .Errors.notes}}<span class="field-error" id="kunde-err-notes">{{.}}</span>{{end}}
+</div>
 {{end}}
 
+{{define "kunden-fehler"}}{{if .}}<p class="error" role="alert">{{or .form "Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert."}}</p>{{end}}{{end}}
+
 {{define "kunden-neu"}}{{template "dash-top" .}}
-{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+<style>.field-error { color: var(--danger); }</style>
+{{template "kunden-fehler" .Errors}}
 <form class="form" method="post" action="/dashboard/kunden/neu">
-  {{template "kunden-felder" .Form}}
-  <div class="actions"><button class="btn" type="submit">Kunde anlegen</button><a href="/dashboard/kunden">Abbrechen</a></div>
+  {{template "kunden-felder" .}}
+  <div class="actions"><button class="btn" type="submit">Speichern</button><a href="/dashboard/kunden">Abbrechen</a></div>
 </form>
 {{template "dash-bottom" .}}{{end}}
 
+{{/* Terminhistorie. Am Handy nur Termin, Status, Leistung. */}}
 {{define "kunden-termine"}}
 <div class="table-wrap">
-<table class="table">
-  <thead><tr><th>Termin</th><th>Leistung</th><th>Mitarbeiter</th><th class="num">Preis</th><th>Status</th></tr></thead>
+<table class="table kunden-termine">
+  <thead><tr><th class="kt-when">Termin</th><th class="kt-status">Status</th><th>Leistung</th><th class="kt-staff kunden-mobil-aus">Mitarbeiter</th><th class="kt-price num kunden-mobil-aus">Preis</th></tr></thead>
   <tbody>
   {{range .}}<tr>
     <td><a href="/dashboard/termine/{{.ID}}">{{.When}}</a></td>
-    <td>{{.Service}}</td>
-    <td>{{.Staff}}</td>
-    <td class="num nowrap">{{euro .PriceCents}}</td>
     <td><span class="badge {{.Badge}}">{{.Status}}</span></td>
+    <td>{{.Service}}</td>
+    <td class="kunden-mobil-aus">{{.Staff}}</td>
+    <td class="num nowrap kunden-mobil-aus">{{euro .PriceCents}}</td>
   </tr>{{end}}
   </tbody>
 </table>
@@ -92,17 +110,31 @@
 
 {{define "kunden-karte"}}{{template "dash-top" .}}
 <style>
-  .kunden-notiz { white-space: pre-wrap; margin: 0 0 16px; padding: 12px 14px; border-left: 4px solid var(--fg); background: var(--soft); }
-  .kunden-bearbeiten { margin: 0 0 8px; }
+  .kunden-notizen h2 { margin-top: 0; }
+  .kunden-notiz { white-space: pre-wrap; margin: 0 0 24px; padding: 12px 14px; border-left: 4px solid var(--fg); background: var(--soft); }
+  .kunden-bearbeiten { margin: 16px 0 8px; }
   .kunden-bearbeiten > summary { list-style: none; margin-bottom: 16px; }
   .kunden-bearbeiten > summary::-webkit-details-marker { display: none; }
+  .field-error { color: var(--danger); }
+  /* Kommende und vergangene Termine mit gleichen Spalten; am Handy automatisch */
+  @media (min-width: 561px) {
+    .kunden-termine { table-layout: fixed; }
+    .kt-when { width: 30%; } .kt-status { width: 17%; } .kt-staff { width: 16%; } .kt-price { width: 12%; }
+  }
+  @media (max-width: 560px) { .kunden-mobil-aus { display: none; } }
 </style>
-{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{template "kunden-fehler" .Errors}}
 <div class="toolbar">
-  <a class="btn" href="/dashboard/termine/neu?kunde={{.Customer.ID}}">Termin anlegen</a>
+  <a class="btn" href="/dashboard/termine/neu?kunde={{.Customer.ID}}">Neuer Termin</a>
   <span class="spacer"></span>
   <a href="/dashboard/kunden">Alle Kunden</a>
 </div>
+
+<section class="kunden-notizen">
+  <h2>Notizen</h2>
+  {{with .Customer.Notes}}<p class="kunden-notiz">{{.}}</p>{{else}}<p class="muted">Noch keine Notizen. Hier passt zum Beispiel die Farbrezeptur hin („7/1 + 20 Vol.“).</p>{{end}}
+</section>
+
 <div class="grid">
   <section class="card">
     <h2>Kontakt</h2>
@@ -122,13 +154,10 @@
   </section>
 </div>
 
-<h2>Notizen</h2>
-{{with .Customer.Notes}}<p class="kunden-notiz">{{.}}</p>{{else}}<p class="muted">Noch keine Notizen. Hier passt zum Beispiel die Farbrezeptur hin („7/1 + 20 Vol.“).</p>{{end}}
-
-<details class="kunden-bearbeiten"{{if .Error}} open{{end}}>
+<details class="kunden-bearbeiten"{{if .Errors}} open{{end}}>
   <summary class="btn btn-secondary">Kontakt und Notizen bearbeiten</summary>
   <form class="form" method="post" action="/dashboard/kunden/{{.Customer.ID}}">
-    {{template "kunden-felder" .Form}}
+    {{template "kunden-felder" .}}
     <div class="actions"><button class="btn" type="submit">Speichern</button></div>
   </form>
 </details>
