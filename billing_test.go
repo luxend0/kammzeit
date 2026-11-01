@@ -400,7 +400,7 @@ func TestAboPage(t *testing.T) {
 		t.Fatalf("Pro-Seite:\n%s", body)
 	}
 	a.db.Exec(`UPDATE salons SET plan = 'pro' WHERE id = 2`)
-	if body := page(2, "/dashboard/abo"); strings.Contains(body, "/dashboard/abo/portal") || !strings.Contains(body, "contact@instantnode.eu") {
+	if body := page(2, "/dashboard/abo"); strings.Contains(body, "/dashboard/abo/portal") || !strings.Contains(body, "kontakt@kammzeit.de") {
 		t.Fatalf("Pro ohne Stripe:\n%s", body)
 	}
 }
