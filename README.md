@@ -72,6 +72,8 @@ Buchungsseite zum Ausprobieren: [demo.kammzeit.de](https://demo.kammzeit.de) auf
   </tr>
 </table>
 
+**Geplant** (ohne festen Termin, Details auf [kammzeit.de/geplant](https://kammzeit.de/geplant)): eigene Domain für die Buchungsseite, Abgleich mit Google Kalender, Urlaub und Abwesenheiten je Mitarbeiter, weitere Sprachen, Kunden per CSV übernehmen. Wünsche gern als Issue.
+
 ## Schnellstart
 
 Voraussetzung: Go in der Version aus [go.mod](go.mod) oder neuer.
@@ -208,6 +210,8 @@ Use the hosted version at [kammzeit.com](https://kammzeit.com) (English, sign up
 - Kammzeit news by email for salon owners: only after confirmation (double opt-in), unsubscribe with one click
 - JSON export of all salon data, delete your account yourself
 - Free with one staff member; Pro with unlimited staff, staff logins, the queue and more branding for €14.90 per month or €149 per year. Self-hosted in single-salon mode without staff limit, with queue and staff logins and without the Kammzeit notice
+
+**Planned** (no fixed dates, see [kammzeit.com/roadmap](https://kammzeit.com/roadmap)): custom domain for the booking page, Google Calendar sync, holidays and time off per staff member, more languages, importing customers from CSV.
 
 **Quick start** (Go version from [go.mod](go.mod) or newer):
 
