@@ -1,0 +1,134 @@
+{{/* Einstellungen, Datenexport, Konto löschen (dash_settings.go). Präfix "einst-". */}}
+{{define "einst-err"}}{{with .}}<span class="einst-err">{{.}}</span>{{end}}{{end}}
+
+{{define "einst-seite"}}{{template "dash-top" .}}
+<style>
+.einst-err { display: block; margin-top: 4px; font-weight: 400; color: var(--danger); }
+.einst-section { max-width: 560px; margin: 0 0 36px; }
+.einst-section h2 { border-bottom: 2px solid var(--fg); padding-bottom: 6px; }
+.einst-color { display: flex; align-items: center; gap: 16px; margin-top: 4px; }
+.einst-color input { margin-top: 0; }
+.einst-preview { display: inline-block; padding: 9px 16px; font-weight: 700; color: #fff; background: var(--accent); }
+#einst-url { font-family: ui-monospace, monospace; }
+</style>
+<script src="/static/einstellungen.js" defer></script>
+
+<section class="einst-section">
+  <h2>Deine Buchungsseite</h2>
+  <label class="field">Adresse (fest, nicht änderbar)
+    <input type="text" id="einst-url" value="{{.BookingURL}}" readonly>
+    <span class="hint">Anklicken, mit Strg+C (Mac: Cmd+C) kopieren und z. B. bei Google, Instagram oder auf deiner Website verlinken.</span>
+  </label>
+</section>
+
+{{if .Errors}}<p class="error" role="alert">Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert.</p>{{end}}
+<form method="post" action="/dashboard/einstellungen" class="form" novalidate>
+  <section class="einst-section">
+    <h2>Salon</h2>
+    <label class="field">Name
+      <input type="text" name="name" value="{{.Form.Name}}" maxlength="80" required{{if .Errors.name}} aria-invalid="true"{{end}}>
+      {{template "einst-err" .Errors.name}}
+    </label>
+    <label class="field">E-Mail für Buchungsinfos
+      <input type="email" name="email" value="{{.Form.Email}}" maxlength="200"{{if .Errors.email}} aria-invalid="true"{{end}}>
+      <span class="hint">Hierhin schicken wir neue Buchungen und Absagen. Leer lassen = keine Mails.</span>
+      {{template "einst-err" .Errors.email}}
+    </label>
+    <label class="field">Telefon
+      <input type="tel" name="phone" value="{{.Form.Phone}}" maxlength="40"{{if .Errors.phone}} aria-invalid="true"{{end}}>
+      {{template "einst-err" .Errors.phone}}
+    </label>
+    <label class="field">Adresse
+      <textarea name="address" rows="3" maxlength="300"{{if .Errors.address}} aria-invalid="true"{{end}}>{{.Form.Address}}</textarea>
+      {{template "einst-err" .Errors.address}}
+    </label>
+    <label class="field">Website
+      <input type="url" name="website" value="{{.Form.Website}}" maxlength="200" placeholder="https://"{{if .Errors.website}} aria-invalid="true"{{end}}>
+      {{template "einst-err" .Errors.website}}
+    </label>
+    <label class="field">Impressum deines Salons
+      <input type="url" name="imprint_url" value="{{.Form.ImprintURL}}" maxlength="200" placeholder="https://"{{if .Errors.imprint_url}} aria-invalid="true"{{end}}>
+      <span class="hint">Link zu deinem Impressum, nur https://. Steht auf deiner Buchungsseite.</span>
+      {{template "einst-err" .Errors.imprint_url}}
+    </label>
+    <label class="field">Über uns
+      <textarea name="about" rows="4" maxlength="500"{{if .Errors.about}} aria-invalid="true"{{end}}>{{.Form.About}}</textarea>
+      <span class="hint">Kurzer Text auf der Buchungsseite, höchstens 500 Zeichen.</span>
+      {{template "einst-err" .Errors.about}}
+    </label>
+  </section>
+
+  <section class="einst-section">
+    <h2>Aussehen</h2>
+    <label class="field">Akzentfarbe
+      <span class="einst-color" id="einst-preview-box" style="--accent: {{.Form.Accent}}">
+        <input type="color" name="accent" id="einst-accent" value="{{.Form.Accent}}"{{if .Errors.accent}} aria-invalid="true"{{end}}>
+        <span class="einst-preview" aria-hidden="true">Termin buchen</span>
+      </span>
+      <span class="hint">Für Buttons und Markierungen auf deiner Buchungsseite und hier im Dashboard.</span>
+      {{template "einst-err" .Errors.accent}}
+    </label>
+  </section>
+
+  <section class="einst-section">
+    <h2>Buchungsregeln</h2>
+    <label class="field">Zeitzone
+      <select name="timezone">{{range .Timezones}}<option value="{{.Value}}"{{if eq .Value $.Form.TZ}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+      {{template "einst-err" .Errors.timezone}}
+    </label>
+    <label class="field">Online buchbar frühestens
+      <select name="min_notice">{{range .MinNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.MinNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+      <span class="hint">So kurzfristig dürfen Kunden vor Terminbeginn noch online buchen.</span>
+      {{template "einst-err" .Errors.min_notice}}
+    </label>
+    <label class="field">Online absagen
+      <select name="cancel_notice">{{range .CancelNotice}}<option value="{{.Value}}"{{if eq .Value $.Form.CancelNoticeMin}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+      <span class="hint">Bis wann Kunden über den Link in ihrer Mail selbst absagen können.</span>
+      {{template "einst-err" .Errors.cancel_notice}}
+    </label>
+    <label class="field">Im Voraus buchbar
+      <select name="horizon">{{range .Horizon}}<option value="{{.Value}}"{{if eq .Value $.Form.HorizonDays}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+      <span class="hint">So weit in die Zukunft zeigt die Buchungsseite freie Termine.</span>
+      {{template "einst-err" .Errors.horizon}}
+    </label>
+  </section>
+
+  <div class="actions"><button class="btn" type="submit">Speichern</button></div>
+</form>
+
+<section class="einst-section" style="margin-top: 48px">
+  <h2>Login</h2>
+  <dl class="kv"><dt>Login-E-Mail</dt><dd>{{.User.Email}}</dd></dl>
+  <p class="muted small">Du meldest dich mit einem Link per Mail an. Zum Ändern der Login-Adresse schreib uns kurz (Kontakt im <a href="/impressum">Impressum</a>).</p>
+</section>
+
+<section class="einst-section">
+  <h2>Deine Daten</h2>
+  <p>Alle Daten deines Salons (Team, Leistungen, Arbeitszeiten, Kunden, Termine) als JSON-Datei.</p>
+  <p><a class="btn btn-secondary" href="/dashboard/einstellungen/export">Daten exportieren</a></p>
+  <p class="muted small" style="margin-top: 24px">Salon und Konto endgültig entfernen: <a href="/dashboard/einstellungen/loeschen">Konto löschen</a></p>
+</section>
+{{template "dash-bottom" .}}{{end}}
+
+{{define "einst-loeschen"}}{{template "dash-top" .}}
+<div class="form">
+{{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
+{{if .HasAbo}}
+  {{if not .Error}}<p class="error">Bitte zuerst das Pro-Abo unter <a href="/dashboard/abo">/dashboard/abo</a> kündigen. Danach kannst du das Konto löschen.</p>{{end}}
+  <p><a href="/dashboard/abo">Zum Abo</a> · <a href="/dashboard/einstellungen">Zurück zu den Einstellungen</a></p>
+{{else}}
+  <p>Damit löschst du <strong>{{.Salon.Name}}</strong> endgültig: Buchungsseite, Team, Leistungen, Arbeitszeiten, Kundenkartei, alle Termine und deinen Login. Das lässt sich nicht rückgängig machen.</p>
+  <p>Kunden mit offenen Terminen bekommen keine Nachricht. Sag ihnen vorher Bescheid.</p>
+  <p>Willst du die Daten behalten? Lade vorher den <a href="/dashboard/einstellungen/export">Datenexport</a> herunter.</p>
+  <form method="post" action="/dashboard/einstellungen/loeschen">
+    <label class="field">Zum Bestätigen die Adresse deines Salons eintippen: {{.Salon.Slug}}
+      <input type="text" name="slug" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+    </label>
+    <div class="actions">
+      <button class="btn btn-danger" type="submit">Endgültig löschen</button>
+      <a href="/dashboard/einstellungen">Abbrechen</a>
+    </div>
+  </form>
+{{end}}
+</div>
+{{template "dash-bottom" .}}{{end}}
