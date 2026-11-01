@@ -39,13 +39,14 @@ func catalogID(r *http.Request) int64 {
 }
 
 func catalogNotFound(a *app, w http.ResponseWriter, r *http.Request, c *dctx) {
-	a.dashError(w, r, c, http.StatusNotFound, "Diesen Eintrag gibt es nicht.")
+	a.dashError(w, r, c, http.StatusNotFound, tr(a.langFor(r), "Diesen Eintrag gibt es nicht."))
 }
 
 // catalogInvalid steht über dem Formular, die Einzelheiten stehen an den Feldern.
 const catalogInvalid = "Bitte die markierten Felder prüfen. Es wurde noch nichts gespeichert."
 
 // catalogSaved: Erfolgsmeldung zu ?gespeichert=<code>. Nur feste Texte, nie etwas aus der URL.
+// Übersetzt wird beim Anzeigen (catalogSavedMsg).
 var catalogSaved = map[string]string{
 	"leistung":                "Leistung gespeichert.",
 	"leistung-neu":            "Leistung angelegt. Alle aktiven Mitarbeiter bieten sie an, ändern kannst du das unter Team.",
@@ -56,6 +57,14 @@ var catalogSaved = map[string]string{
 	"mitarbeiter-neu":         "Mitarbeiter angelegt.",
 	"mitarbeiter-geloescht":   "Mitarbeiter gelöscht.",
 	"mitarbeiter-deaktiviert": "Der Mitarbeiter hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.",
+}
+
+// catalogSavedMsg: übersetzte Erfolgsmeldung; ohne bekannten Code nil, dann zeigt das Layout "Gespeichert.".
+func catalogSavedMsg(r *http.Request, lang string) any {
+	if msg := catalogSaved[r.URL.Query().Get("gespeichert")]; msg != "" {
+		return tr(lang, msg)
+	}
+	return nil
 }
 
 // catalogAppts zählt alle Termine (auch vergangene und abgesagte) an einer Leistung
@@ -148,10 +157,11 @@ func (a *app) leistList(w http.ResponseWriter, r *http.Request, c *dctx) {
 	if n := len(list); n > 0 {
 		list[0].First, list[n-1].Last = true, true
 	}
-	d := a.dashPage(c, r, "leistungen", "Leistungen")
+	lang := a.langFor(r)
+	d := a.dashPage(c, r, "leistungen", tr(lang, "Leistungen"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Services"] = list
-	d["SavedMsg"] = catalogSaved[r.URL.Query().Get("gespeichert")]
+	d["SavedMsg"] = catalogSavedMsg(r, lang)
 	a.render(w, http.StatusOK, "leist-liste", d)
 }
 
@@ -170,7 +180,7 @@ func (a *app) leistEdit(w http.ResponseWriter, r *http.Request, c *dctx) {
 			a.dashServerError(w, r, c, err)
 			return
 		}
-		f.Duration, f.Price = strconv.Itoa(dur), fmt.Sprintf("%d,%02d", cents/100, cents%100)
+		f.Duration, f.Price = strconv.Itoa(dur), trf(a.langFor(r), "%d,%02d", cents/100, cents%100)
 	}
 	a.leistRender(w, r, c, http.StatusOK, f, "")
 }
@@ -185,9 +195,13 @@ func (a *app) leistRender(w http.ResponseWriter, r *http.Request, c *dctx, statu
 			return
 		}
 	}
-	d := a.dashPage(c, r, "leistungen", title)
+	lang := a.langFor(r)
+	for k, v := range f.Errs {
+		f.Errs[k] = tr(lang, v)
+	}
+	d := a.dashPage(c, r, "leistungen", tr(lang, title))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
-	d["F"], d["Error"] = f, msg
+	d["F"], d["Error"] = f, tr(lang, msg)
 	a.render(w, status, "leist-form", d)
 }
 
@@ -195,7 +209,7 @@ func (a *app) leistSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 	isNew := r.PathValue("id") == ""
 	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
 	if err := r.ParseForm(); err != nil {
-		a.dashError(w, r, c, http.StatusBadRequest, "Das Formular war unvollständig.")
+		a.dashError(w, r, c, http.StatusBadRequest, tr(a.langFor(r), "Das Formular war unvollständig."))
 		return
 	}
 	f := leistForm{
@@ -416,21 +430,31 @@ func (a *app) teamList(w http.ResponseWriter, r *http.Request, c *dctx) {
 		hours[id] = append(hours[id], h)
 	}
 	rows.Close()
+	lang := a.langFor(r)
 	for i := range list {
-		list[i].Hours = teamHoursSummary(hours[list[i].ID])
+		list[i].Hours = teamHoursSummary(lang, hours[list[i].ID])
 	}
-	d := a.dashPage(c, r, "team", "Team")
+	d := a.dashPage(c, r, "team", tr(lang, "Team"))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
 	d["Staff"] = list
-	d["SavedMsg"] = catalogSaved[r.URL.Query().Get("gespeichert")]
+	d["SavedMsg"] = catalogSavedMsg(r, lang)
 	d["ShowLimit"] = !c.Salon.Pro() && !a.cfg.SingleTenant
-	d["Limit"] = freeStaffLimit
+	d["ProHint"] = trf(lang, "Im Gratis-Plan ist höchstens %d Mitarbeiter aktiv. Mit Pro unbegrenzt viele.", freeStaffLimit)
 	a.render(w, http.StatusOK, "team-liste", d)
 }
 
+// teamWeekday: Name des Wochentags in der Sprache lang.
+func teamWeekday(lang string, wd time.Weekday) string {
+	if lang == "en" {
+		return weekdaysEN[wd]
+	}
+	return weekdaysDE[wd]
+}
+
 // teamHoursSummary fasst Wochentage mit gleichen Zeiten zusammen, z. B.
-// ["Di-Fr 9:00-18:00", "Sa 9:00-14:00"]. hours muss nach start_min sortiert sein.
-func teamHoursSummary(hours []WorkingHours) []string {
+// ["Di-Fr 9:00-18:00", "Sa 9:00-14:00"] bzw. ["Tue-Fri 9:00-18:00", ...].
+// hours muss nach start_min sortiert sein.
+func teamHoursSummary(lang string, hours []WorkingHours) []string {
 	clock := func(m int) string { return fmt.Sprintf("%d:%02d", m/60, m%60) }
 	day := map[time.Weekday]string{}
 	for _, h := range hours {
@@ -439,6 +463,10 @@ func teamHoursSummary(hours []WorkingHours) []string {
 		}
 		day[h.Weekday] += clock(h.StartMin) + "-" + clock(h.EndMin)
 	}
+	n := 2 // "Di", englisch "Tue"
+	if lang == "en" {
+		n = 3
+	}
 	var out []string
 	for i := 0; i < len(teamOrder); {
 		j := i
@@ -446,9 +474,9 @@ func teamHoursSummary(hours []WorkingHours) []string {
 			j++
 		}
 		if txt := day[teamOrder[i]]; txt != "" {
-			label := weekdaysDE[teamOrder[i]][:2]
+			label := teamWeekday(lang, teamOrder[i])[:n]
 			if j > i {
-				label += "-" + weekdaysDE[teamOrder[j]][:2]
+				label += "-" + teamWeekday(lang, teamOrder[j])[:n]
 			}
 			out = append(out, label+" "+txt)
 		}
@@ -513,7 +541,7 @@ func (a *app) teamEdit(w http.ResponseWriter, r *http.Request, c *dctx) {
 	}
 	f.Services = svcs
 	for _, wd := range teamOrder {
-		d := teamDay{WD: int(wd), Label: weekdaysDE[wd]}
+		d := teamDay{WD: int(wd), Label: teamWeekday(a.langFor(r), wd)}
 		i := 0
 		for _, h := range hours {
 			if h.Weekday == wd && i < 2 { // ponytail: mehr als zwei Blöcke am Tag kann das Formular nicht zeigen
@@ -559,9 +587,13 @@ func (a *app) teamLimitReached(q querier, s *salon, exceptID int64) (bool, error
 
 // teamRender zeigt das Mitarbeiter-Formular. f == nil zusammen mit limit: nur der Hinweis auf Pro.
 func (a *app) teamRender(w http.ResponseWriter, r *http.Request, c *dctx, status int, f *teamForm, msg string, limit bool) {
+	lang := a.langFor(r)
 	title := "Neuer Mitarbeiter"
 	if f != nil {
-		f.CopyFrom, f.CopyLabel = teamCopySource(f.Days)
+		f.CopyFrom, f.CopyLabel = teamCopySource(lang, f.Days)
+		for k, v := range f.Errs {
+			f.Errs[k] = tr(lang, v)
+		}
 	}
 	if f != nil && f.ID != 0 {
 		title = "Mitarbeiter bearbeiten"
@@ -571,9 +603,10 @@ func (a *app) teamRender(w http.ResponseWriter, r *http.Request, c *dctx, status
 			return
 		}
 	}
-	d := a.dashPage(c, r, "team", title)
+	d := a.dashPage(c, r, "team", tr(lang, title))
 	d["PageTitle"], d["Heading"] = d["Heading"], "" // Überschrift steht im .page-head des Templates
-	d["F"], d["Error"], d["LimitHit"], d["Limit"] = f, msg, limit, freeStaffLimit
+	d["F"], d["Error"], d["LimitHit"], d["Limit"] = f, tr(lang, msg), limit, freeStaffLimit
+	d["ProHint"] = tr(lang, "Mit Pro sind beliebig viele Mitarbeiter aktiv, für 14,90 € im Monat oder 149 € im Jahr.")
 	a.render(w, status, "team-form", d)
 }
 
@@ -581,13 +614,14 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 	isNew := r.PathValue("id") == ""
 	r.Body = http.MaxBytesReader(w, r.Body, 64<<10)
 	if err := r.ParseForm(); err != nil {
-		a.dashError(w, r, c, http.StatusBadRequest, "Das Formular war unvollständig.")
+		a.dashError(w, r, c, http.StatusBadRequest, tr(a.langFor(r), "Das Formular war unvollständig."))
 		return
 	}
+	lang := a.langFor(r)
 	f := teamForm{
 		Name:   strings.TrimSpace(r.PostFormValue("name")),
 		Active: r.PostFormValue("aktiv") == "1",
-		Days:   teamDaysFromForm(r.PostForm),
+		Days:   teamDaysFromForm(lang, r.PostForm),
 	}
 	wasActive := false
 	if !isNew {
@@ -624,11 +658,11 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 				f.Days[i].From, f.Days[i].To = from.From, from.To
 			}
 		}
-		f.Notice = "Zeiten übertragen: " + teamCopyRange(src) + ". Noch nicht gespeichert."
+		f.Notice = trf(lang, "Zeiten übertragen: %s. Noch nicht gespeichert.", teamCopyRange(lang, src))
 		a.teamRender(w, r, c, http.StatusOK, &f, "", false)
 		return
 	}
-	hours, ok := teamParseHours(f.Days)
+	hours, ok := teamParseHours(lang, f.Days)
 	f.Errs = map[string]string{}
 	if f.Name == "" || utf8.RuneCountInString(f.Name) > 60 {
 		f.Errs["name"] = "Bitte einen Namen mit höchstens 60 Zeichen angeben."
@@ -703,28 +737,28 @@ func (a *app) teamSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 // teamCopySource wählt die Vorlage für den Knopf "... auf ... bis Freitag übertragen":
 // den ersten Tag Mo-Do mit Zeiten (viele Salons haben montags zu). 0 = kein Knopf.
 // days ist wie teamOrder sortiert (Mo zuerst).
-func teamCopySource(days []teamDay) (int, string) {
+func teamCopySource(lang string, days []teamDay) (int, string) {
 	for _, d := range days[:4] {
 		if d.From != [2]string{} || d.To != [2]string{} {
-			return d.WD, teamCopyRange(d.WD) + " übertragen"
+			return d.WD, trf(lang, "%s übertragen", teamCopyRange(lang, d.WD))
 		}
 	}
 	return 0, ""
 }
 
 // teamCopyRange: "Dienstag auf Mittwoch bis Freitag", für Donnerstag nur "Donnerstag auf Freitag".
-func teamCopyRange(src int) string {
+func teamCopyRange(lang string, src int) string {
 	if src == int(time.Thursday) {
-		return "Donnerstag auf Freitag"
+		return tr(lang, "Donnerstag auf Freitag")
 	}
-	return weekdaysDE[src] + " auf " + weekdaysDE[src+1] + " bis Freitag"
+	return trf(lang, "%s auf %s bis Freitag", teamWeekday(lang, time.Weekday(src)), teamWeekday(lang, time.Weekday(src+1)))
 }
 
 // teamDaysFromForm liest die Felder von-<wd>-<i> / bis-<wd>-<i> (i = 0, 1) roh ein.
-func teamDaysFromForm(f url.Values) []teamDay {
+func teamDaysFromForm(lang string, f url.Values) []teamDay {
 	var days []teamDay
 	for _, wd := range teamOrder {
-		d := teamDay{WD: int(wd), Label: weekdaysDE[wd]}
+		d := teamDay{WD: int(wd), Label: teamWeekday(lang, wd)}
 		for i := range 2 {
 			d.From[i] = strings.TrimSpace(f.Get(fmt.Sprintf("von-%d-%d", wd, i)))
 			d.To[i] = strings.TrimSpace(f.Get(fmt.Sprintf("bis-%d-%d", wd, i)))
@@ -736,14 +770,14 @@ func teamDaysFromForm(f url.Values) []teamDay {
 
 // teamParseHours prüft die Arbeitszeiten: beide Felder leer = frei, sonst
 // Beginn und Ende im 5-Minuten-Raster, Ende nach Beginn, Blöcke ohne Überschneidung.
-// Fehler schreibt es an den Tag (Err, Bad) und liefert dann ok = false.
-func teamParseHours(days []teamDay) (out []WorkingHours, ok bool) {
+// Fehler schreibt es an den Tag (Err, Bad, in der Sprache lang) und liefert dann ok = false.
+func teamParseHours(lang string, days []teamDay) (out []WorkingHours, ok bool) {
 	ok = true
 	for k := range days {
 		d := &days[k]
 		fail := func(i int, msg string) {
 			d.Bad[i], ok = true, false
-			d.Err = strings.TrimSpace(fmt.Sprintf("%s %s Block %d: %s", d.Err, d.Label, i+1, msg))
+			d.Err = strings.TrimSpace(d.Err + " " + trf(lang, "%s Block %d: %s", d.Label, i+1, tr(lang, msg)))
 		}
 		var blocks []WorkingHours
 		for i := range 2 {
@@ -762,7 +796,7 @@ func teamParseHours(days []teamDay) (out []WorkingHours, ok bool) {
 			}
 		}
 		if len(blocks) == 2 && blocks[0].StartMin < blocks[1].EndMin && blocks[1].StartMin < blocks[0].EndMin {
-			d.Bad, d.Err, ok = [2]bool{true, true}, d.Label+": Die beiden Blöcke überschneiden sich.", false
+			d.Bad, d.Err, ok = [2]bool{true, true}, trf(lang, "%s: Die beiden Blöcke überschneiden sich.", d.Label), false
 		}
 		out = append(out, blocks...)
 	}
