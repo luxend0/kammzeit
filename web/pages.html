@@ -16,7 +16,7 @@
 {{end}}
 
 {{define "bottom"}}</main>
-<footer>{{if .Salon}}{{if .Branding}}{{t .Lang "Online-Termine mit"}} <a href="{{if eq .Lang "en"}}https://kammzeit.com{{else}}https://kammzeit.de{{end}}">Kammzeit</a> · {{end}}{{with .Imprint}}<a href="{{.}}" rel="noopener">{{t $.Lang "Impressum"}}</a> · {{end}}<a href="/datenschutz">{{t .Lang "Datenschutz"}}</a>
+<footer>{{if .Salon}}{{if .Branding}}{{t .Lang "Online-Termine mit"}} <a href="{{if eq .Lang "en"}}https://kammzeit.com{{else}}https://kammzeit.de{{end}}">Kammzeit</a> · {{end}}{{with .Imprint}}<a href="{{.}}" rel="noopener">{{t $.Lang "Impressum"}}</a> · {{end}}<a href="{{if eq .Lang "en"}}https://kammzeit.com/privacy{{else}}/datenschutz{{end}}">{{t .Lang "Datenschutz"}}</a>
 {{- else}}<a href="/impressum">{{t .Lang "Impressum"}}</a> · <a href="/datenschutz">{{t .Lang "Datenschutz"}}</a> · <a href="/agb">{{t .Lang "AGB"}}</a> · <a href="/avv">{{t .Lang "AVV"}}</a>{{end}}</footer>
 </body>
 </html>{{end}}
@@ -66,7 +66,7 @@
     <div class="hp" aria-hidden="true"><label>{{t .Lang "Firma, bitte leer lassen"}}<input type="text" name="firma" tabindex="-1" autocomplete="off"></label></div>
   </fieldset>
   <button type="submit">{{t .Lang "Verbindlich buchen"}}</button>
-  <p class="muted small">{{t .Lang "Du bekommst eine Bestätigung per E-Mail mit Kalendereintrag und Link zum Absagen."}}{{with .CancelNotice}} {{tf $.Lang "Online absagen kannst du bis %s vor dem Termin." .}}{{end}} <a href="/datenschutz">{{t .Lang "Hinweise zum Datenschutz"}}</a></p>
+  <p class="muted small">{{t .Lang "Du bekommst eine Bestätigung per E-Mail mit Kalendereintrag und Link zum Absagen."}}{{with .CancelNotice}} {{tf $.Lang "Online absagen kannst du bis %s vor dem Termin." .}}{{end}} <a href="{{if eq .Lang "en"}}https://kammzeit.com/privacy{{else}}/datenschutz{{end}}">{{t .Lang "Hinweise zum Datenschutz"}}</a></p>
 </form>
 {{else}}
 <p>{{t .Lang "Für diesen Salon sind noch keine Termine online buchbar."}}{{if .Tel}} {{t .Lang "Ruf gern an:"}} <a href="{{.Tel}}">{{.Salon.Phone}}</a>{{end}}</p>
