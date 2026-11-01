@@ -1,46 +1,86 @@
-{{/* Leistungen (leist-*) und Team (team-*). Handler: dash_catalog.go */}}
+{{/* Leistungen (leist-*) und Team (team-*). Handler: dash_catalog.go
+     Feldfehler: aria-invalid + aria-describedby auf <span class="field-error" id="err-...">,
+     Stil dafür kommt aus dash.css. Erfolgsmeldungen setzt der Handler als SavedMsg. */}}
+
+{{define "catalog-style"}}<style>
+.catalog-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.catalog-del { margin-top: 40px; }
+.catalog-del summary { list-style: none; }
+.catalog-del summary::-webkit-details-marker { display: none; }
+.catalog-del[open] summary { color: var(--danger); background: var(--bg); }
+.catalog-del-box { margin-top: 12px; padding: 14px 16px; border-left: 4px solid var(--danger); background: var(--soft); max-width: 560px; }
+.catalog-del-box p { margin: 0 0 12px; }
+.catalog-del-box form { margin: 0; }
+.catalog-sub { display: block; font-size: .8125rem; color: var(--muted); }
+</style>{{end}}
 
 {{define "leist-liste"}}{{template "dash-top" .}}
-{{if .Deactivated}}<p class="flash" role="status">Die Leistung hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.</p>{{end}}
-{{if .Deleted}}<p class="flash" role="status">Gelöscht.</p>{{end}}
+{{template "catalog-style"}}
+<style>
+.leist-move { margin: 0; display: flex; gap: 4px; }
+.leist-move-col { width: 1%; }
+.leist-move .btn { font-size: 1rem; line-height: 1.2; }
+.leist-move .btn:disabled, .leist-move .btn:disabled:hover { opacity: .3; cursor: default; color: var(--fg); background: var(--bg); border-color: var(--fg); }
+.leist-mob { display: none; }
+@media (pointer: coarse) { .leist-move .btn { min-width: 44px; } }
+@media (max-width: 560px) {
+  .leist-dauer { display: none; }
+  .leist-mob { display: block; }
+}
+</style>
 <div class="toolbar">
   <span class="spacer"></span>
   <a class="btn" href="/dashboard/leistungen/neu">Neue Leistung</a>
 </div>
 {{if .Services}}
 <div class="table-wrap"><table class="table">
-<thead><tr><th>Name</th><th class="num">Dauer</th><th class="num">Preis</th><th>Status</th><th>Reihenfolge</th></tr></thead>
+<thead><tr><th class="leist-move-col"><span class="catalog-sr">Reihenfolge</span></th><th>Name</th><th class="num leist-dauer">Dauer</th><th class="num">Preis</th></tr></thead>
 <tbody>
-{{range .Services}}<tr>
-  <td><a href="/dashboard/leistungen/{{.ID}}">{{.Name}}</a></td>
-  <td class="num nowrap">{{.Duration}} Min.</td>
-  <td class="num nowrap">{{euro .PriceCents}}</td>
-  <td>{{if .Active}}<span class="badge">aktiv</span>{{else}}<span class="badge badge-muted">inaktiv</span>{{end}}</td>
-  <td class="nowrap"><form method="post" action="/dashboard/leistungen/{{.ID}}/verschieben" style="margin:0">
+{{range .Services}}<tr id="leist-{{.ID}}">
+  <td><form class="leist-move" method="post" action="/dashboard/leistungen/{{.ID}}/verschieben">
     <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="hoch" aria-label="{{.Name}} nach oben"{{if .First}} disabled{{end}}>&uarr;</button>
     <button class="btn btn-secondary btn-small" type="submit" name="richtung" value="runter" aria-label="{{.Name}} nach unten"{{if .Last}} disabled{{end}}>&darr;</button>
   </form></td>
+  <td><a href="/dashboard/leistungen/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="badge badge-muted">inaktiv</span>{{end}}
+    <span class="catalog-sub leist-mob">{{.Duration}} Min.</span></td>
+  <td class="num nowrap leist-dauer">{{.Duration}} Min.</td>
+  <td class="num nowrap">{{euro .PriceCents}}</td>
 </tr>{{end}}
 </tbody>
 </table></div>
+<p class="muted small">In dieser Reihenfolge stehen die Leistungen auf der Buchungsseite. Inaktive Leistungen sind dort nicht zu sehen.</p>
 {{else}}
 <p class="empty">Noch keine Leistungen. Lege die erste an, damit Kunden buchen können.</p>
 {{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "leist-form"}}{{template "dash-top" .}}
+{{template "catalog-style"}}
 {{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
 {{with .F}}
-<form method="post" class="form">
-  <label class="field">Name
-    <input type="text" name="name" value="{{.Name}}" maxlength="80" required></label>
-  <label class="field">Beschreibung <span class="hint">Optional, höchstens 300 Zeichen.</span>
-    <textarea name="beschreibung" maxlength="300">{{.Description}}</textarea></label>
+<form method="post" class="form" novalidate>
+  <div class="field">
+    <label for="leist-name">Name</label>
+    <input type="text" id="leist-name" name="name" value="{{.Name}}" maxlength="80" required{{if .Errs.name}} aria-invalid="true" aria-describedby="err-name"{{end}}>
+    {{with .Errs.name}}<span class="field-error" id="err-name">{{.}}</span>{{end}}
+  </div>
+  <div class="field">
+    <label for="leist-beschreibung">Beschreibung</label>
+    <textarea id="leist-beschreibung" name="beschreibung" maxlength="300" aria-describedby="leist-beschreibung-hint{{if .Errs.beschreibung}} err-beschreibung{{end}}"{{if .Errs.beschreibung}} aria-invalid="true"{{end}}>{{.Description}}</textarea>
+    <span class="hint" id="leist-beschreibung-hint">Optional, höchstens 300 Zeichen. Steht auf der Buchungsseite unter dem Namen.</span>
+    {{with .Errs.beschreibung}}<span class="field-error" id="err-beschreibung">{{.}}</span>{{end}}
+  </div>
   <div class="row">
-    <label class="field">Dauer in Minuten
-      <input type="number" name="dauer" value="{{.Duration}}" min="5" max="480" step="5" required></label>
-    <label class="field">Preis in Euro
-      <input type="text" name="preis" value="{{.Price}}" inputmode="decimal" placeholder="25,00" maxlength="12" required></label>
+    <div class="field">
+      <label for="leist-dauer">Dauer in Minuten</label>
+      <input type="number" id="leist-dauer" name="dauer" value="{{.Duration}}" min="5" max="480" step="5" required{{if .Errs.dauer}} aria-invalid="true" aria-describedby="err-dauer"{{end}}>
+      {{with .Errs.dauer}}<span class="field-error" id="err-dauer">{{.}}</span>{{end}}
+    </div>
+    <div class="field">
+      <label for="leist-preis">Preis in Euro</label>
+      <input type="text" id="leist-preis" name="preis" value="{{.Price}}" inputmode="decimal" placeholder="25,00" maxlength="12" required{{if .Errs.preis}} aria-invalid="true" aria-describedby="err-preis"{{end}}>
+      {{with .Errs.preis}}<span class="field-error" id="err-preis">{{.}}</span>{{end}}
+    </div>
   </div>
   <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> Aktiv, online buchbar</label>
   {{if not .ID}}<p class="muted small">Neue Leistungen bekommen automatisch alle aktiven Mitarbeiter. Ändern kannst du das unter Team.</p>{{end}}
@@ -50,19 +90,27 @@
   </div>
 </form>
 {{if .ID}}
-<h2>Löschen</h2>
-<form method="post" action="/dashboard/leistungen/{{.ID}}/loeschen" class="actions">
-  <label class="check"><input type="checkbox" name="ok" value="1" required> Ja, löschen</label>
-  <button class="btn btn-danger btn-small" type="submit">Leistung löschen</button>
-</form>
-<p class="muted small">Hat die Leistung schon Termine, wird sie stattdessen deaktiviert.</p>
+{{if and .Appts (not .Active)}}<p class="muted small catalog-del">Die Leistung hat Termine und kann deshalb nicht gelöscht werden. Sie ist deaktiviert und auf der Buchungsseite nicht zu sehen.</p>
+{{else}}<details class="catalog-del">
+  <summary class="btn btn-danger btn-small">Leistung löschen</summary>
+  <div class="catalog-del-box">
+    <p><strong>Wirklich löschen?</strong>
+    {{if .Appts}}Die Leistung hat schon Termine. Sie wird deshalb nicht gelöscht, sondern stattdessen deaktiviert. Die Termine bleiben.
+    {{else}}Das lässt sich nicht rückgängig machen.{{end}}</p>
+    <form method="post" action="/dashboard/leistungen/{{.ID}}/loeschen">
+      <button class="btn btn-danger" type="submit">{{if .Appts}}Ja, deaktivieren{{else}}Ja, löschen{{end}}</button>
+    </form>
+  </div>
+</details>{{end}}
 {{end}}
 {{end}}
 {{template "dash-bottom" .}}{{end}}
 
 {{define "team-liste"}}{{template "dash-top" .}}
-{{if .Deactivated}}<p class="flash" role="status">Der Mitarbeiter hat Termine und wurde deshalb nicht gelöscht, sondern deaktiviert.</p>{{end}}
-{{if .Deleted}}<p class="flash" role="status">Gelöscht.</p>{{end}}
+{{template "catalog-style"}}
+<style>
+@media (max-width: 560px) { .team-leist { display: none; } }
+</style>
 <div class="toolbar">
   {{if .ShowLimit}}<span class="muted">Aktive Mitarbeiter im Gratis-Plan: höchstens {{.Limit}}. Mehr mit <a href="/dashboard/abo">Pro</a>.</span>{{end}}
   <span class="spacer"></span>
@@ -70,13 +118,13 @@
 </div>
 {{if .Staff}}
 <div class="table-wrap"><table class="table">
-<thead><tr><th>Name</th><th>Arbeitszeiten</th><th class="num">Leistungen</th><th>Status</th></tr></thead>
+<thead><tr><th>Name</th><th>Arbeitszeiten</th><th class="num team-leist">Leistungen</th></tr></thead>
 <tbody>
 {{range .Staff}}<tr>
-  <td><a href="/dashboard/team/{{.ID}}">{{.Name}}</a></td>
+  <td><a href="/dashboard/team/{{.ID}}">{{.Name}}</a>{{if not .Active}} <span class="badge badge-muted">inaktiv</span>{{end}}
+    {{if eq .Services 0}}<span class="catalog-sub">Keine Leistungen, online nicht buchbar</span>{{end}}</td>
   <td>{{range .Hours}}<div class="nowrap">{{.}}</div>{{else}}<span class="muted">keine</span>{{end}}</td>
-  <td class="num">{{.Services}}</td>
-  <td>{{if .Active}}<span class="badge">aktiv</span>{{else}}<span class="badge badge-muted">inaktiv</span>{{end}}</td>
+  <td class="num team-leist">{{.Services}}</td>
 </tr>{{end}}
 </tbody>
 </table></div>
@@ -86,55 +134,81 @@
 {{template "dash-bottom" .}}{{end}}
 
 {{define "team-form"}}{{template "dash-top" .}}
+{{template "catalog-style"}}
 <style>
 .team-hours { border-collapse: collapse; margin: 0 0 8px; }
 .team-hours th, .team-hours td { padding: 4px 16px 4px 0; text-align: left; vertical-align: middle; }
 .team-hours thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
 .team-hours input[type=time] { display: inline-block; width: 7.5em; margin: 0; }
+.team-hours .team-err td { padding-top: 0; padding-bottom: 8px; }
+@media (max-width: 560px) {
+  .team-hours, .team-hours tbody, .team-hours tr, .team-hours th, .team-hours td { display: block; }
+  .team-hours thead { display: none; }
+  .team-hours tr { padding: 10px 0 4px; }
+  .team-hours th, .team-hours td { padding: 2px 0; }
+  .team-hours td[data-label]::before { content: attr(data-label); display: inline-block; width: 4.5em; font-size: .8125rem; color: var(--muted); }
+  .team-hours .team-err { padding-top: 0; }
+}
 </style>
 {{if .LimitHit}}<p class="error" role="alert">Aktive Mitarbeiter im Gratis-Plan: höchstens {{.Limit}}.
   <a href="/dashboard/abo">Zu Pro wechseln</a>{{if .F}} oder einen anderen Mitarbeiter deaktivieren{{end}}.</p>
 {{if not .F}}<p><a href="/dashboard/team">Zurück zum Team</a></p>{{end}}{{end}}
 {{with .Error}}<p class="error" role="alert">{{.}}</p>{{end}}
 {{with .F}}
-<form method="post" class="form form-wide">
+{{with .Notice}}<p class="flash" role="status">{{.}}</p>{{end}}
+<form method="post" class="form form-wide" novalidate>
+  {{/* Enter in einem Feld löst den ersten Absende-Knopf aus: das soll Speichern sein, nicht "übertragen". */}}
+  <button class="catalog-sr" type="submit" tabindex="-1" aria-hidden="true">Speichern</button>
   <div class="form">
-    <label class="field">Name
-      <input type="text" name="name" value="{{.Name}}" maxlength="60" required></label>
+    <div class="field">
+      <label for="team-name">Name</label>
+      <input type="text" id="team-name" name="name" value="{{.Name}}" maxlength="60" required{{if .Errs.name}} aria-invalid="true" aria-describedby="err-name"{{end}}>
+      {{with .Errs.name}}<span class="field-error" id="err-name">{{.}}</span>{{end}}
+    </div>
     <label class="check"><input type="checkbox" name="aktiv" value="1"{{if .Active}} checked{{end}}> Aktiv, online buchbar</label>
   </div>
   {{if not .ID}}<p class="muted small">Leistungen und Arbeitszeiten sind ein Vorschlag. Pass sie vor dem Speichern an.</p>{{end}}
 
   <h2>Leistungen</h2>
+  <p class="muted small">Online buchbar ist der Mitarbeiter nur für die angehakten Leistungen.</p>
   {{range .Services}}<label class="check"><input type="checkbox" name="leistung" value="{{.ID}}"{{if .Checked}} checked{{end}}> {{.Name}}{{if not .Active}} <span class="muted">(inaktiv)</span>{{end}}</label>
-  {{else}}<p class="muted">Noch keine Leistungen. <a href="/dashboard/leistungen/neu">Leistung anlegen</a></p>{{end}}
+  {{else}}<p class="muted">Noch keine Leistungen. <a href="/dashboard/leistungen/neu">Neue Leistung</a></p>{{end}}
 
-  <h2>Arbeitszeiten</h2>
-  <p class="muted small">Leer heißt frei. Der zweite Block ist für eine Pause, z. B. 9:00-12:00 und 13:00-18:00.</p>
-  <div class="table-wrap"><table class="team-hours">
+  <h2 id="team-hours-h">Arbeitszeiten</h2>
+  <p class="muted small" id="team-hours-hint">Leer heißt frei. Mit Mittagspause: Block 1 bis zur Pause, Block 2 danach, z. B. 9:00-12:00 und 13:00-18:00.</p>
+  <div class="table-wrap"><table class="team-hours" aria-labelledby="team-hours-h" aria-describedby="team-hours-hint">
     <thead><tr><th>Tag</th><th>Block 1</th><th>Block 2</th></tr></thead>
     <tbody>
     {{range .Days}}<tr>
       <th scope="row">{{.Label}}</th>
-      <td class="nowrap"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{.Label}}, Block 1, Beginn">
-        - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{.Label}}, Block 1, Ende"></td>
-      <td class="nowrap"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{.Label}}, Block 2, Beginn">
-        - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{.Label}}, Block 2, Ende"></td>
-    </tr>{{end}}
+      <td class="nowrap" data-label="Block 1"><input type="time" name="von-{{.WD}}-0" value="{{index .From 0}}" step="300" aria-label="{{.Label}}, Block 1, Beginn"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
+        - <input type="time" name="bis-{{.WD}}-0" value="{{index .To 0}}" step="300" aria-label="{{.Label}}, Block 1, Ende"{{if index .Bad 0}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
+      <td class="nowrap" data-label="Block 2"><input type="time" name="von-{{.WD}}-1" value="{{index .From 1}}" step="300" aria-label="{{.Label}}, Block 2, Beginn"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}>
+        - <input type="time" name="bis-{{.WD}}-1" value="{{index .To 1}}" step="300" aria-label="{{.Label}}, Block 2, Ende"{{if index .Bad 1}} aria-invalid="true"{{end}}{{if .Err}} aria-describedby="err-tag-{{.WD}}"{{end}}></td>
+    </tr>
+    {{if .Err}}<tr class="team-err"><td></td><td colspan="2"><span class="field-error" id="err-tag-{{.WD}}">{{.Err}}</span></td></tr>{{end}}
+    {{end}}
     </tbody>
   </table></div>
-  <div class="actions">
+  {{if .CopyFrom}}<button class="btn btn-secondary btn-small" type="submit" name="uebertragen" value="{{.CopyFrom}}">{{.CopyLabel}}</button>{{end}}
+  <div class="actions" style="margin-top: 24px">
     <button class="btn" type="submit">Speichern</button>
     <a href="/dashboard/team">Abbrechen</a>
   </div>
 </form>
 {{if .ID}}
-<h2>Löschen</h2>
-<form method="post" action="/dashboard/team/{{.ID}}/loeschen" class="actions">
-  <label class="check"><input type="checkbox" name="ok" value="1" required> Ja, löschen</label>
-  <button class="btn btn-danger btn-small" type="submit">Mitarbeiter löschen</button>
-</form>
-<p class="muted small">Hat der Mitarbeiter schon Termine, wird er stattdessen deaktiviert.</p>
+{{if and .Appts (not .Active)}}<p class="muted small catalog-del">Der Mitarbeiter hat Termine und kann deshalb nicht gelöscht werden. Er ist deaktiviert und online nicht buchbar.</p>
+{{else}}<details class="catalog-del">
+  <summary class="btn btn-danger btn-small">Mitarbeiter löschen</summary>
+  <div class="catalog-del-box">
+    <p><strong>Wirklich löschen?</strong>
+    {{if .Appts}}Der Mitarbeiter hat schon Termine. Er wird deshalb nicht gelöscht, sondern stattdessen deaktiviert. Die Termine bleiben.
+    {{else}}Das lässt sich nicht rückgängig machen.{{end}}</p>
+    <form method="post" action="/dashboard/team/{{.ID}}/loeschen">
+      <button class="btn btn-danger" type="submit">{{if .Appts}}Ja, deaktivieren{{else}}Ja, löschen{{end}}</button>
+    </form>
+  </div>
+</details>{{end}}
 {{end}}
 {{end}}
 {{template "dash-bottom" .}}{{end}}
