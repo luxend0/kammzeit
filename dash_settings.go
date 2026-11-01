@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -51,13 +52,27 @@ var (
 	}
 )
 
-// webURL prüft eine Adresse: leer ist erlaubt, sonst absolute URL mit einem der Schemata.
+// webURL prüft eine Adresse: leer ist erlaubt, sonst absolute URL mit einem der
+// Schemata, ohne Benutzerteil (https://bank.de@betrug.de).
 func webURL(s string, schemes ...string) bool {
 	if s == "" {
 		return true
 	}
 	u, err := url.Parse(s)
-	return err == nil && u.Host != "" && slices.Contains(schemes, u.Scheme) && len(s) <= 200
+	return err == nil && u.Host != "" && u.User == nil && slices.Contains(schemes, u.Scheme) && len(s) <= 200
+}
+
+// einstSchema ergänzt https://, wenn eine Adresse ohne Schema kommt ("salon-demo.de").
+func einstSchema(s string) string {
+	if s != "" && !strings.Contains(s, "://") {
+		return "https://" + s
+	}
+	return s
+}
+
+// einstGespeichert: Erfolgsmeldung je ?gespeichert=<code>. Nur feste Texte, nie Text aus der URL.
+var einstGespeichert = map[string]string{
+	"einstellungen": "Einstellungen gespeichert. Deine Buchungsseite zeigt die Änderungen sofort.",
 }
 
 // parseSettings liest das Einstellungsformular. Fehler je Feldname; die
@@ -73,12 +88,12 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 	runes := utf8.RuneCountInString
 	s := salon{
 		Name: text("name"), Email: text("email"), Phone: text("phone"), Address: text("address"),
-		Website: text("website"), ImprintURL: text("imprint_url"), About: text("about"),
+		Website: einstSchema(text("website")), ImprintURL: einstSchema(text("imprint_url")), About: text("about"),
 		Accent: strings.ToLower(text("accent")), TZ: f.Get("timezone"),
 		MinNoticeMin: num("min_notice"), CancelNoticeMin: num("cancel_notice"), HorizonDays: num("horizon"),
 	}
 	errs := map[string]string{}
-	if n := runes(s.Name); n < 2 || n > 80 || strings.ContainsAny(s.Name, "\r\n") {
+	if n := runes(s.Name); n < 2 || n > 80 || strings.ContainsFunc(s.Name, unicode.IsControl) {
 		errs["name"] = "Bitte einen Namen mit 2 bis 80 Zeichen angeben."
 	}
 	if s.Email != "" {
@@ -95,10 +110,10 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 		errs["address"] = "Die Adresse darf höchstens 300 Zeichen haben."
 	}
 	if !webURL(s.Website, "http", "https") {
-		errs["website"] = "Bitte eine vollständige Adresse mit http:// oder https:// angeben (höchstens 200 Zeichen)."
+		errs["website"] = "Bitte eine gültige Web-Adresse angeben, z. B. www.dein-salon.de (höchstens 200 Zeichen)."
 	}
 	if !webURL(s.ImprintURL, "https") {
-		errs["imprint_url"] = "Bitte eine vollständige Adresse mit https:// angeben (höchstens 200 Zeichen)."
+		errs["imprint_url"] = "Bitte eine gültige Adresse angeben, z. B. www.dein-salon.de/impressum. Nur https://, nicht http:// (höchstens 200 Zeichen)."
 	}
 	if runes(s.About) > 500 {
 		errs["about"] = "Der Text darf höchstens 500 Zeichen haben."
@@ -123,7 +138,8 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 
 func (a *app) renderSettings(w http.ResponseWriter, r *http.Request, c *dctx, status int, form salon, errs map[string]string) {
 	d := a.dashPage(c, r, "einstellungen", "Einstellungen")
-	d["Form"], d["Errors"] = form, errs
+	d["Form"], d["Errors"], d["PreviewOn"] = form, errs, onAccent(form.Accent)
+	d["SavedMsg"] = einstGespeichert[r.URL.Query().Get("gespeichert")]
 	d["Timezones"], d["MinNotice"], d["CancelNotice"], d["Horizon"] = timezoneChoices, minNoticeChoices, cancelNoticeChoices, horizonChoices
 	a.render(w, status, "einst-seite", d)
 }
@@ -151,7 +167,7 @@ func (a *app) settingsSave(w http.ResponseWriter, r *http.Request, c *dctx) {
 		a.dashServerError(w, r, c, err)
 		return
 	}
-	http.Redirect(w, r, "/dashboard/einstellungen?gespeichert", http.StatusSeeOther)
+	http.Redirect(w, r, "/dashboard/einstellungen?gespeichert=einstellungen", http.StatusSeeOther)
 }
 
 // exportQueries: alles, was zu einem Salon gehört (?1 = Salon-ID). Ohne

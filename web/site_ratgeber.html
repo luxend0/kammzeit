@@ -1,0 +1,725 @@
+{{/* Ratgeber (site_ratgeber.go). Präfix "ratgeber-". Ein Template pro Artikel ("ratgeber-<slug>"),
+     dazu Übersicht, Artikelkarten, Deko und Abschluss. Farbe je Thema über die Klasse am .rg-Element
+     (rg-blau, rg-koralle, rg-gelb, rg-mint, rg-himmel). Lesezeiten stehen in den Karten UND im
+     Artikelkopf, site_ratgeber_test.go prüft beide gegen die Wortzahl (200 Wörter/Minute, aufgerundet). */}}
+
+{{define "ratgeber-liste"}}<ol class="rg-cards">
+{{if ne .Path "/ratgeber/online-terminbuchung-friseur"}}<li class="rg-card rg-blau"><a href="/ratgeber/online-terminbuchung-friseur">
+  <span class="rg-card-fig"><img src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Terminbuchung</span>
+    <h3>Online-Terminbuchung im Friseursalon</h3>
+    <span class="rg-card-teaser">Was ein Buchungslink im Alltag ändert, wann das Telefon besser ist und wie du deine Stammkunden mitnimmst.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="online-terminbuchung-friseur">5 Min.</span> Lesezeit</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/ratgeber/no-shows-reduzieren"}}<li class="rg-card rg-koralle"><a href="/ratgeber/no-shows-reduzieren">
+  <span class="rg-card-fig"><img src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Ausfälle</span>
+    <h3>No-Shows im Salon reduzieren</h3>
+    <span class="rg-card-teaser">Erinnerungen, Absagen per Klick, passende Fristen und ein klarer Umgang mit Kundschaft, die immer wieder fehlt.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="no-shows-reduzieren">6 Min.</span> Lesezeit</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/ratgeber/buchungslink-instagram-google"}}<li class="rg-card rg-gelb"><a href="/ratgeber/buchungslink-instagram-google">
+  <span class="rg-card-fig"><img src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Sichtbarkeit</span>
+    <h3>Buchungslink in Instagram, Google und WhatsApp</h3>
+    <span class="rg-card-teaser">Wo dein Link hingehört, wonach du in den Apps suchst und wie du am Ende prüfst, ob alles funktioniert.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="buchungslink-instagram-google">5 Min.</span> Lesezeit</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/ratgeber/preisliste-und-dauer"}}<li class="rg-card rg-mint"><a href="/ratgeber/preisliste-und-dauer">
+  <span class="rg-card-fig"><img src="/static/img/ill/kalender.webp" width="1000" height="800" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Planung</span>
+    <h3>Leistungen und Dauer sinnvoll planen</h3>
+    <span class="rg-card-teaser">Puffer, Einwirkzeiten beim Färben und geschützte Pausen: Realistische Dauern sparen dir jeden Tag Stress.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="preisliste-und-dauer">5 Min.</span> Lesezeit</span>
+  </span>
+</a></li>{{end}}
+{{if ne .Path "/ratgeber/dsgvo-kundenkartei"}}<li class="rg-card rg-himmel"><a href="/ratgeber/dsgvo-kundenkartei">
+  <span class="rg-card-fig"><img src="/static/img/ill/kartei.webp" width="1000" height="800" alt="" loading="lazy"></span>
+  <span class="rg-card-body">
+    <span class="rg-kicker">Datenschutz</span>
+    <h3>Kundenkartei und DSGVO im Salon</h3>
+    <span class="rg-card-teaser">Was du notieren darfst, warum Allergien besonders sensibel sind und was bei Auskunft, Löschung und AVV gilt.</span>
+    <span class="rg-card-meta"><span class="rg-dur" data-slug="dsgvo-kundenkartei">6 Min.</span> Lesezeit</span>
+  </span>
+</a></li>{{end}}
+</ol>{{end}}
+
+{{/* Kleine Deko-Formen und die Welle am unteren Rand des Kopfbands. */}}
+{{define "ratgeber-deko"}}<span class="rg-deko" aria-hidden="true"><i class="rg-ring"></i><i class="rg-cross"></i><i class="rg-dot"></i><i class="rg-dot rg-dot-b"></i></span>
+<svg class="rg-wave" aria-hidden="true" focusable="false" viewBox="0 0 1440 64" preserveAspectRatio="none"><path d="M0 34C160 6 330 4 520 22s380 40 560 26 260-36 360-30v46H0z"/></svg>{{end}}
+
+{{define "ratgeber-cta"}}<aside class="rg-cta" aria-labelledby="rg-cta-h">
+  <div class="rg-cta-text">
+    <h2 id="rg-cta-h">Kammzeit in Ruhe ansehen</h2>
+    <p>Online-Terminbuchung für Salons: Buchungsseite ohne App, Erinnerung per E-Mail, Kundenkartei. Gratis für einen Mitarbeiter.</p>
+    <p class="rg-cta-links"><a class="btn" href="/registrieren">Kostenlos starten <span aria-hidden="true">→</span></a> <a class="btn-ghost" href="https://demo.kammzeit.de">Demo-Salon ansehen</a></p>
+  </div>
+  <img class="rg-cta-fig" src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="" loading="lazy">
+</aside>{{end}}
+
+{{define "ratgeber-weiter"}}<section class="rg-more" aria-labelledby="rg-more-h">
+  <h2 id="rg-more-h">Weiterlesen</h2>
+  {{template "ratgeber-liste" .}}
+</section>{{end}}
+
+{{define "ratgeber-index"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-blau rg-index">
+<header class="rg-hero">
+<div class="wrap rg-hero-in">
+<div class="rg-hero-text">
+  <p class="rg-kicker">Ratgeber</p>
+  <h1>Ratgeber für <span class="rg-mark">Salons</span></h1>
+  <p class="lead">Praxiswissen für deinen Salonalltag: Termine, Ausfälle, Preise und Datenschutz. Konkret, ohne Fachchinesisch und ehrlich auch dort, wo ein Online-System nicht hilft.</p>
+</div>
+<div class="rg-hero-fig rg-hero-kammi"><img src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt=""></div>
+</div>
+{{template "ratgeber-deko"}}
+</header>
+<div class="wrap">
+  <h2 class="rg-index-h">Alle Artikel</h2>
+  {{template "ratgeber-liste" .}}
+  {{template "ratgeber-cta"}}
+</div>
+</div>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 01 Online-Terminbuchung ============ */}}
+{{define "ratgeber-online-terminbuchung-friseur"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-blau">
+<header class="rg-hero">
+<div class="wrap rg-hero-in">
+<nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Online-Terminbuchung</li></ol></nav>
+<div class="rg-hero-text">
+    <p class="rg-kicker">Terminbuchung</p>
+    <h1>Online-Terminbuchung im Friseursalon: was sie bringt und worauf du achten solltest</h1>
+    <p class="lead">Ein Buchungslink nimmt dir Anrufe ab, während du schneidest. Damit das klappt, kommt es auf ein paar Dinge an: Datenschutz, Kosten, klare Absageregeln und eine gute Einführung bei deinen Stammkunden.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">5 Min. Lesezeit</span></p>
+</div>
+<div class="rg-hero-fig"><img src="/static/img/ill/schritt-buchen.webp" width="1200" height="900" alt=""></div>
+</div>
+{{template "ratgeber-deko"}}
+</header>
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Inhalt</h2>
+  <ol>
+    <li><a href="#was-sie-bringt">Was sich im Alltag ändert</a></li>
+    <li><a href="#telefon">Wann das Telefon besser ist</a></li>
+    <li><a href="#auswahl">Worauf du achten solltest</a></li>
+    <li><a href="#einfuehren">So führst du sie ein</a></li>
+    <li><a href="#stammkunden">Stammkunden informieren</a></li>
+    <li><a href="#ein-kalender">Ein Kalender für alles</a></li>
+    <li><a href="#fazit">Fazit</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="was-sie-bringt">Was Online-Buchung im Salonalltag ändert</h2>
+<p>Das Telefon klingelt meistens dann, wenn du gerade die Schere in der Hand hast. Entweder du unterbrichst den Schnitt, oder der Anruf geht ins Leere und die Kundin versucht es später noch einmal, vielleicht auch woanders. Eine Buchungsseite setzt genau hier an: Kundinnen und Kunden sehen freie Zeiten, wählen eine Leistung und buchen selbst, auch abends um elf oder am Sonntag.</p>
+<p>Für dich bedeutet das vor allem drei Dinge:</p>
+<ul>
+  <li><strong>Weniger Unterbrechungen.</strong> Termine, die online gebucht werden, musst du nicht am Telefon abstimmen. Du siehst sie im Kalender und bekommst eine Mail.</li>
+  <li><strong>Weniger Rückfragen.</strong> Wer online bucht, sieht Dauer und Preis der Leistung schon vorher. Die Frage „Was kostet bei euch ein Herrenschnitt?“ beantwortet die Seite.</li>
+  <li><strong>Bestätigung und Erinnerung laufen von selbst.</strong> Die Kundin bekommt eine Bestätigung per E-Mail und vor dem Termin eine Erinnerung. Wer nicht kann, sagt über einen Link ab, statt einfach nicht zu kommen.</li>
+</ul>
+<p>Was Online-Buchung nicht macht: Sie füllt keinen leeren Kalender. Neue Kundschaft kommt weiterhin über Empfehlungen, Laufkundschaft, Instagram oder dein Google-Profil. Die Buchungsseite sorgt nur dafür, dass aus Interesse schneller ein Termin wird.</p>
+
+<h2 id="telefon">Wann das Telefon besser ist</h2>
+<p>Online-Buchung passt nicht für jede Leistung und nicht für jeden Salon. Überleg ehrlich, wo vorher ein Gespräch nötig ist:</p>
+<ul>
+  <li><strong>Farbkorrekturen, Blondierungen, Extensions.</strong> Hier hängt die Dauer stark vom Ausgangszustand ab. Ohne Beratung ist ein fester Zeitblock oft geraten. Biete solche Leistungen online gar nicht an oder nur als Beratungstermin.</li>
+  <li><strong>Brautfrisuren und Termine außerhalb der Öffnungszeiten.</strong> Das sind Absprachen, keine Standardtermine.</li>
+  <li><strong>Neukunden bei aufwendiger Farbe.</strong> Wenn du vorher eine Strähnenprobe oder einen Verträglichkeitstest machen möchtest, gehört das in ein Gespräch.</li>
+  <li><strong>Stammkunden, die lieber anrufen.</strong> Manche Menschen wollen nicht online buchen. Zwing sie nicht dazu. Das Telefon bleibt ein Buchungsweg, die Online-Seite kommt dazu.</li>
+</ul>
+<p>Ein kleiner Salon, in dem fast alle Termine schon beim Bezahlen für das nächste Mal ausgemacht werden, braucht vielleicht gar kein Online-System. Wenn bei dir das Telefon selten stört und kaum Termine ausfallen, ist das völlig in Ordnung.</p>
+
+<h2 id="auswahl">Worauf du bei der Auswahl achten solltest</h2>
+<h3>Datenschutz und Serverstandort</h3>
+<p>Ein Buchungssystem speichert Namen, E-Mail-Adressen, Telefonnummern und Termine deiner Kundschaft. Für diese Daten bist du verantwortlich, der Anbieter verarbeitet sie in deinem Auftrag. Dafür brauchst du einen Vertrag zur Auftragsverarbeitung (AVV) nach Art.&nbsp;28 DSGVO. Ein seriöser Anbieter stellt ihn dir von sich aus bereit. Frag außerdem, wo die Server stehen: Ein Standort in der EU macht vieles einfacher. Mehr dazu im Artikel <a href="/ratgeber/dsgvo-kundenkartei">Kundenkartei und DSGVO im Salon</a>.</p>
+<h3>Keine App, kein Kundenkonto</h3>
+<p>Jede Hürde kostet Buchungen. Wenn deine Kundin erst eine App installieren oder ein Passwort anlegen muss, ruft sie lieber an oder lässt es ganz. Achte darauf, dass die Buchung im normalen Handy-Browser funktioniert und nur abfragt, was du wirklich brauchst: Name, E-Mail und auf Wunsch die Telefonnummer.</p>
+<h3>Kosten ehrlich vergleichen</h3>
+<p>Die Preismodelle unterscheiden sich stark: feste Monatsgebühr, Gebühr pro Mitarbeiter, Provision pro Buchung oder Aufpreise für SMS. Rechne mit deinen eigenen Zahlen durch, was ein normaler Monat kostet. Eine Provision pro Termin wirkt am Anfang günstig und wird teuer, sobald viel online gebucht wird. Prüf auch, wie lange du gebunden bist und wie du kündigst.</p>
+<h3>Absageregeln und Vorlauf</h3>
+<p>Du solltest selbst festlegen können, bis wann online abgesagt werden darf, wie kurzfristig gebucht werden kann und wie weit im Voraus. Ohne Mindestvorlauf bucht jemand um 8:55&nbsp;Uhr den Termin um 9:00&nbsp;Uhr, und du erfährst es erst, wenn die Person in der Tür steht.</p>
+<h3>Daten mitnehmen können</h3>
+<p>Frag vorher, ob du Kundenkartei und Termine exportieren kannst, zum Beispiel als CSV-Datei. Wenn du irgendwann wechseln willst, sollen deine Daten nicht beim Anbieter festhängen.</p>
+
+<h2 id="einfuehren">So führst du die Online-Buchung ein</h2>
+<ol>
+  <li><strong>Leistungen anlegen, aber nicht alle.</strong> Fang mit den Standardleistungen an: Schnitte, Waschen und Föhnen, einfache Farbe. Aufwendige Behandlungen bleiben vorerst am Telefon.</li>
+  <li><strong>Realistische Dauern eintragen.</strong> Plane Zeit für Beratung und Aufräumen mit ein. Wie das geht, steht im Artikel <a href="/ratgeber/preisliste-und-dauer">Leistungen und Dauer sinnvoll planen</a>.</li>
+  <li><strong>Arbeitszeiten und Pausen pflegen.</strong> Trag die Mittagspause ein, sonst bucht jemand genau hinein.</li>
+  <li><strong>Selbst testen.</strong> Buch einen Termin auf dem eigenen Handy, lies die Bestätigungsmail und sag den Termin über den Link wieder ab. So weißt du, was deine Kundschaft erlebt.</li>
+  <li><strong>Den Link überall hinterlegen.</strong> Instagram-Bio, Google-Unternehmensprofil, WhatsApp, Website. Eine Anleitung findest du im Artikel <a href="/ratgeber/buchungslink-instagram-google">Buchungslink in Instagram, Google und WhatsApp</a>.</li>
+</ol>
+
+<h2 id="stammkunden">Stammkunden informieren</h2>
+<p>Deine Stammkunden erfahren von der neuen Möglichkeit am besten von dir persönlich, an der Kasse oder beim Verabschieden. Ein Satz reicht: „Du kannst übrigens jetzt auch online buchen, der Link steht bei Instagram und auf der Karte hier.“</p>
+<p>Hilfreich sind außerdem:</p>
+<ul>
+  <li>eine kleine Karte oder ein Aufsteller an der Kasse mit dem Link und einem QR-Code,</li>
+  <li>ein Satz auf dem Anrufbeantworter: „Termine kannst du auch online buchen unter …“,</li>
+  <li>ein kurzer Beitrag oder eine Story, in der du zeigst, wie die Buchung aussieht.</li>
+</ul>
+<p>Wichtig ist der Ton: Online ist ein zusätzliches Angebot, kein Zwang. Wer weiter anrufen will, darf das.</p>
+
+<h2 id="ein-kalender">Telefon und Online in einem Kalender</h2>
+<p>Ein typischer Fehler beim Umstieg: Online-Termine stehen im System, Telefontermine weiter im Papierbuch. Dann bucht jemand online genau die Zeit, die du am Telefon schon vergeben hast. Trag deshalb jeden Termin, egal woher er kommt, in denselben Kalender ein. In Kammzeit geht das im Dashboard über „Termin eintragen“; die Zeit ist danach online nicht mehr buchbar.</p>
+<p>Wenn du das Papierbuch noch eine Weile parallel führen möchtest, ist das okay. Dann gilt eine einfache Regel: Der digitale Kalender ist die Wahrheit, das Papier ist die Kopie.</p>
+
+<h2 id="fazit">Fazit</h2>
+<p>Online-Buchung lohnt sich, wenn dein Telefon oft im falschen Moment klingelt und viele Termine Standardleistungen sind. Achte auf einen AVV und Server in der EU, eine Buchung ohne App und Konto, ein durchschaubares Preismodell und Absageregeln, die du selbst festlegst. Führ sie schrittweise ein, sprich deine Stammkunden persönlich an und halte alle Termine in einem Kalender.</p>
+<p>Kammzeit ist eine solche Buchungsseite für Salons, mit einem Gratis-Plan für einen Mitarbeiter. Ob sie zu deinem Salon passt, siehst du am schnellsten im <a href="https://demo.kammzeit.de">Demo-Salon</a>.</p>
+</article>
+<aside class="rg-help" aria-label="Passende Anleitung">
+  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+  <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/erste-schritte">Erste Schritte mit Kammzeit</a></p>
+</aside>
+</div>
+</div>
+<div class="wrap">
+{{template "ratgeber-weiter" .}}
+{{template "ratgeber-cta"}}
+</div>
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Online-Terminbuchung im Friseursalon: was sie bringt und worauf du achten solltest","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://kammzeit.de/"},{"@type":"ListItem","position":2,"name":"Ratgeber","item":"https://kammzeit.de/ratgeber"},{"@type":"ListItem","position":3,"name":"Online-Terminbuchung im Friseursalon","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 02 No-Shows ============ */}}
+{{define "ratgeber-no-shows-reduzieren"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-koralle">
+<header class="rg-hero">
+<div class="wrap rg-hero-in">
+<nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">No-Shows reduzieren</li></ol></nav>
+<div class="rg-hero-text">
+    <p class="rg-kicker">Ausfälle</p>
+    <h1>No-Shows im Salon reduzieren: was wirklich hilft</h1>
+    <p class="lead">Ein leerer Stuhl kostet dich Zeit, die du nicht zurückbekommst. Gegen Ausfälle helfen vor allem Erinnerungen, einfache Absagen und klare Regeln. Hier steht, wie du sie umsetzt und wo die Grenzen sind.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">6 Min. Lesezeit</span></p>
+</div>
+<div class="rg-hero-fig"><img src="/static/img/ill/schritt-erinnerung.webp" width="1200" height="900" alt=""></div>
+</div>
+{{template "ratgeber-deko"}}
+</header>
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Inhalt</h2>
+  <ol>
+    <li><a href="#warum">Warum Termine ausfallen</a></li>
+    <li><a href="#erinnerung">Erinnern</a></li>
+    <li><a href="#absagen">Absagen leicht machen</a></li>
+    <li><a href="#fristen">Absagefrist und Vorlauf</a></li>
+    <li><a href="#wiederholung">Wiederholte Ausfälle</a></li>
+    <li><a href="#anzahlung">Anzahlung</a></li>
+    <li><a href="#ausfallhonorar">Ausfallhonorar</a></li>
+    <li><a href="#luecken">Lücken füllen</a></li>
+    <li><a href="#fazit">Kurz zusammengefasst</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="warum">Warum Termine ausfallen</h2>
+<p>Die wenigsten Kundinnen bleiben aus Gleichgültigkeit weg. Meistens steckt etwas Banales dahinter:</p>
+<ul>
+  <li><strong>Vergessen.</strong> Der Termin wurde vor sechs Wochen gemacht und steht in keinem Kalender.</li>
+  <li><strong>Absagen ist umständlich.</strong> Abends ist der Salon nicht erreichbar, morgens ist besetzt, und irgendwann ist es zu spät und peinlich.</li>
+  <li><strong>Verwechselt.</strong> Falscher Tag, falsche Uhrzeit, oder die Person dachte, der Termin sei erst nächste Woche.</li>
+  <li><strong>Etwas kam dazwischen.</strong> Krankes Kind, Stau, Schicht getauscht.</li>
+</ul>
+<p>Gegen die ersten drei Gründe kannst du viel tun. Den vierten wirst du nie ganz los, aber du kannst dafür sorgen, dass du wenigstens rechtzeitig Bescheid bekommst.</p>
+
+<h2 id="erinnerung">Erinnern, bevor es zu spät ist</h2>
+<p>Eine Erinnerung am Vortag ist das einfachste Mittel gegen das Vergessen. Sie kommt früh genug, dass die Kundin noch absagen kann, und spät genug, dass sie den Termin wirklich auf dem Schirm hat.</p>
+<p>Darauf kommt es an:</p>
+<ul>
+  <li><strong>Alles Wichtige steht drin:</strong> Datum, Uhrzeit, Leistung, Adresse und ein Link zum Absagen.</li>
+  <li><strong>Sie kommt automatisch.</strong> Wenn du jede Erinnerung selbst schreiben musst, bleibt es an vollen Tagen liegen.</li>
+  <li><strong>Ein Kalendereintrag hilft zusätzlich.</strong> Wer den Termin im Handykalender hat, bekommt dort noch eine eigene Erinnerung.</li>
+</ul>
+<p>Kammzeit schickt die Erinnerung 24 Stunden vor dem Termin per E-Mail, der Bestätigung liegt ein Kalendereintrag bei. SMS-Erinnerungen gibt es in Kammzeit nicht. Bei langen Terminen und Kundschaft, die selten Mails liest, kann ein kurzer Anruf am Vortag trotzdem sinnvoll sein.</p>
+
+<h2 id="absagen">Absagen leicht machen</h2>
+<p>Klingt paradox, ist aber der wichtigste Punkt: Je leichter das Absagen, desto weniger Leute bleiben einfach weg. Eine Absage am Vortag ist ärgerlich, ein No-Show ist schlimmer. Bei einer Absage weißt du Bescheid und kannst den Platz noch neu vergeben.</p>
+<ul>
+  <li><strong>Absage ohne Anruf ermöglichen.</strong> Ein Link in der Bestätigung und in der Erinnerung reicht. Ein Klick, fertig, auch um 23&nbsp;Uhr.</li>
+  <li><strong>Kein schlechtes Gewissen machen.</strong> „Bitte sag rechtzeitig ab, dann kann jemand anderes den Termin bekommen“ wirkt besser als jede Drohung.</li>
+  <li><strong>Telefonnummer sichtbar lassen.</strong> Wer für die Online-Absage zu spät dran ist, soll wenigstens wissen, wo er anrufen kann.</li>
+</ul>
+<p>In Kammzeit bekommt der Salon bei jeder Absage eine Mail, und die Zeit ist auf der Buchungsseite sofort wieder frei.</p>
+
+<h2 id="fristen">Absagefrist und Vorlauf festlegen</h2>
+<p>Die Absagefrist legt fest, bis wann online abgesagt werden kann. Danach geht es nur noch telefonisch. Das hat zwei Vorteile: Kurzfristige Absagen landen bei dir persönlich, und du kannst gleich fragen, ob ein anderer Termin passt.</p>
+<p>Wie lang die Frist sein sollte, hängt von deinen Terminen ab. Zum Beispiel:</p>
+<ul>
+  <li><strong>Kurze Termine wie Herrenschnitte:</strong> Einige Stunden reichen oft, weil sich solche Lücken leichter füllen lassen.</li>
+  <li><strong>Lange Termine wie Farbe oder Strähnen:</strong> eher 24 Stunden oder mehr, weil ein freier Block von zwei Stunden am selben Tag kaum neu zu vergeben ist.</li>
+</ul>
+<p>Kammzeit kennt eine Absagefrist pro Salon, nicht pro Leistung. Nimm also den Wert, der zu deinen längeren Terminen passt. Eine eingestellte Frist steht automatisch unter dem Buchungsformular. Wenn du mehr dazu sagen willst, etwa was nach Ablauf der Frist gilt, schreib es in den Über-uns-Text deiner Buchungsseite. Dann ist die Regel sichtbar, bevor jemand bucht.</p>
+<p>Zwei weitere Einstellungen helfen:</p>
+<ul>
+  <li><strong>Buchungshorizont.</strong> Wenn Termine nur einige Wochen im Voraus buchbar sind, liegt zwischen Buchung und Termin weniger Zeit zum Vergessen.</li>
+  <li><strong>Mindestvorlauf.</strong> Er verhindert Buchungen fünf Minuten vor Terminbeginn, die du gar nicht mehr mitbekommst.</li>
+</ul>
+
+<h2 id="wiederholung">Wiederholte Ausfälle: freundlich und klar</h2>
+<p>Die meisten Ausfälle sind Einzelfälle. Wenn dieselbe Person aber zum dritten Mal nicht kommt, solltest du reagieren. Damit du das überhaupt merkst, markier Ausfälle konsequent. In Kammzeit setzt du den Termin auf „nicht erschienen“; auf der Karteikarte siehst du dann in der Terminhistorie, wie oft das schon vorkam.</p>
+<p>Ein mögliches Vorgehen:</p>
+<ol>
+  <li><strong>Beim ersten Mal:</strong> nichts unternehmen oder kurz und freundlich nachfragen, ob alles in Ordnung ist.</li>
+  <li><strong>Beim zweiten Mal:</strong> beim nächsten Besuch ansprechen, sachlich und ohne Vorwurf: „Die letzten beiden Termine sind leider ausgefallen. Sag bitte Bescheid, wenn du nicht kannst, dann gebe ich den Platz weiter.“</li>
+  <li><strong>Danach:</strong> Termine für diese Person nur noch persönlich vereinbaren, zum Beispiel kurzfristig am selben Tag, wenn noch etwas frei ist.</li>
+</ol>
+<p>Kammzeit sperrt niemanden automatisch, und einzelne Personen von der Online-Buchung ausschließen kannst du dort nicht. Das persönliche Gespräch ist hier ohnehin das wirksamere Mittel.</p>
+
+<h2 id="anzahlung">Anzahlung: wirksam, aber mit Nebenwirkungen</h2>
+<p>Wer bei der Buchung schon etwas bezahlt hat, bleibt seltener einfach weg. Eine Anzahlung hat aber auch Nachteile:</p>
+<ul>
+  <li>Manche Kundinnen buchen dann gar nicht, vor allem neue.</li>
+  <li>Zahlungsanbieter kosten Gebühren.</li>
+  <li>Du brauchst klare Regeln, wann die Anzahlung verfällt und wann du sie zurückzahlst, und musst diese Fälle dann auch abwickeln.</li>
+</ul>
+<p>Sinnvoll ist eine Anzahlung vor allem bei langen, teuren Terminen. Für einen Herrenschnitt ist sie meist übertrieben.</p>
+<p>Online-Anzahlungen sind in Kammzeit geplant, aber noch nicht verfügbar. Bis dahin kannst du bei langen Terminen eine Anzahlung persönlich vereinbaren, etwa beim Beratungsgespräch im Salon.</p>
+
+<h2 id="ausfallhonorar">Ausfallhonorar: nur mit vorheriger Vereinbarung</h2>
+<p>Vielleicht überlegst du, für nicht wahrgenommene Termine eine Gebühr zu verlangen. Rechtlich ist das kein Selbstläufer. Als Grundsatz gilt: Ein Ausfallhonorar setzt voraus, dass es vorher vereinbart wurde, also klar und sichtbar, bevor die Kundin den Termin bucht. Ein Schild, das sie nie gesehen hat, oder eine Regel, die du erst nach dem Ausfall nennst, reicht nicht.</p>
+<p>Außerdem kommt es auf Höhe und Formulierung an. Pauschalen in allgemeinen Geschäftsbedingungen dürfen nicht unangemessen hoch sein, und die Kundin muss nachweisen dürfen, dass dir ein geringerer Schaden entstanden ist. Ob eine Regel im Einzelfall trägt, hängt von vielen Details ab.</p>
+<p class="rg-note"><strong>Hinweis:</strong> Dieser Abschnitt ist eine allgemeine Information und keine Rechtsberatung. Bevor du ein Ausfallhonorar einführst, lass die Formulierung von einer Anwältin oder einem Anwalt prüfen oder frag bei deiner Innung oder Handwerkskammer nach.</p>
+<p>In der Praxis bringt eine Forderung gegen eine Stammkundin oft mehr Ärger als Geld. Eine klare Absageregel und ein offenes Gespräch sind häufig der bessere Weg.</p>
+
+<h2 id="luecken">Freie Lücken wieder füllen</h2>
+<p>Wird ein Termin abgesagt, ist die Zeit in Kammzeit sofort wieder online buchbar. Damit sie auch jemand bucht:</p>
+<ul>
+  <li>Führ eine kurze Liste mit Kundinnen, die gern kurzfristig kommen, und ruf sie an. Ein Zettel oder eine Notiz im Handy genügt.</li>
+  <li>Poste kurzfristig freie Termine als Story, mit dem Buchungslink.</li>
+  <li>Rechne nicht damit, jede Lücke zu füllen. Eine Absage am Vortag ist trotzdem besser als ein No-Show.</li>
+</ul>
+
+<h2 id="fazit">Kurz zusammengefasst</h2>
+<ul class="rg-check">
+  <li>Erinnerung am Vortag mit Absagelink, automatisch.</li>
+  <li>Absagen per Klick, ohne Anruf.</li>
+  <li>Absagefrist, Mindestvorlauf und Buchungshorizont passend zu deinen Terminen einstellen.</li>
+  <li>Ausfälle markieren und wiederholte Ausfälle persönlich ansprechen.</li>
+  <li>Anzahlung und Ausfallhonorar nur mit klaren, vorher vereinbarten Regeln.</li>
+</ul>
+</article>
+<aside class="rg-help" aria-label="Passende Anleitung">
+  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+  <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/absagen-und-no-shows">Absagen und No-Shows in Kammzeit</a></p>
+</aside>
+</div>
+</div>
+<div class="wrap">
+{{template "ratgeber-weiter" .}}
+{{template "ratgeber-cta"}}
+</div>
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"No-Shows im Salon reduzieren: was wirklich hilft","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://kammzeit.de/"},{"@type":"ListItem","position":2,"name":"Ratgeber","item":"https://kammzeit.de/ratgeber"},{"@type":"ListItem","position":3,"name":"No-Shows im Salon reduzieren","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 03 Buchungslink ============ */}}
+{{define "ratgeber-buchungslink-instagram-google"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-gelb">
+<header class="rg-hero">
+<div class="wrap rg-hero-in">
+<nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Buchungslink einrichten</li></ol></nav>
+<div class="rg-hero-text">
+    <p class="rg-kicker">Sichtbarkeit</p>
+    <h1>Buchungslink in Instagram-Bio, Google-Profil und WhatsApp einrichten</h1>
+    <p class="lead">Ein Buchungslink bringt nur etwas, wenn deine Kundschaft ihn findet. Hier steht Schritt für Schritt, wo er hingehört. Weil sich die Menüs der Apps öfter ändern, beschreiben wir, wonach du suchst, statt jeden Klick vorzugeben.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">5 Min. Lesezeit</span></p>
+</div>
+<div class="rg-hero-fig"><img src="/static/img/ill/schritt-entdecken.webp" width="1200" height="900" alt=""></div>
+</div>
+{{template "ratgeber-deko"}}
+</header>
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Inhalt</h2>
+  <ol>
+    <li><a href="#vorher">Vorher: Link prüfen</a></li>
+    <li><a href="#instagram">Instagram</a></li>
+    <li><a href="#google">Google-Unternehmensprofil</a></li>
+    <li><a href="#whatsapp">WhatsApp Business</a></li>
+    <li><a href="#weitere">Website, Facebook und Co.</a></li>
+    <li><a href="#im-salon">QR-Code im Salon</a></li>
+    <li><a href="#ankuendigen">Den Link ankündigen</a></li>
+    <li><a href="#testen">Zum Schluss testen</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="vorher">Vorher: deinen Link prüfen</h2>
+<p>Bei Kammzeit hat jeder Salon eine eigene Buchungsseite unter einer Adresse wie <code>deinsalon.kammzeit.de</code>. Du öffnest sie im Dashboard oben über „Buchungsseite“. Bevor du den Link verteilst:</p>
+<ol>
+  <li><strong>Öffne ihn auf dem Handy in einem privaten Fenster.</strong> So siehst du die Seite wie eine neue Kundin, ohne Anmeldung.</li>
+  <li><strong>Prüf Name, Adresse, Telefonnummer und Leistungen.</strong> Was dort steht, sieht jede Person, die über Instagram oder Google kommt.</li>
+  <li><strong>Kopier den Link vollständig,</strong> mit <code>https://</code> am Anfang. Manche Apps erkennen Links ohne diesen Teil nicht zuverlässig.</li>
+</ol>
+<p>Nutze überall denselben Link und schreib dir auf, wo er überall steht. Wenn sich später etwas ändert, weißt du genau, was du anpassen musst.</p>
+
+<h2 id="instagram">Instagram</h2>
+<p>Auf Instagram gibt es zwei gute Stellen für deinen Link: das Profil und die Stories.</p>
+<h3>Im Profil</h3>
+<ol>
+  <li>Öffne dein Profil und wähle die Schaltfläche zum Bearbeiten.</li>
+  <li>Such den Bereich für Links und füg einen externen Link hinzu.</li>
+  <li>Setz deinen Buchungslink ein und gib ihm einen kurzen Titel, zum Beispiel „Termin buchen“.</li>
+  <li>Schreib in die Bio einen Satz, wofür der Link da ist: „Termine online buchen, Link unten.“</li>
+</ol>
+<p>Wenn du mehrere Links hinterlegst, setz den Buchungslink an die erste Stelle. In der Profilansicht ist meist nur der erste Link direkt zu sehen.</p>
+<h3>In Stories</h3>
+<p>Für Stories gibt es einen Link-Sticker. Er eignet sich gut für kurzfristig freie Termine: Foto vom leeren Stuhl, dazu „Heute 15&nbsp;Uhr noch frei“ und der Sticker mit deinem Buchungslink. Speichere eine Story mit Link zusätzlich als Highlight im Profil, etwa unter „Termine“. Dann ist sie auch nach 24 Stunden noch da.</p>
+
+<h2 id="google">Google-Unternehmensprofil</h2>
+<p>Viele Menschen suchen ihren Salon über Google oder Google Maps. Dein Unternehmensprofil ist deshalb eine der wichtigsten Stellen für den Link.</p>
+<ol>
+  <li>Melde dich mit dem Google-Konto an, mit dem du dein Unternehmensprofil verwaltest, und öffne die Bearbeitung des Profils. Das geht auch direkt aus der Google-Suche heraus, wenn du nach deinem Salonnamen suchst.</li>
+  <li>Such bei den Kontaktangaben nach einem Feld für Terminlinks oder Buchungslinks. Je nach Ansicht kann es etwas anders heißen.</li>
+  <li>Trag dort deinen Buchungslink ein und speichere.</li>
+  <li>Wenn du keine eigene Website hast, kannst du den Buchungslink auch als Website eintragen. Adresse, Telefon und Leistungen stehen ja auf der Buchungsseite.</li>
+</ol>
+<p>Änderungen am Profil prüft Google teilweise, bevor sie sichtbar werden. Es kann also etwas dauern, bis der Link erscheint. Schau nach ein paar Tagen nach.</p>
+<p>Pflege bei der Gelegenheit gleich die Öffnungszeiten. Wenn Google andere Zeiten zeigt als deine Buchungsseite, sorgt das für Verwirrung.</p>
+<p>Über das Profil kannst du außerdem Beiträge veröffentlichen, etwa zu neuen Leistungen oder freien Terminen vor Feiertagen. Je nach Beitragsart lässt sich ein Knopf anhängen. Wähl die Variante zum Buchen und hinterleg dort ebenfalls deinen Link.</p>
+
+<h2 id="whatsapp">WhatsApp Business</h2>
+<p>Wenn deine Kundschaft dir über WhatsApp schreibt, nutze das für den Link. Die App WhatsApp Business bietet dafür mehrere Möglichkeiten:</p>
+<ul>
+  <li><strong>Im Unternehmensprofil:</strong> Dort kannst du eine Website-Adresse hinterlegen. Trag den Buchungslink ein, er erscheint dann in deinem Profil.</li>
+  <li><strong>Als automatische Nachricht:</strong> Such in den Unternehmenstools nach Begrüßungs- oder Abwesenheitsnachrichten. Außerhalb der Öffnungszeiten könnte die Antwort lauten: „Danke für deine Nachricht! Wir sind gerade nicht im Salon. Termine kannst du jederzeit hier buchen: deinsalon.kammzeit.de. Wir melden uns morgen.“</li>
+  <li><strong>Als Schnellantwort:</strong> Leg eine vorbereitete Antwort mit dem Link an. Dann musst du bei der Frage „Habt ihr nächste Woche was frei?“ nicht jedes Mal tippen.</li>
+</ul>
+<p>In der normalen WhatsApp-App fehlen diese Werkzeuge, dort schickst du den Link einfach selbst. Ob du WhatsApp für deinen Salon datenschutzrechtlich sauber nutzt, ist ein eigenes Thema; am Link ändert das nichts.</p>
+
+<h2 id="weitere">Website, Facebook und Co.</h2>
+<ul>
+  <li><strong>Eigene Website:</strong> Setz einen deutlichen Knopf „Termin buchen“ auf die Startseite, nicht nur einen Textlink weit unten. Auch neben deiner Preisliste passt er gut.</li>
+  <li><strong>Facebook-Seite:</strong> Seiten lassen sich mit einem Aktionsknopf versehen, der auf eine Adresse verweist. Such in den Einstellungen deiner Seite danach und hinterleg den Buchungslink.</li>
+  <li><strong>E-Mail-Signatur:</strong> eine Zeile unter jeder Mail, etwa „Termine online: deinsalon.kammzeit.de“.</li>
+  <li><strong>Anrufbeantworter:</strong> Sprich den Link kurz in die Ansage. Wer außerhalb der Öffnungszeiten anruft, kann so trotzdem buchen. Buchstabier den Salonnamen, wenn er ungewöhnlich geschrieben wird.</li>
+</ul>
+
+<h2 id="im-salon">Im Salon: QR-Code und Karte</h2>
+<p>Deine Stammkunden sitzen vor dir. Ein QR-Code an der Kasse oder auf der Visitenkarte ist der kürzeste Weg zum nächsten Termin.</p>
+<ul>
+  <li>Erzeuge den QR-Code so, dass er direkt deinen Buchungslink enthält. Manche Dienste leiten über eigene Adressen um und schalten den Code später ab oder zeigen Werbung. Achte auf einen statischen QR-Code ohne Umleitung.</li>
+  <li>Druck den Link zusätzlich als Text unter den Code, für alle, die nicht scannen wollen.</li>
+  <li>Teste den gedruckten Code mit zwei verschiedenen Handys, bevor du hundert Karten bestellst.</li>
+</ul>
+
+<h2 id="ankuendigen">Den Link richtig ankündigen</h2>
+<p>Ein Link allein wird leicht übersehen. Sag dazu, was passiert, wenn man darauf tippt, und was man davon hat:</p>
+<ul>
+  <li><strong>Konkret statt allgemein.</strong> „Termin online buchen, auch abends“ sagt mehr als „Link in Bio“.</li>
+  <li><strong>Hürden nehmen.</strong> Ein kurzer Satz wie „ohne App und ohne Anmeldung“ nimmt die Sorge vor einem langen Formular.</li>
+  <li><strong>Wiederholen.</strong> Ein angepinnter Beitrag im Instagram-Profil, der die Buchung in drei Bildern zeigt, hilft neuen Followern auch Wochen später noch.</li>
+</ul>
+<p>Und nenn deine Telefonnummer weiterhin. Wer lieber anruft, soll das auch können.</p>
+
+<h2 id="testen">Nach dem Einrichten testen</h2>
+<p>Geh einmal alle Stellen durch, so wie es deine Kundschaft tun würde:</p>
+<ol>
+  <li>Dein Instagram-Profil auf einem fremden Handy öffnen und den Link antippen.</li>
+  <li>Bei Google nach deinem Salon suchen und schauen, ob der Buchungslink angezeigt wird.</li>
+  <li>Dir von einer anderen Nummer eine WhatsApp-Nachricht schicken und prüfen, ob die automatische Antwort kommt.</li>
+  <li>Einen Testtermin buchen und über den Link in der Mail wieder absagen.</li>
+</ol>
+<p>Danach ist der Link dort, wo deine Kundschaft ohnehin schon sucht. Den Rest erledigt die Buchungsseite.</p>
+</article>
+<aside class="rg-help" aria-label="Passende Anleitung">
+  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+  <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/link-teilen">Buchungslink teilen</a></p>
+</aside>
+</div>
+</div>
+<div class="wrap">
+{{template "ratgeber-weiter" .}}
+{{template "ratgeber-cta"}}
+</div>
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Buchungslink in Instagram-Bio, Google-Profil und WhatsApp einrichten","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://kammzeit.de/"},{"@type":"ListItem","position":2,"name":"Ratgeber","item":"https://kammzeit.de/ratgeber"},{"@type":"ListItem","position":3,"name":"Buchungslink in Instagram, Google und WhatsApp","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 04 Leistungen und Dauer ============ */}}
+{{define "ratgeber-preisliste-und-dauer"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-mint">
+<header class="rg-hero">
+<div class="wrap rg-hero-in">
+<nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Leistungen und Dauer</li></ol></nav>
+<div class="rg-hero-text">
+    <p class="rg-kicker">Planung</p>
+    <h1>Leistungen und Dauer sinnvoll planen: Puffer, Einwirkzeit, Pausen</h1>
+    <p class="lead">Zu knapp geplante Termine machen den ganzen Tag stressig: Du hängst hinterher, die nächste Kundin wartet, die Pause fällt aus. Mit realistischen Dauern, eingeplanten Puffern und einer klaren Leistungsliste wird es ruhiger.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">5 Min. Lesezeit</span></p>
+</div>
+<div class="rg-hero-fig"><img src="/static/img/ill/kalender.webp" width="1000" height="800" alt=""></div>
+</div>
+{{template "ratgeber-deko"}}
+</header>
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Inhalt</h2>
+  <ol>
+    <li><a href="#warum">Warum die Dauer so wichtig ist</a></li>
+    <li><a href="#messen">Die eigene Zeit messen</a></li>
+    <li><a href="#puffer">Puffer einplanen</a></li>
+    <li><a href="#einwirkzeit">Einwirkzeit beim Färben</a></li>
+    <li><a href="#varianten">Varianten statt Einheitsdauer</a></li>
+    <li><a href="#pausen">Pausen schützen</a></li>
+    <li><a href="#beispiel">Beispiel-Leistungsliste</a></li>
+    <li><a href="#preise">Preise klar angeben</a></li>
+    <li><a href="#nachjustieren">Nachjustieren</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="warum">Warum realistische Dauern so viel ausmachen</h2>
+<p>Am Telefon planst du aus dem Gefühl: „Die Kundin kenne ich, das dauert eine Stunde.“ Bei der Online-Buchung entscheidet die Dauer, die du für die Leistung hinterlegt hast. Ist sie zu knapp, landet der nächste Termin direkt dahinter, und jede kleine Verzögerung schiebt sich durch den ganzen Tag.</p>
+<p>Ist die Dauer dagegen etwas großzügig, passiert wenig: Du bist mal fünf Minuten früher fertig, fegst in Ruhe oder trinkst einen Kaffee. Im Zweifel lieber etwas zu lang als zu kurz.</p>
+
+<h2 id="messen">Die eigene Zeit messen</h2>
+<p>Schätzungen sind oft zu optimistisch, weil man an die Termine denkt, die glatt liefen. Besser: Notier eine Woche lang für deine wichtigsten Leistungen, wie lange sie wirklich dauern, von der Begrüßung bis zum Bezahlen. Ein Zettel neben der Kasse reicht.</p>
+<p>Nimm dann nicht den schnellsten Wert, sondern einen, mit dem du an den meisten Tagen hinkommst. Wenn ein Herrenschnitt meistens 25 Minuten dauert und manchmal 35, plan eher mit 30 als mit 25.</p>
+<p>Arbeiten mehrere Leute im Team, unterscheiden sich die Zeiten oft. In Kammzeit hat eine Leistung eine Dauer für alle, die sie anbieten. Wähle sie so, dass auch die Langsamste im Team hinkommt.</p>
+
+<h2 id="puffer">Puffer einplanen</h2>
+<p>Ein Termin besteht nicht nur aus Schneiden. Dazu kommen:</p>
+<ul>
+  <li>Begrüßung, Jacke abnehmen, kurze Beratung,</li>
+  <li>Haare waschen,</li>
+  <li>Kassieren und den nächsten Termin ausmachen,</li>
+  <li>Platz aufräumen, Haare zusammenfegen, Werkzeug reinigen.</li>
+</ul>
+<p>Diese Minuten fallen bei jedem Termin an, auch wenn sie sich klein anfühlen. Rechne sie in die Dauer der Leistung ein. Fünf bis zehn Minuten pro Termin sind ein brauchbarer Startwert, den du nach ein paar Wochen nachjustierst.</p>
+<p>Ein eigenes Pufferfeld gibt es in Kammzeit nicht; der Puffer gehört in die Dauer. Die Kundin sieht dann zum Beispiel 45 Minuten, auch wenn du nur 35 davon schneidest. Das ist in Ordnung, die Zeit gehört zum Termin.</p>
+
+<h2 id="einwirkzeit">Einwirkzeiten beim Färben</h2>
+<p>Bei Farbe, Tönung oder Dauerwelle kommt die Einwirkzeit dazu. Sie richtet sich nach dem Produkt, also nach den Angaben des Herstellers, und nach dem Haar. So könnte eine Ansatzfarbe mit Schnitt aussehen:</p>
+<div class="rg-table">
+<table>
+  <caption>Beispiel mit angenommenen Werten, keine Empfehlung</caption>
+  <thead><tr><th scope="col">Schritt</th><th scope="col" class="num">Dauer</th></tr></thead>
+  <tbody>
+    <tr><td>Begrüßung und Beratung</td><td class="num">10 Min.</td></tr>
+    <tr><td>Farbe anmischen und auftragen</td><td class="num">20 Min.</td></tr>
+    <tr><td>Einwirkzeit</td><td class="num">35 Min.</td></tr>
+    <tr><td>Auswaschen und Pflege</td><td class="num">10 Min.</td></tr>
+    <tr><td>Schneiden und Föhnen</td><td class="num">35 Min.</td></tr>
+    <tr><td>Kassieren und Aufräumen</td><td class="num">10 Min.</td></tr>
+  </tbody>
+  <tfoot><tr><th scope="row">Gesamt</th><td class="num">120 Min.</td></tr></tfoot>
+</table>
+</div>
+<p>Setz für jeden Schritt deine eigenen Werte ein. Die Einwirkzeit ist dabei der einzige Teil, den du nicht beschleunigen kannst.</p>
+<p>Während der Einwirkzeit hast du die Hände frei, und es liegt nahe, in dieser Zeit eine zweite Kundin dazwischenzuschieben. Kammzeit plant pro Mitarbeiter aber einen Termin nach dem anderen. Für dieselbe Person lässt der Kalender keine Überschneidungen zu, auch nicht beim manuellen Eintragen. Die Einwirkzeit blockiert also den ganzen Block. Nutze sie für Vorbereitung, Rückrufe oder eine kurze Pause. Wenn das Arbeiten in der Einwirkzeit für deinen Salon unverzichtbar ist, solltest du wissen, dass Kammzeit das derzeit nicht abbildet.</p>
+
+<h2 id="varianten">Varianten statt Einheitsdauer</h2>
+<p>Ein Schnitt beim kinnlangen Bob dauert anders als bei Haaren bis zur Hüfte. Wenn du nur eine Leistung „Damenhaarschnitt“ mit einer Dauer anlegst, liegt die Zeit oft daneben. Leg lieber Varianten an:</p>
+<ul>
+  <li>nach Haarlänge: kurz, mittel, lang,</li>
+  <li>nach Umfang: „nur Schneiden“ oder „Waschen, Schneiden, Föhnen“,</li>
+  <li>häufige Kombinationen als eigene Leistung, etwa „Ansatzfarbe mit Schnitt“.</li>
+</ul>
+<p>Das Letzte ist bei Kammzeit wichtig: Pro Termin bucht die Kundin eine Leistung. Was oft zusammen gebucht wird, legst du deshalb als eigene Leistung mit der Gesamtdauer an.</p>
+<p>Nutze die Beschreibung, um zu erklären, was enthalten ist und für wen die Variante gedacht ist: „Für Haare bis Schulterlänge, mit Waschen und Föhnen.“ Das hilft beim Auswählen. Halte die Liste trotzdem überschaubar. Wer sich durch dreißig Einträge scrollen muss, ruft am Ende doch an. Fasse zusammen, was ähnlich lange dauert und ähnlich viel kostet.</p>
+
+<h2 id="pausen">Pausen schützen</h2>
+<p>Wenn jede freie Minute buchbar ist, wird sie irgendwann gebucht. Trag deine Pausen deshalb fest in die Arbeitszeiten ein. In Kammzeit kann jeder Mitarbeiter pro Tag zwei Zeitblöcke haben, zum Beispiel 9:00 bis 13:00&nbsp;Uhr und 13:45 bis 18:00&nbsp;Uhr. Dazwischen ist nichts buchbar.</p>
+<ul>
+  <li><strong>Mindestvorlauf:</strong> Wenn frühestens eine Stunde vorher gebucht werden kann, überrascht dich kein Termin, während du gerade isst.</li>
+  <li><strong>Feierabend:</strong> Lass die Arbeitszeit dort enden, wo der letzte Termin spätestens fertig sein soll. Kammzeit bietet nur Zeiten an, zu denen die ganze Leistung noch in die Arbeitszeit passt.</li>
+</ul>
+
+<h2 id="beispiel">Beispiel: eine Leistungsliste</h2>
+<p>So könnte eine kleine Leistungsliste für einen Friseursalon aussehen. Die Preise sind frei erfunden und dienen nur zur Veranschaulichung. Deine Preise hängen von Standort, Kosten, Ausbildung und Produkten ab.</p>
+<div class="rg-table">
+<table>
+  <caption>Beispiel-Preisliste, keine Preisempfehlung</caption>
+  <thead><tr><th scope="col">Leistung</th><th scope="col" class="num">Dauer</th><th scope="col" class="num">Preis</th></tr></thead>
+  <tbody>
+    <tr><td>Herrenschnitt</td><td class="num">30 Min.</td><td class="num">28&nbsp;€</td></tr>
+    <tr><td>Herrenschnitt mit Bart</td><td class="num">45 Min.</td><td class="num">38&nbsp;€</td></tr>
+    <tr><td>Damenhaarschnitt kurz, mit Waschen und Föhnen</td><td class="num">45 Min.</td><td class="num">42&nbsp;€</td></tr>
+    <tr><td>Damenhaarschnitt lang, mit Waschen und Föhnen</td><td class="num">60 Min.</td><td class="num">52&nbsp;€</td></tr>
+    <tr><td>Waschen und Föhnen</td><td class="num">30 Min.</td><td class="num">25&nbsp;€</td></tr>
+    <tr><td>Ansatzfarbe mit Föhnen</td><td class="num">90 Min.</td><td class="num">65&nbsp;€</td></tr>
+    <tr><td>Ansatzfarbe mit Schnitt</td><td class="num">120 Min.</td><td class="num">89&nbsp;€</td></tr>
+    <tr><td>Kinderhaarschnitt bis 10 Jahre</td><td class="num">20 Min.</td><td class="num">16&nbsp;€</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="preise">Preise klar angeben</h2>
+<ul>
+  <li><strong>Endpreise angeben.</strong> Privatkundschaft soll den Preis sehen, den sie am Ende zahlt, inklusive Umsatzsteuer.</li>
+  <li><strong>„Ab“-Preise sparsam einsetzen.</strong> Wenn der Preis stark vom Aufwand abhängt, ist ein ab-Preis ehrlich. Schreib dazu, wovon er abhängt. Besser sind Varianten mit festen Preisen. In Kammzeit trägst du einen festen Betrag ein; ein „ab“ schreibst du bei Bedarf in den Namen oder die Beschreibung.</li>
+  <li><strong>Preisliste im Salon.</strong> Unabhängig von der Buchungsseite verlangt die Preisangabenverordnung, dass die Preise deiner wesentlichen Leistungen im Salon gut sichtbar aushängen.</li>
+  <li><strong>Preis und Dauer zusammen prüfen.</strong> Wenn eine Leistung regelmäßig länger dauert als geplant, ist oft auch der Preis zu niedrig. Rechne nach, was dich eine Stunde am Platz kostet.</li>
+</ul>
+
+<h2 id="nachjustieren">Nach vier Wochen nachjustieren</h2>
+<p>Die ersten Werte sind ein Entwurf. Schau nach ein paar Wochen in deinen Kalender: Bei welchen Leistungen hängst du regelmäßig hinterher? Dort verlängerst du die Dauer. Wo bist du fast immer zu früh fertig? Dort kürzt du. Zwei oder drei solcher Runden, und dein Kalender passt zu deinem echten Arbeitstag.</p>
+</article>
+<aside class="rg-help" aria-label="Passende Anleitung">
+  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+  <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/leistungen">Leistungen anlegen</a></p>
+</aside>
+</div>
+</div>
+<div class="wrap">
+{{template "ratgeber-weiter" .}}
+{{template "ratgeber-cta"}}
+</div>
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Leistungen und Dauer sinnvoll planen: Puffer, Einwirkzeit, Pausen","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://kammzeit.de/"},{"@type":"ListItem","position":2,"name":"Ratgeber","item":"https://kammzeit.de/ratgeber"},{"@type":"ListItem","position":3,"name":"Leistungen und Dauer im Salon planen","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}
+
+{{/* ============ 05 Kundenkartei und DSGVO ============ */}}
+{{define "ratgeber-dsgvo-kundenkartei"}}{{template "site-top" .}}
+<link rel="stylesheet" href="/static/site-ratgeber.css">
+<div class="rg rg-himmel">
+<header class="rg-hero">
+<div class="wrap rg-hero-in">
+<nav class="breadcrumb" aria-label="Brotkrümelnavigation"><ol><li><a href="/">Start</a></li><li><a href="/ratgeber">Ratgeber</a></li><li aria-current="page">Kundenkartei und DSGVO</li></ol></nav>
+<div class="rg-hero-text">
+    <p class="rg-kicker">Datenschutz</p>
+    <h1>Kundenkartei und DSGVO im Salon: was du notieren darfst</h1>
+    <p class="lead">Farbrezeptur, Lieblingsschnitt, Telefonnummer: Eine gute Kundenkartei macht deine Arbeit leichter. Damit sie auch datenschutzrechtlich sauber ist, solltest du ein paar Grundregeln kennen. Dieser Artikel gibt einen Überblick, ersetzt aber keine Rechtsberatung.</p>
+    <p class="rg-meta"><time datetime="2026-11-01">1. November 2026</time><span class="rg-read">6 Min. Lesezeit</span></p>
+</div>
+<div class="rg-hero-fig"><img src="/static/img/ill/kartei.webp" width="1000" height="800" alt=""></div>
+</div>
+{{template "ratgeber-deko"}}
+</header>
+<div class="wrap rg-layout">
+<nav class="rg-toc" aria-labelledby="rg-toc-h">
+  <h2 id="rg-toc-h">Inhalt</h2>
+  <ol>
+    <li><a href="#geltung">Auch Karteikarten zählen</a></li>
+    <li><a href="#notieren">Was du notieren darfst</a></li>
+    <li><a href="#nicht-notieren">Was nicht hineingehört</a></li>
+    <li><a href="#gesundheit">Allergien und Gesundheitsdaten</a></li>
+    <li><a href="#informieren">Kundschaft informieren</a></li>
+    <li><a href="#auskunft">Auskunft und Löschung</a></li>
+    <li><a href="#avv">Software und AVV</a></li>
+    <li><a href="#checkliste">Checkliste</a></li>
+  </ol>
+</nav>
+<div class="rg-main">
+<article class="prose rg-body">
+<h2 id="geltung">Die DSGVO gilt auch für Karteikarten</h2>
+<p>Die Datenschutz-Grundverordnung gilt nicht nur für Software. Auch eine Kundenkartei auf Papier fällt darunter, wenn sie geordnet geführt wird, zum Beispiel alphabetisch im Karteikasten. Ob du mit Papier, einer Tabelle oder einem Programm arbeitest, spielt also keine Rolle: Die Regeln sind dieselben.</p>
+<p>Für die Daten deiner Kundschaft bist du als Salon „Verantwortlicher“ im Sinne der DSGVO. Das heißt: Du entscheidest, was gespeichert wird, und du musst begründen können, warum.</p>
+
+<h2 id="notieren">Was du notieren darfst</h2>
+<p>Jede Speicherung braucht eine Rechtsgrundlage. Für die normale Kundenkartei kommen vor allem zwei infrage:</p>
+<ul>
+  <li><strong>Vertrag (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;b DSGVO):</strong> Name und Kontaktdaten brauchst du, um Termine zu vereinbaren, zu bestätigen und bei Änderungen Bescheid zu geben.</li>
+  <li><strong>Berechtigtes Interesse (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO):</strong> Notizen, die deiner Arbeit dienen und mit denen die Kundin rechnet, etwa die Farbrezeptur vom letzten Mal oder die Länge, die sie gern trägt.</li>
+</ul>
+<p>Typischerweise unproblematisch sind:</p>
+<ul>
+  <li>Name, Telefonnummer, E-Mail-Adresse,</li>
+  <li>Termine und gebuchte Leistungen,</li>
+  <li>Farbrezeptur, Mischverhältnis, Einwirkzeit,</li>
+  <li>Haarstruktur, Schnittwünsche, gewünschte Länge,</li>
+  <li>praktische Hinweise wie „kommt lieber vormittags“.</li>
+</ul>
+<p>Die Faustregel: Notier nur, was du für die nächste Behandlung wirklich brauchst. Weniger Daten heißt weniger Risiko und weniger Arbeit, wenn jemand Auskunft oder Löschung verlangt.</p>
+
+<h2 id="nicht-notieren">Was nicht in die Kartei gehört</h2>
+<ul>
+  <li><strong>Wertungen über Personen</strong> wie „schwierig“, „nervig“ oder „zahlt ungern“. Deine Kundin kann Auskunft verlangen und sieht dann jeden Eintrag. Schreib nur, was du ihr auch zeigen würdest.</li>
+  <li><strong>Private Details ohne Bezug zur Behandlung,</strong> etwa Beziehung, Arbeitgeber oder Familienstreit, auch wenn sie im Gespräch erzählt wurden.</li>
+  <li><strong>Ausweis- oder Kontodaten,</strong> wenn du sie nicht für einen konkreten Zweck brauchst.</li>
+  <li><strong>Gesundheitsangaben ohne Einwilligung.</strong> Dazu gleich mehr.</li>
+</ul>
+<p>Sachliche Angaben, etwa ein Termin mit dem Status „nicht erschienen“, sind etwas anderes als Wertungen über einen Menschen.</p>
+
+<h2 id="gesundheit">Allergien und Gesundheitsdaten: besonders sensibel</h2>
+<p>Gerade beim Färben sind Allergien wichtig: Eine bekannte Reaktion auf bestimmte Farbstoffe solltest du kennen, bevor du anmischst. Rechtlich sind das aber Gesundheitsdaten, und die gehören nach Art.&nbsp;9 DSGVO zu den besonderen Kategorien personenbezogener Daten. Ihre Verarbeitung ist grundsätzlich verboten, außer es greift eine Ausnahme. Im Salon ist das in der Regel die ausdrückliche Einwilligung der Kundin (Art.&nbsp;9 Abs.&nbsp;2 lit.&nbsp;a DSGVO).</p>
+<p>Praktisch heißt das:</p>
+<ol>
+  <li><strong>Frag, bevor du es aufschreibst:</strong> „Darf ich mir notieren, dass du auf diesen Farbstoff reagierst? Dann weiß es beim nächsten Mal auch meine Kollegin.“</li>
+  <li><strong>Halte die Einwilligung fest,</strong> am besten schriftlich, mindestens mit Datum in der Kartei. Du musst sie später nachweisen können.</li>
+  <li><strong>Notier nur das Nötige.</strong> „Keine Farbe mit PPD“ reicht. Eine Krankengeschichte gehört nicht in die Kartei.</li>
+  <li><strong>Sag dazu, dass die Einwilligung jederzeit widerrufen werden kann.</strong> Dann löschst du den Eintrag.</li>
+</ol>
+<p>Das gilt auch für andere Gesundheitsangaben, etwa Probleme mit der Kopfhaut oder eine Schwangerschaft, wenn sie für die Behandlung wichtig sind.</p>
+<p>Wenn du eine Software nutzt, überleg, wer solche Notizen sehen kann. Bei Kammzeit gibt es einen Login pro Salon, getrennte Zugänge für Mitarbeiter gibt es nicht. Wer Zugriff auf das Dashboard hat, sieht die ganze Kartei.</p>
+
+<h2 id="informieren">Kundschaft informieren</h2>
+<p>Nach Art.&nbsp;13 DSGVO musst du Menschen informieren, wenn du ihre Daten erhebst: wer verantwortlich ist, wofür die Daten genutzt werden, wie lange sie gespeichert bleiben und welche Rechte die Person hat. Im Salon geht das gut mit einem Aushang oder einem Blatt an der Kasse, dazu kommt die Datenschutzerklärung auf deiner Website.</p>
+<p>Bei der Online-Buchung gehört die Information ebenfalls dazu. Die Buchungsseite von Kammzeit verlinkt Hinweise zum Datenschutz, in denen steht, dass der Salon für die Buchungen verantwortlich ist und Kammzeit die Daten in seinem Auftrag verarbeitet. Erwähne die Online-Buchung und Kammzeit als Dienstleister auch in deiner eigenen Datenschutzerklärung.</p>
+
+<h2 id="auskunft">Auskunft und Löschung</h2>
+<h3>Auskunft</h3>
+<p>Jede Kundin kann nach Art.&nbsp;15 DSGVO fragen, welche Daten du über sie gespeichert hast. Antworten musst du grundsätzlich innerhalb eines Monats; in schwierigen Fällen ist eine Verlängerung möglich. Die Auskunft ist in der Regel kostenlos. Prüf vorher, ob die Anfrage wirklich von der Kundin kommt, vor allem bei einer unbekannten Mailadresse.</p>
+<p>In Kammzeit stehen Kontaktdaten, Notizen und Termine einer Person auf ihrer Karteikarte. Diese Angaben kannst du ausdrucken oder abschreiben und herausgeben, inklusive der Notizen.</p>
+<h3>Löschung</h3>
+<p>Wenn du Daten nicht mehr brauchst oder die Kundin die Löschung verlangt (Art.&nbsp;17 DSGVO), löschst du sie, soweit keine Aufbewahrungspflicht entgegensteht. Steuerliche Pflichten, etwa für Rechnungen und Kassenbelege, gelten weiter. Was davon deine Unterlagen betrifft, klärst du im Zweifel mit deiner Steuerberatung.</p>
+<p>In Kammzeit löschst du eine Kundin über „Kunde löschen“ auf ihrer Karteikarte, zusammen mit ihren Terminen. Auch ohne Anfrage lohnt es sich, einmal im Jahr aufzuräumen. Wer seit Jahren nicht mehr da war, braucht keine Karteikarte mehr. Leg dir selbst eine Frist fest und halte dich daran.</p>
+
+<h2 id="avv">Software-Anbieter und AVV</h2>
+<p>Wenn ein Anbieter die Daten deiner Kundschaft für dich speichert, etwa ein Buchungssystem oder eine Kartei in der Cloud, ist das in der Regel eine Auftragsverarbeitung. Dafür schreibt Art.&nbsp;28 DSGVO einen Vertrag vor, den Auftragsverarbeitungsvertrag (AVV). Darin steht unter anderem, dass der Anbieter die Daten nur nach deinen Weisungen verarbeitet, wie er sie schützt und welche Unterauftragnehmer beteiligt sind.</p>
+<p>Darauf achtest du:</p>
+<ul>
+  <li>Gibt es einen AVV, und kannst du ihn vor Vertragsschluss lesen?</li>
+  <li>Wo werden die Daten gespeichert? Stehen die Server in der EU?</li>
+  <li>Welche Unterauftragnehmer gibt es?</li>
+  <li>Kannst du deine Daten exportieren und am Ende vollständig löschen lassen?</li>
+</ul>
+<p>Bei Kammzeit gilt der <a href="/avv">AVV</a> ab der Registrierung. Die Daten liegen auf Servern in einem Rechenzentrum in Eygelshoven in den Niederlanden. Die Kundenkartei kannst du als CSV exportieren, alle Daten des Salons als JSON, und dein Konto kannst du selbst löschen.</p>
+
+<h2 id="checkliste">Checkliste</h2>
+<ul class="rg-check">
+  <li>Nur notieren, was du für die Behandlung brauchst.</li>
+  <li>Keine Wertungen und nichts, was du der Kundin nicht zeigen würdest.</li>
+  <li>Allergien und andere Gesundheitsdaten nur mit ausdrücklicher Einwilligung, und die Einwilligung festhalten.</li>
+  <li>Datenschutzhinweis im Salon und auf der Website.</li>
+  <li>Auskunft innerhalb eines Monats geben.</li>
+  <li>Alte Karteikarten regelmäßig löschen.</li>
+  <li>AVV mit jedem Anbieter, der Kundendaten für dich speichert.</li>
+  <li>Zugang zur Kartei nur für Personen, die ihn brauchen.</li>
+</ul>
+<p class="rg-note"><strong>Hinweis:</strong> Dieser Artikel ist eine allgemeine Information und keine Rechtsberatung. Bei konkreten Fragen wende dich an eine Anwältin oder einen Anwalt, an deine Innung oder an die Datenschutz-Aufsichtsbehörde deines Bundeslandes.</p>
+</article>
+<aside class="rg-help" aria-label="Passende Anleitung">
+  <img class="icon" src="/static/img/icons/hilfe.svg" width="24" height="24" alt="">
+  <p>Passende Anleitung im Hilfe-Center: <a href="/hilfe/kundenkartei">Kundenkartei in Kammzeit</a></p>
+</aside>
+</div>
+</div>
+<div class="wrap">
+{{template "ratgeber-weiter" .}}
+{{template "ratgeber-cta"}}
+</div>
+</div>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[
+{"@type":"Article","headline":"Kundenkartei und DSGVO im Salon: was du notieren darfst","datePublished":"2026-11-01","dateModified":"2026-11-01","inLanguage":"de","mainEntityOfPage":"{{.Canonical}}","image":"https://kammzeit.de/static/img/og.png","author":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"},"publisher":{"@type":"Organization","name":"Kammzeit","url":"https://kammzeit.de/"}},
+{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Start","item":"https://kammzeit.de/"},{"@type":"ListItem","position":2,"name":"Ratgeber","item":"https://kammzeit.de/ratgeber"},{"@type":"ListItem","position":3,"name":"Kundenkartei und DSGVO im Salon","item":"{{.Canonical}}"}]}]}</script>
+{{template "site-bottom" .}}{{end}}

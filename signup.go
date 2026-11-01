@@ -11,6 +11,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -24,10 +25,14 @@ func (a *app) routesSignup(mux *http.ServeMux) {
 var reservedSlugs = []string{"www", "mail", "smtp", "imap", "pop", "mx", "ns1", "ns2", "admin", "api", "app",
 	"dashboard", "login", "logout", "static", "assets", "cdn", "demo", "kammzeit", "hilfe", "help", "support",
 	"status", "blog", "docs", "test", "dev", "staging", "billing", "stripe", "abo", "konto", "registrieren",
-	"impressum", "datenschutz", "agb", "avv", "autoconfig", "autodiscover", "_dmarc"}
+	"impressum", "datenschutz", "agb", "avv", "autoconfig", "autodiscover", "_dmarc", "mta-sts", "webmail"}
 
 // ponytail: im Speicher wie alle Limiter, zählt nur gültige Anmeldungen (die Mails auslösen).
-var signupLimit = newLimiter(5, time.Hour)
+// signupMailLimit begrenzt die Login-Mails je Empfänger, wie loginMailLimit in auth.go.
+var (
+	signupLimit     = newLimiter(5, time.Hour)
+	signupMailLimit = newLimiter(3, 15*time.Minute)
+)
 
 // slugProblem prüft nur die Form einer Wunsch-Adresse. "" = in Ordnung.
 func slugProblem(slug string) string {
@@ -111,20 +116,21 @@ func signupHasSalon(q querier) (bool, error) {
 
 func (a *app) signupPage(w http.ResponseWriter, r *http.Request) {
 	if a.signupOpen(w, r) {
-		a.signupForm(w, r, http.StatusOK, "")
+		a.signupForm(w, r, http.StatusOK, nil, "")
 	}
 }
 
 // signupForm zeigt das Formular, nach einem Fehler mit den Eingaben von eben.
-func (a *app) signupForm(w http.ResponseWriter, r *http.Request, status int, msg string) {
+// errs = Fehler am Feld (name, slug, vorname, email, agb), msg = Hinweis ohne Feldbezug.
+func (a *app) signupForm(w http.ResponseWriter, r *http.Request, status int, errs map[string]string, msg string) {
 	title := "Salon registrieren"
 	if a.cfg.SingleTenant {
 		title = "Ersteinrichtung"
 	}
 	d := a.page(nil, title+" - Kammzeit")
-	d["Heading"], d["Error"], d["Single"], d["Domain"] = title, msg, a.cfg.SingleTenant, a.cfg.BaseDomain
+	d["Heading"], d["Error"], d["Errors"], d["Single"], d["Domain"] = title, msg, errs, a.cfg.SingleTenant, a.cfg.BaseDomain
 	d["Name"], d["Slug"], d["SlugAuto"] = r.PostFormValue("name"), r.PostFormValue("slug"), r.PostFormValue("slug_auto")
-	d["Email"], d["AGB"] = r.PostFormValue("email"), r.PostFormValue("agb") == "1"
+	d["Vorname"], d["Email"], d["AGB"] = r.PostFormValue("vorname"), r.PostFormValue("email"), r.PostFormValue("agb") == "1"
 	a.render(w, status, "signup", d)
 }
 
@@ -163,12 +169,17 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 	if !a.signupOpen(w, r) {
 		return
 	}
+	if !sameOrigin(r) {
+		http.Error(w, "Ungültige Herkunft der Anfrage.", http.StatusForbidden)
+		return
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
 	if err := r.ParseForm(); err != nil {
 		a.fail(w, nil, http.StatusBadRequest, "Das Formular war unvollständig.")
 		return
 	}
 	name := strings.TrimSpace(r.PostFormValue("name"))
+	first := strings.TrimSpace(r.PostFormValue("vorname"))
 	slug := strings.ToLower(strings.TrimSpace(r.PostFormValue("slug")))
 	if a.cfg.SingleTenant { // keine Subdomains, die Adresse sieht niemand
 		if slug = suggestSlug(name); slugProblem(slug) != "" {
@@ -176,23 +187,29 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	addr, mailErr := mail.ParseAddress(strings.TrimSpace(r.PostFormValue("email")))
-	n, sp := utf8.RuneCountInString(name), slugProblem(slug)
+	n, fn, sp := utf8.RuneCountInString(name), utf8.RuneCountInString(first), slugProblem(slug)
 	taken := "Die Adresse " + slug + "." + a.cfg.BaseDomain + " ist leider vergeben. Bitte wähle eine andere."
-	var msg string
-	switch {
-	case n < 2 || n > 80:
-		msg = "Bitte den Namen des Salons angeben (2 bis 80 Zeichen)."
-	case sp == "vergeben":
-		msg = taken
-	case sp != "":
-		msg = "Die Wunsch-Adresse ist " + sp + "."
-	case mailErr != nil || len(addr.Address) > 200:
-		msg = "Bitte eine gültige E-Mail-Adresse angeben."
-	case !a.cfg.SingleTenant && r.PostFormValue("agb") != "1":
-		msg = "Bitte bestätigen, dass du als Unternehmer handelst, und die AGB und den Vertrag zur Auftragsverarbeitung akzeptieren."
+	errs := map[string]string{}
+	if n < 2 || n > 80 || strings.ContainsFunc(name, unicode.IsControl) {
+		errs["name"] = "Bitte den Namen des Salons angeben (2 bis 80 Zeichen)."
 	}
-	if msg != "" {
-		a.signupForm(w, r, http.StatusBadRequest, msg)
+	switch {
+	case sp == "vergeben":
+		errs["slug"] = taken
+	case sp != "":
+		errs["slug"] = "Die Wunsch-Adresse ist " + sp + "."
+	}
+	if fn < 1 || fn > 40 || strings.ContainsFunc(first, unicode.IsControl) {
+		errs["vorname"] = "Bitte deinen Vornamen angeben (höchstens 40 Zeichen)."
+	}
+	if mailErr != nil || len(addr.Address) > 200 {
+		errs["email"] = "Bitte eine gültige E-Mail-Adresse angeben."
+	}
+	if !a.cfg.SingleTenant && r.PostFormValue("agb") != "1" {
+		errs["agb"] = "Bitte bestätigen, dass du als Unternehmer handelst, und die AGB und den Vertrag zur Auftragsverarbeitung akzeptieren."
+	}
+	if len(errs) > 0 {
+		a.signupForm(w, r, http.StatusBadRequest, errs, "")
 		return
 	}
 	email := strings.ToLower(addr.Address)
@@ -201,11 +218,15 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !signupLimit.allow(clientIP(r)) {
-		a.signupForm(w, r, http.StatusTooManyRequests, "Zu viele Anmeldungen von deinem Anschluss. Bitte versuche es in einer Stunde noch einmal.")
+		a.signupForm(w, r, http.StatusTooManyRequests, nil, "Zu viele Anmeldungen von deinem Anschluss. Bitte versuche es in einer Stunde noch einmal.")
+		return
+	}
+	if !signupMailLimit.allow(email) { // vor jeder Abfrage: verrät nicht, ob es das Konto gibt
+		a.signupForm(w, r, http.StatusTooManyRequests, nil, "Zu viele Anmeldungen mit dieser E-Mail-Adresse. Bitte versuche es in 15 Minuten noch einmal.")
 		return
 	}
 
-	userID, isTaken, err := a.signupCreate(name, slug, email)
+	userID, isTaken, err := a.signupCreate(name, first, slug, email)
 	if errors.Is(err, errSignupClosed) {
 		a.fail(w, nil, http.StatusNotFound, "Diese Seite gibt es nicht.")
 		return
@@ -215,7 +236,7 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if isTaken {
-		a.signupForm(w, r, http.StatusConflict, taken)
+		a.signupForm(w, r, http.StatusConflict, map[string]string{"slug": taken}, "")
 		return
 	}
 	// Neues und schon bestehendes Konto bekommen dieselbe Seite und denselben
@@ -229,11 +250,15 @@ func (a *app) signup(w http.ResponseWriter, r *http.Request) {
 
 var errSignupClosed = errors.New("Registrierung geschlossen")
 
-// signupCreate legt in einer Transaktion Salon, Konto, einen Mitarbeiter mit
-// Arbeitszeiten und zwei Beispiel-Leistungen an und liefert die Konto-ID.
+// signupCreate legt in einer Transaktion Salon, Konto, einen Mitarbeiter (first =
+// Vorname der Inhaberin) mit Arbeitszeiten und zwei Beispiel-Leistungen an und
+// liefert die Konto-ID. Die Beispiel-Leistungen sind inaktiv: online buchbar
+// wird erst, was der Salon selbst geprüft und eingeschaltet hat.
 // Gibt es das Konto schon, wird nichts angelegt und dessen ID geliefert.
-// taken = die Adresse gehört einem anderen Konto.
-func (a *app) signupCreate(name, slug, email string) (userID int64, taken bool, err error) {
+// taken = die Adresse ist vergeben, immer, auch für das eigene Konto: sonst
+// verriete die Antwort, welche E-Mail zu welchem Salon gehört. Wer schon
+// registriert ist, meldet sich über /login an.
+func (a *app) signupCreate(name, first, slug, email string) (userID int64, taken bool, err error) {
 	tx, err := a.db.Begin()
 	if err != nil {
 		return 0, false, err
@@ -253,13 +278,7 @@ func (a *app) signupCreate(name, slug, email string) (userID int64, taken bool, 
 		return 0, false, err
 	}
 	if st != "frei" {
-		// Dasselbe Konto schickt das Formular noch einmal (Doppelklick, Neuladen): wie Erfolg behandeln.
-		err = tx.QueryRow(`SELECT u.id FROM users u JOIN salons s ON s.id = u.salon_id WHERE s.slug = ? AND u.email = ?`,
-			slug, email).Scan(&userID)
-		if errors.Is(err, sql.ErrNoRows) {
-			return 0, true, nil
-		}
-		return userID, false, err
+		return 0, true, nil
 	}
 	err = tx.QueryRow(`SELECT id FROM users WHERE email = ?`, email).Scan(&userID)
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -281,7 +300,7 @@ func (a *app) signupCreate(name, slug, email string) (userID int64, taken bool, 
 	}
 	salonID := exec(`INSERT INTO salons (name, slug, email, plan) VALUES (?, ?, ?, 'free')`, name, slug, email)
 	userID = exec(`INSERT INTO users (salon_id, email, terms_accepted_at, terms_version) VALUES (?, ?, unixepoch(), ?)`, salonID, email, termsVersion)
-	staffID := exec(`INSERT INTO staff (salon_id, name) VALUES (?, 'Team')`, salonID)
+	staffID := exec(`INSERT INTO staff (salon_id, name) VALUES (?, ?)`, salonID, first)
 	for wd := time.Tuesday; wd <= time.Saturday; wd++ {
 		end := 18 * 60
 		if wd == time.Saturday {
@@ -289,8 +308,8 @@ func (a *app) signupCreate(name, slug, email string) (userID int64, taken bool, 
 		}
 		exec(`INSERT INTO working_hours (staff_id, weekday, start_min, end_min) VALUES (?, ?, ?, ?)`, staffID, int(wd), 9*60, end)
 	}
-	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort) VALUES (?, 'Haarschnitt', 30, 2500, 1)`, salonID)
-	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort) VALUES (?, 'Waschen, Schneiden, Föhnen', 60, 4500, 2)`, salonID)
+	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort, active) VALUES (?, 'Haarschnitt', 30, 2500, 1, 0)`, salonID)
+	exec(`INSERT INTO services (salon_id, name, duration_min, price_cents, sort, active) VALUES (?, 'Waschen, Schneiden, Föhnen', 60, 4500, 2, 0)`, salonID)
 	exec(`INSERT INTO staff_services (staff_id, service_id) SELECT ?, id FROM services WHERE salon_id = ?`, staffID, salonID)
 	if err != nil {
 		return 0, false, err

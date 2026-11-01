@@ -113,30 +113,33 @@ func (a *app) loginRequest(w http.ResponseWriter, r *http.Request) {
 		a.loginTooMany(w)
 		return
 	}
-	var userID int64
-	var stored string
-	err = a.db.QueryRow(`SELECT id, email FROM users WHERE email = ?`, email).Scan(&userID, &stored)
-	switch {
-	case err == nil:
-		token, err := a.newLoginToken(userID)
-		if err != nil {
-			a.serverError(w, nil, err)
-			return
-		}
-		// Mail im Hintergrund: die Antwort soll nicht merklich langsamer sein,
-		// wenn es das Konto gibt (sonst verrät die Zeit, welche Adressen existieren).
-		// ponytail: das Token-INSERT bleibt synchron, der Unterschied ist Rauschen.
-		go func() {
-			if err := a.mailLoginLink(stored, token, next); err != nil {
-				log.Printf("Login-Link an %s: %v", stored, err)
-			}
-		}()
-	case !errors.Is(err, sql.ErrNoRows):
-		a.serverError(w, nil, err)
-		return
-	}
+	// Konto suchen, Token anlegen und Mail schicken im Hintergrund: die Antwort
+	// dauert so gleich lang, egal ob es das Konto gibt (sonst verrät die Zeit,
+	// welche Adressen existieren).
+	go a.loginMail(email, next)
 	d["Sent"] = true
 	a.render(w, http.StatusOK, "auth-login", d)
+}
+
+// loginMail schickt einen Login-Link, wenn es ein Konto mit der Adresse gibt.
+// Läuft im Hintergrund, Fehler landen nur im Log.
+func (a *app) loginMail(email, next string) {
+	var userID int64
+	var stored string
+	err := a.db.QueryRow(`SELECT id, email FROM users WHERE email = ?`, email).Scan(&userID, &stored)
+	if errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+	var token string
+	if err == nil {
+		token, err = a.newLoginToken(userID)
+	}
+	if err == nil {
+		err = a.mailLoginLink(stored, token, next)
+	}
+	if err != nil {
+		log.Printf("Login-Link an %s: %v", email, err)
+	}
 }
 
 func (a *app) loginTooMany(w http.ResponseWriter) {
@@ -231,7 +234,8 @@ func (a *app) mailLoginLink(email, token, next string) error {
 		link += "?weiter=" + url.QueryEscape(next)
 	}
 	body := "Hallo,\n\nhier ist dein Login-Link für Kammzeit:\n\n" + link + "\n\n" +
-		"Er ist 15 Minuten gültig und funktioniert nur einmal.\n\n" +
+		"Er ist 15 Minuten gültig und funktioniert nur einmal.\n" +
+		"Öffne den Link auf dem Gerät, auf dem du angemeldet sein willst.\n\n" +
 		"Du hast keinen Login angefordert? Dann kannst du diese Mail einfach ignorieren.\n"
 	return a.mail.send(email, "Dein Login für Kammzeit", body)
 }

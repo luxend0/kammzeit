@@ -5,6 +5,8 @@
 .abo-vergleich { max-width: 720px; margin-bottom: 8px; }
 .abo-vergleich th:not(:first-child), .abo-vergleich td:not(:first-child) { width: 32%; }
 .abo-aktiv { font-weight: 700; }
+/* Zeilenköpfe wie normale Zellen, nicht wie die Kopfzeile */
+.abo-vergleich tbody th { font-size: inherit; text-transform: none; letter-spacing: normal; color: var(--fg); font-weight: 400; border-bottom: 1px solid var(--line); }
 .abo-kauf form { margin: 0; }
 .abo-kauf { margin-top: 24px; }
 </style>
@@ -14,11 +16,11 @@
 
 <div class="table-wrap">
 <table class="table abo-vergleich">
-  <thead><tr><th></th><th>Gratis</th><th>Pro</th></tr></thead>
+  <thead><tr><th scope="col">Funktion</th><th scope="col">Gratis</th><th scope="col">Pro</th></tr></thead>
   <tbody>
-    <tr><td>Mitarbeiter</td><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>1</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>unbegrenzt</td></tr>
-    <tr><td>Hinweis "Online-Termine mit Kammzeit" auf deiner Buchungsseite</td><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>ja</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>nein</td></tr>
-    <tr><td>Preis</td><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>0 €</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>14,90 € im Monat<br>oder 149 € im Jahr (2 Monate geschenkt)</td></tr>
+    <tr><th scope="row">Mitarbeiter</th><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>1</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>unbegrenzt</td></tr>
+    <tr><th scope="row">Hinweis „Online-Termine mit Kammzeit“ auf deiner Buchungsseite</th><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>ja</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>nein</td></tr>
+    <tr><th scope="row">Preis</th><td{{if not .Salon.Pro}} class="abo-aktiv"{{end}}>0 €</td><td{{if .Salon.Pro}} class="abo-aktiv"{{end}}>14,90 € im Monat<br>oder 149 € im Jahr (2 Monate geschenkt)</td></tr>
   </tbody>
 </table>
 </div>

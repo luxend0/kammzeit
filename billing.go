@@ -202,6 +202,7 @@ type stripeEvent struct {
 			Mode              string `json:"mode"`
 			ClientReferenceID string `json:"client_reference_id"`
 			Subscription      string `json:"subscription"`
+			Created           int64  `json:"created"` // Unix-Sekunden, bei Checkout-Sessions
 		} `json:"object"`
 	} `json:"data"`
 }
@@ -210,6 +211,7 @@ type stripeSub struct {
 	ID       string            `json:"id"`
 	Status   string            `json:"status"`
 	Customer string            `json:"customer"`
+	Created  int64             `json:"created"` // Unix-Sekunden
 	Metadata map[string]string `json:"metadata"`
 }
 
@@ -256,7 +258,7 @@ func (a *app) stripeWebhook(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Abo nicht abrufbar", http.StatusInternalServerError) // Stripe wiederholt
 		return
 	}
-	if err := a.applyStripeSub(ev.ID, o.ClientReferenceID, &sub); err != nil {
+	if err := a.applyStripeSub(ev.ID, o.ClientReferenceID, o.Created, &sub); err != nil {
 		log.Printf("Stripe-Webhook %s: %v", ev.ID, err)
 		http.Error(w, "Fehler", http.StatusInternalServerError) // Stripe wiederholt
 		return
@@ -266,7 +268,8 @@ func (a *app) stripeWebhook(w http.ResponseWriter, r *http.Request) {
 
 // applyStripeSub setzt in einer Transaktion Ereignis-Eintrag und Plan. Bei
 // einem Fehler rollt beides zurück, damit Stripes Wiederholung wieder wirkt.
-func (a *app) applyStripeSub(eventID, clientRef string, sub *stripeSub) error {
+// clientRef und refCreated stammen aus der Checkout-Session (sonst leer und 0).
+func (a *app) applyStripeSub(eventID, clientRef string, refCreated int64, sub *stripeSub) error {
 	tx, err := a.db.Begin()
 	if err != nil {
 		return err
@@ -281,7 +284,7 @@ func (a *app) applyStripeSub(eventID, clientRef string, sub *stripeSub) error {
 	}
 	switch sub.Status {
 	case "active", "trialing", "past_due":
-		salonID, err := findStripeSalon(tx, clientRef, sub)
+		salonID, err := findStripeSalon(tx, clientRef, refCreated, sub)
 		if err != nil {
 			return err
 		}
@@ -310,19 +313,31 @@ func (a *app) applyStripeSub(eventID, clientRef string, sub *stripeSub) error {
 // findStripeSalon: Salon-ID aus den Metadaten des Abos (von uns beim Checkout
 // gesetzt), sonst client_reference_id der Checkout-Session, sonst gespeicherte
 // Abo- oder Kunden-ID (z. B. ein im Stripe-Dashboard angelegtes Abo). 0 = keiner.
-func findStripeSalon(q querier, clientRef string, sub *stripeSub) (int64, error) {
-	for _, ref := range []string{sub.Metadata["salon_id"], clientRef} {
-		id, err := strconv.ParseInt(ref, 10, 64)
+// SQLite vergibt die ID eines gelöschten Salons neu (INTEGER PRIMARY KEY ohne
+// AUTOINCREMENT): eine Salon-ID zählt darum nur, wenn der Salon nicht jünger
+// ist als das Abo bzw. die Session, die sie nennt.
+func findStripeSalon(q querier, clientRef string, refCreated int64, sub *stripeSub) (int64, error) {
+	for _, ref := range []struct {
+		id      string
+		created int64
+	}{{sub.Metadata["salon_id"], sub.Created}, {clientRef, refCreated}} {
+		id, err := strconv.ParseInt(ref.id, 10, 64)
 		if err != nil {
 			continue
 		}
-		err = q.QueryRow(`SELECT id FROM salons WHERE id = ?`, id).Scan(&id)
-		if err == nil {
-			return id, nil
+		var createdAt int64
+		err = q.QueryRow(`SELECT created_at FROM salons WHERE id = ?`, id).Scan(&createdAt)
+		if errors.Is(err, sql.ErrNoRows) {
+			continue
 		}
-		if !errors.Is(err, sql.ErrNoRows) {
+		if err != nil {
 			return 0, err
 		}
+		if createdAt > ref.created {
+			log.Printf("Stripe: Abo %s nennt Salon %d, der aber erst nach dem Abo bzw. der Session angelegt wurde (ID neu vergeben?), ignoriert", sub.ID, id)
+			continue
+		}
+		return id, nil
 	}
 	var id int64
 	err := q.QueryRow(`SELECT id FROM salons WHERE (stripe_subscription_id != '' AND stripe_subscription_id = ?)

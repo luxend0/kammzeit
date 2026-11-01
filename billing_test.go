@@ -101,7 +101,7 @@ func newFakeStripe(t *testing.T) *fakeStripe {
 func (f *fakeStripe) setSub(id, status, customer, salonID string) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
-	f.subs[id] = stripeSub{ID: id, Status: status, Customer: customer, Metadata: map[string]string{"salon_id": salonID}}
+	f.subs[id] = stripeSub{ID: id, Status: status, Customer: customer, Created: time.Now().Unix(), Metadata: map[string]string{"salon_id": salonID}}
 }
 
 func setStripeEnv(t *testing.T, key, monthly, yearly string) {
@@ -152,7 +152,7 @@ func signed(a *app, body []byte) int {
 
 func checkoutCompleted(evt, salonID, sub string) []byte {
 	return fmt.Appendf(nil, `{"id":%q,"object":"event","type":"checkout.session.completed","data":{"object":{"id":"cs_1","object":"checkout.session",
-		"mode":"subscription","client_reference_id":%q,"customer":"cus_x","subscription":%q,"metadata":{"salon_id":%q}}}}`, evt, salonID, sub, salonID)
+		"mode":"subscription","client_reference_id":%q,"customer":"cus_x","subscription":%q,"created":%d,"metadata":{"salon_id":%q}}}}`, evt, salonID, sub, time.Now().Unix(), salonID)
 }
 
 func subEvent(evt, typ, sub string) []byte {

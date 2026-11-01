@@ -96,7 +96,14 @@ func TestTLSAllowed(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := db.Exec(`INSERT INTO salons (slug, name) VALUES ('mueller', 'Salon Müller')`); err != nil {
+	// Ein Salon zählt erst, wenn sein Inhaber den Login-Link eingelöst hat:
+	// Registrieren mit erfundenen Adressen allein verbraucht kein Zertifikat.
+	if _, err := db.Exec(`INSERT INTO salons (id, slug, name) VALUES (1, 'mueller', 'Salon Müller'), (2, 'neu', 'Salon Neu'), (3, 'ohnekonto', 'Ohne Konto');
+		INSERT INTO users (salon_id, email, last_login_at) VALUES (1, 'inhaber@mueller.test', unixepoch());
+		INSERT INTO users (salon_id, email) VALUES (2, 'inhaber@neu.test')`); err != nil {
+		t.Fatal(err)
+	}
+	if err := seedDemo(db); err != nil {
 		t.Fatal(err)
 	}
 	a := &app{cfg: config{BaseDomain: "kammzeit.de"}, db: db}
@@ -105,6 +112,9 @@ func TestTLSAllowed(t *testing.T) {
 		"www.kammzeit.de":        true,
 		"mueller.kammzeit.de":    true,
 		"MUELLER.kammzeit.de":    true,
+		"demo.kammzeit.de":       true, // kammzeit demo setzt last_login_at
+		"neu.kammzeit.de":        false,
+		"ohnekonto.kammzeit.de":  false,
 		"gibtsnicht.kammzeit.de": false,
 		"a.mueller.kammzeit.de":  false,
 		"evilkammzeit.de":        false,
@@ -113,6 +123,32 @@ func TestTLSAllowed(t *testing.T) {
 	} {
 		if got := a.tlsAllowed(domain); got != want {
 			t.Errorf("tlsAllowed(%q) = %v, want %v", domain, got, want)
+		}
+	}
+	// Schon vorhandener Demo-Salon ohne Login: erneutes `kammzeit demo` holt das nach.
+	if _, err := db.Exec(`UPDATE users SET last_login_at = NULL WHERE email = 'demo@example.com'`); err != nil {
+		t.Fatal(err)
+	}
+	if a.tlsAllowed("demo.kammzeit.de") {
+		t.Fatal("Demo ohne Login zugelassen")
+	}
+	if err := seedDemo(db); err != nil {
+		t.Fatal(err)
+	}
+	if !a.tlsAllowed("demo.kammzeit.de") {
+		t.Fatal("erneutes seedDemo setzt last_login_at nicht")
+	}
+}
+
+// Ohne LISTEN lauscht der Server auf allen Schnittstellen; dann gibt es beim
+// Start einen Hinweis.
+func TestAllInterfaces(t *testing.T) {
+	for addr, want := range map[string]bool{
+		":8080": true, "0.0.0.0:8080": true, "[::]:8080": true,
+		"127.0.0.1:8080": false, "[::1]:8080": false, "192.0.2.10:8080": false, "localhost:8080": false, "kaputt": false,
+	} {
+		if got := allInterfaces(addr); got != want {
+			t.Errorf("allInterfaces(%q) = %v, want %v", addr, got, want)
 		}
 	}
 }

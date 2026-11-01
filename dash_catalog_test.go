@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -52,32 +54,37 @@ func TestTeamParseHours(t *testing.T) {
 	mon := func(f0, t0, f1, t1 string) []teamDay {
 		return []teamDay{{WD: 1, Label: "Montag", From: [2]string{f0, f1}, To: [2]string{t0, t1}}}
 	}
+	both, first, second := [2]bool{true, true}, [2]bool{true, false}, [2]bool{false, true}
 	cases := []struct {
 		name   string
 		days   []teamDay
-		blocks int    // erwartete Blöcke, wenn gültig
-		err    string // erwarteter Teil der Fehlermeldung, "" = gültig
+		blocks int     // erwartete Blöcke, wenn gültig
+		err    string  // erwarteter Anfang der Fehlermeldung am Tag, "" = gültig
+		bad    [2]bool // welche Blöcke markiert sind
 	}{
-		{"zwei Blöcke mit Pause", mon("09:00", "12:00", "13:00", "18:00"), 2, ""},
-		{"Blöcke berühren sich", mon("09:00", "12:00", "12:00", "18:00"), 2, ""},
-		{"nur zweiter Block", mon("", "", "13:00", "18:00"), 1, ""},
-		{"leer = frei", mon("", "", "", ""), 0, ""},
-		{"Überlappung", mon("09:00", "13:00", "12:00", "18:00"), 0, "überschneiden"},
-		{"Überlappung, später Block zuerst", mon("12:00", "18:00", "09:00", "12:30"), 0, "überschneiden"},
-		{"Block im Block", mon("09:00", "18:00", "12:00", "13:00"), 0, "überschneiden"},
-		{"Ende vor Beginn", mon("18:00", "09:00", "", ""), 0, "Ende"},
-		{"Ende gleich Beginn", mon("09:00", "09:00", "", ""), 0, "Ende"},
-		{"nicht im 5-Minuten-Raster", mon("09:03", "12:00", "", ""), 0, "Raster"},
-		{"nur Beginn", mon("09:00", "", "", ""), 0, "Raster"},
-		{"Unsinn", mon("neun", "zwölf", "", ""), 0, "Raster"},
-		{"Stunde 24", mon("09:00", "24:00", "", ""), 0, "Raster"},
+		{"zwei Blöcke mit Pause", mon("09:00", "12:00", "13:00", "18:00"), 2, "", [2]bool{}},
+		{"Blöcke berühren sich", mon("09:00", "12:00", "12:00", "18:00"), 2, "", [2]bool{}},
+		{"nur zweiter Block", mon("", "", "13:00", "18:00"), 1, "", [2]bool{}},
+		{"leer = frei", mon("", "", "", ""), 0, "", [2]bool{}},
+		{"Überlappung", mon("09:00", "13:00", "12:00", "18:00"), 0, "Montag: Die beiden Blöcke überschneiden sich", both},
+		{"Überlappung, später Block zuerst", mon("12:00", "18:00", "09:00", "12:30"), 0, "Montag: Die beiden Blöcke überschneiden", both},
+		{"Block im Block", mon("09:00", "18:00", "12:00", "13:00"), 0, "Montag: Die beiden Blöcke überschneiden", both},
+		{"Ende vor Beginn", mon("18:00", "09:00", "", ""), 0, "Montag Block 1: Das Ende muss nach dem Beginn liegen", first},
+		{"Ende gleich Beginn", mon("09:00", "09:00", "", ""), 0, "Montag Block 1: Das Ende", first},
+		{"Block 2 Ende vor Beginn", mon("09:00", "12:00", "18:00", "13:00"), 0, "Montag Block 2: Das Ende", second},
+		{"beide Blöcke falsch", mon("09:03", "12:00", "18:00", "13:00"), 0, "Montag Block 1: Bitte Beginn und Ende angeben, im 5-Minuten-Raster (z. B. 09:00). Montag Block 2: Das Ende", both},
+		{"nicht im 5-Minuten-Raster", mon("09:03", "12:00", "", ""), 0, "Montag Block 1: Bitte Beginn und Ende angeben, im 5-Minuten-Raster", first},
+		{"nur Beginn", mon("09:00", "", "", ""), 0, "Montag Block 1: Bitte Beginn", first},
+		{"Unsinn", mon("neun", "zwölf", "", ""), 0, "Montag Block 1: Bitte Beginn", first},
+		{"Stunde 24", mon("", "", "09:00", "24:00"), 0, "Montag Block 2: Bitte Beginn", second},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got, msg := teamParseHours(c.days)
+			got, ok := teamParseHours(c.days)
+			d := c.days[0]
 			if c.err == "" {
-				if msg != "" || len(got) != c.blocks {
-					t.Fatalf("got %v, %q; want %d blocks", got, msg, c.blocks)
+				if !ok || d.Err != "" || len(got) != c.blocks {
+					t.Fatalf("got %v, %v, %q; want %d blocks", got, ok, d.Err, c.blocks)
 				}
 				for _, h := range got {
 					if h.Weekday != time.Monday {
@@ -86,10 +93,49 @@ func TestTeamParseHours(t *testing.T) {
 				}
 				return
 			}
-			if !strings.Contains(msg, c.err) || !strings.HasPrefix(msg, "Montag") {
-				t.Fatalf("msg %q, want it to name Montag and contain %q", msg, c.err)
+			if ok || got != nil || !strings.HasPrefix(d.Err, c.err) || d.Bad != c.bad {
+				t.Fatalf("ok=%v, Err %q, Bad %v; want Err starting with %q, Bad %v", ok, d.Err, d.Bad, c.err, c.bad)
 			}
 		})
+	}
+	// Fehler an mehreren Tagen landen jeweils am eigenen Tag.
+	days := []teamDay{
+		{WD: 1, Label: "Montag", From: [2]string{"18:00"}, To: [2]string{"09:00"}},
+		{WD: 2, Label: "Dienstag", From: [2]string{"09:00"}, To: [2]string{"18:00"}},
+		{WD: 3, Label: "Mittwoch", From: [2]string{"", "09:00"}, To: [2]string{"", ""}},
+	}
+	if _, ok := teamParseHours(days); ok || days[0].Err == "" || days[1].Err != "" || !strings.HasPrefix(days[2].Err, "Mittwoch Block 2") {
+		t.Fatalf("per-day errors: %q / %q / %q", days[0].Err, days[1].Err, days[2].Err)
+	}
+}
+
+func TestTeamCopySource(t *testing.T) {
+	week := func(filled ...int) []teamDay {
+		var days []teamDay
+		for _, wd := range teamOrder {
+			d := teamDay{WD: int(wd), Label: weekdaysDE[wd]}
+			if slices.Contains(filled, int(wd)) {
+				d.From[0], d.To[0] = "09:00", "18:00"
+			}
+			days = append(days, d)
+		}
+		return days
+	}
+	cases := []struct {
+		filled []int
+		src    int
+		label  string
+	}{
+		{[]int{1, 2, 3, 4, 5}, 1, "Montag auf Dienstag bis Freitag übertragen"},
+		{[]int{2, 3, 4, 5, 6}, 2, "Dienstag auf Mittwoch bis Freitag übertragen"}, // montags zu
+		{[]int{4, 6}, 4, "Donnerstag auf Freitag übertragen"},
+		{[]int{5, 6}, 0, ""}, // nur Fr/Sa: nichts zu übertragen
+		{nil, 0, ""},
+	}
+	for _, c := range cases {
+		if src, label := teamCopySource(week(c.filled...)); src != c.src || label != c.label {
+			t.Errorf("filled %v: %d %q, want %d %q", c.filled, src, label, c.src, c.label)
+		}
 	}
 }
 
@@ -151,6 +197,11 @@ func (e *catalogEnv) count(t *testing.T, q string, args ...any) int {
 }
 
 func (e *catalogEnv) do(method, path string, form url.Values) (int, string) {
+	rec := e.rec(method, path, form)
+	return rec.Code, rec.Body.String()
+}
+
+func (e *catalogEnv) rec(method, path string, form url.Values) *httptest.ResponseRecorder {
 	var body io.Reader
 	if form != nil {
 		body = strings.NewReader(form.Encode())
@@ -161,7 +212,7 @@ func (e *catalogEnv) do(method, path string, form url.Values) (int, string) {
 	req.Header.Set("Cookie", e.cookie)
 	rec := httptest.NewRecorder()
 	e.h.ServeHTTP(rec, req)
-	return rec.Code, rec.Body.String()
+	return rec
 }
 
 func TestTeamPlanLimit(t *testing.T) {
@@ -261,5 +312,143 @@ func TestTeamServicesTenant(t *testing.T) {
 	}
 	if n := e.count(t, `SELECT COUNT(*) FROM staff_services WHERE service_id = ?`, bart); n != 1 {
 		t.Fatalf("new service assigned to %d staff, want 1 (Anna)", n)
+	}
+}
+
+// Fehler stehen am Feld: aria-invalid, aria-describedby und der Text mit passender id.
+func TestCatalogFieldErrors(t *testing.T) {
+	e := newCatalogEnv(t, "pro")
+	code, body := e.do("POST", "/dashboard/leistungen/neu", url.Values{"name": {""}, "dauer": {"7"}, "preis": {"abc"}, "beschreibung": {"kurz"}})
+	if code != http.StatusUnprocessableEntity || !strings.Contains(body, catalogInvalid) {
+		t.Fatalf("leistung: %d\n%s", code, body)
+	}
+	for _, f := range []string{"name", "dauer", "preis"} {
+		if !regexp.MustCompile(`name="`+f+`"[^>]*aria-invalid="true"[^>]*aria-describedby="err-`+f+`"`).MatchString(body) ||
+			!strings.Contains(body, `<span class="field-error" id="err-`+f+`">`) {
+			t.Errorf("leistung: field %s not marked", f)
+		}
+	}
+	if strings.Contains(body, `id="err-beschreibung"`) || strings.Count(body, `aria-invalid="true"`) != 3 {
+		t.Errorf("leistung: unexpected markers\n%s", body)
+	}
+	if !strings.Contains(body, `aria-describedby="leist-beschreibung-hint"`) || !strings.Contains(body, `value="abc"`) {
+		t.Error("leistung: hint not linked or input lost")
+	}
+	if n := e.count(t, `SELECT COUNT(*) FROM services WHERE salon_id = ?`, e.salon); n != 0 {
+		t.Fatalf("saved despite errors: %d", n)
+	}
+
+	anna := strconv.FormatInt(catalogInsert(t, e.db, `INSERT INTO staff (salon_id, name) VALUES (?, 'Anna')`, e.salon), 10)
+	code, body = e.do("POST", "/dashboard/team/"+anna, url.Values{"name": {"Anna"}, "aktiv": {"1"},
+		"von-1-0": {"18:00"}, "bis-1-0": {"09:00"}, "von-1-1": {"13:00"}, "bis-1-1": {"18:00"}, "von-2-0": {"09:00"}, "bis-2-0": {"18:00"}})
+	if code != http.StatusUnprocessableEntity || !strings.Contains(body, catalogInvalid) {
+		t.Fatalf("team: %d\n%s", code, body)
+	}
+	if !strings.Contains(body, `<span class="field-error" id="err-tag-1">Montag Block 1: Das Ende muss nach dem Beginn liegen.</span>`) {
+		t.Errorf("team: Montag error missing\n%s", body)
+	}
+	for _, f := range []string{"von-1-0", "bis-1-0"} {
+		if !regexp.MustCompile(`name="` + f + `"[^>]*aria-invalid="true" aria-describedby="err-tag-1"`).MatchString(body) {
+			t.Errorf("team: %s not marked", f)
+		}
+	}
+	if regexp.MustCompile(`name="von-1-1"[^>]*aria-invalid`).MatchString(body) || strings.Contains(body, `err-tag-2`) {
+		t.Error("team: valid fields marked")
+	}
+	if n := e.count(t, `SELECT COUNT(*) FROM working_hours WHERE staff_id = ?`, anna); n != 0 {
+		t.Fatalf("hours saved despite errors: %d", n)
+	}
+
+	// Gültig gespeichert: Umleitung mit festem Code für die Meldung.
+	for path, want := range map[string]string{"/dashboard/leistungen/neu": "leistung-neu", "/dashboard/team/" + anna: "mitarbeiter"} {
+		rec := e.rec("POST", path, url.Values{"name": {"Anna"}, "aktiv": {"1"}, "dauer": {"30"}, "preis": {"25"}})
+		if loc := rec.Header().Get("Location"); rec.Code != http.StatusSeeOther || !strings.HasSuffix(loc, "?gespeichert="+want) || catalogSaved[want] == "" {
+			t.Errorf("POST %s: %d %q, want code %s", path, rec.Code, loc, want)
+		}
+	}
+}
+
+// "Zeiten übertragen" kopiert die Vorlage auf die Werktage danach bis Freitag und speichert nichts.
+func TestTeamCopyHours(t *testing.T) {
+	e := newCatalogEnv(t, "pro")
+	anna := strconv.FormatInt(catalogInsert(t, e.db, `INSERT INTO staff (salon_id, name) VALUES (?, 'Anna')`, e.salon), 10)
+	code, body := e.do("POST", "/dashboard/team/"+anna, url.Values{"name": {"Anna B."}, "aktiv": {"1"}, "uebertragen": {"2"},
+		"von-2-0": {"09:00"}, "bis-2-0": {"12:00"}, "von-2-1": {"13:00"}, "bis-2-1": {"18:00"},
+		"von-3-0": {"10:00"}, "bis-3-0": {"14:00"}, "von-6-0": {"08:00"}, "bis-6-0": {"13:00"}})
+	if code != http.StatusOK || !strings.Contains(body, "Zeiten übertragen: Dienstag auf Mittwoch bis Freitag. Noch nicht gespeichert.") {
+		t.Fatalf("copy: %d\n%s", code, body)
+	}
+	for _, want := range []string{
+		`name="von-3-0" value="09:00"`, `name="bis-3-1" value="18:00"`, // Mittwoch überschrieben
+		`name="von-5-0" value="09:00"`, `name="bis-5-1" value="18:00"`, // Freitag
+		`name="von-1-0" value=""`,      // Montag bleibt frei
+		`name="von-6-0" value="08:00"`, // Samstag bleibt
+		`value="Anna B."`,
+		`name="uebertragen" value="2">Dienstag auf Mittwoch bis Freitag übertragen</button>`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("copy: missing %s", want)
+		}
+	}
+	// Enter im Formular soll speichern: der erste Absende-Knopf hat keinen Namen.
+	form := body[strings.Index(body, `<form method="post" class="form form-wide"`):]
+	if first := form[strings.Index(form, `type="submit"`)-40:]; strings.Contains(first[:80], "uebertragen") {
+		t.Error("copy button is the default button")
+	}
+	if n := e.count(t, `SELECT COUNT(*) FROM working_hours WHERE staff_id = ?`, anna); n != 0 {
+		t.Fatalf("copy saved hours: %d", n)
+	}
+	if n := e.count(t, `SELECT COUNT(*) FROM staff WHERE name = 'Anna'`); n != 1 {
+		t.Fatal("copy saved the name")
+	}
+}
+
+// Löschen: Rückfrage per <details>, mit Terminen nur deaktivieren, Meldung über festen Code.
+func TestCatalogDelete(t *testing.T) {
+	e := newCatalogEnv(t, "pro")
+	id := func(n int64) string { return strconv.FormatInt(n, 10) }
+	anna := catalogInsert(t, e.db, `INSERT INTO staff (salon_id, name) VALUES (?, 'Anna')`, e.salon)
+	ben := catalogInsert(t, e.db, `INSERT INTO staff (salon_id, name) VALUES (?, 'Ben')`, e.salon)
+	used := catalogInsert(t, e.db, `INSERT INTO services (salon_id, name, duration_min) VALUES (?, 'Schnitt', 30)`, e.salon)
+	unused := catalogInsert(t, e.db, `INSERT INTO services (salon_id, name, duration_min) VALUES (?, 'Bart', 15)`, e.salon)
+	cust := catalogInsert(t, e.db, `INSERT INTO customers (salon_id, name) VALUES (?, 'Kunde')`, e.salon)
+	catalogInsert(t, e.db, `INSERT INTO appointments (salon_id, staff_id, service_id, customer_id, starts_at, ends_at, cancel_token)
+		VALUES (?, ?, ?, ?, 1000, 2800, 'tok')`, e.salon, anna, used, cust)
+
+	cases := []struct {
+		page, confirm, action, saved string
+		gone                         bool
+	}{
+		{"/dashboard/leistungen/" + id(used), "Ja, deaktivieren", "/dashboard/leistungen/" + id(used) + "/loeschen", "leistung-deaktiviert", false},
+		{"/dashboard/leistungen/" + id(unused), "Ja, löschen", "/dashboard/leistungen/" + id(unused) + "/loeschen", "leistung-geloescht", true},
+		{"/dashboard/team/" + id(anna), "Ja, deaktivieren", "/dashboard/team/" + id(anna) + "/loeschen", "mitarbeiter-deaktiviert", false},
+		{"/dashboard/team/" + id(ben), "Ja, löschen", "/dashboard/team/" + id(ben) + "/loeschen", "mitarbeiter-geloescht", true},
+	}
+	for _, c := range cases {
+		code, body := e.do("GET", c.page, nil)
+		if code != http.StatusOK || !strings.Contains(body, `<details class="catalog-del">`) || !strings.Contains(body, c.confirm+"</button>") {
+			t.Errorf("GET %s: %d, want details with %q", c.page, code, c.confirm)
+			continue
+		}
+		rec := e.rec("POST", c.action, url.Values{})
+		loc, _ := url.Parse(rec.Header().Get("Location"))
+		if rec.Code != http.StatusSeeOther || loc.Query().Get("gespeichert") != c.saved || catalogSaved[c.saved] == "" {
+			t.Errorf("POST %s: %d %q, want code %s", c.action, rec.Code, rec.Header().Get("Location"), c.saved)
+		}
+	}
+	if e.count(t, `SELECT COUNT(*) FROM services WHERE id = ? AND active = 0`, used) != 1 || e.count(t, `SELECT COUNT(*) FROM services WHERE id = ?`, unused) != 0 {
+		t.Error("services not deactivated/deleted")
+	}
+	if e.count(t, `SELECT COUNT(*) FROM staff WHERE id = ? AND active = 0`, anna) != 1 || e.count(t, `SELECT COUNT(*) FROM staff WHERE id = ?`, ben) != 0 {
+		t.Error("staff not deactivated/deleted")
+	}
+	// Deaktiviert und mit Terminen: kein Löschen-Knopf mehr, nur der Hinweis.
+	if _, body := e.do("GET", "/dashboard/leistungen/"+id(used), nil); strings.Contains(body, "<details") || !strings.Contains(body, "kann deshalb nicht gelöscht werden") {
+		t.Error("inactive service with appointments still offers delete")
+	}
+	// Verschieben: fester Code und Anker auf die Zeile.
+	rec := e.rec("POST", "/dashboard/leistungen/"+id(used)+"/verschieben", url.Values{"richtung": {"hoch"}})
+	if loc := rec.Header().Get("Location"); loc != "/dashboard/leistungen?gespeichert=reihenfolge#leist-"+id(used) {
+		t.Errorf("verschieben: Location %q", loc)
 	}
 }
