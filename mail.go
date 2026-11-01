@@ -75,6 +75,16 @@ func (a *app) mailDefaults(lang string, d map[string]any) {
 			d[k] = v
 		}
 	}
+	// Mails, die nur den Salon-Namen mitgeben (z. B. Warteschlange: SalonName),
+	// tragen trotzdem den Salon im Kopf, in Kammzeit-Blau.
+	if name, ok := d["SalonName"].(string); ok && name != "" && d["HeadName"] == nil {
+		d["HeadName"], d["Initial"] = name, initial(name)
+		acc, _ := d["Accent"].(string) // optional: Akzentfarbe des Salons
+		d["Accent"], d["OnAccent"] = acc, onAccent(acc)
+		if !hexColor.MatchString(acc) {
+			d["Accent"], d["OnAccent"] = "#1E6BFF", "#ffffff" // Palette: auf Blau nur Weiß
+		}
+	}
 }
 
 // customerMailData: Termin und Salon für Mails an Kunden. Links gehen auf die
@@ -89,8 +99,9 @@ func (a *app) customerMailData(s *salon, b *booking, now time.Time) map[string]a
 		"ICS":       a.bookingURL(s, "/termin/"+b.Token+".ics"),
 		"Cancel":    a.bookingURL(s, "/storno/"+b.Token),
 		"CanCancel": now.Before(deadline),
-		"Initial":   initial(s.Name),
-		"Accent":    s.Accent, "OnAccent": onAccent(s.Accent),
+		"HeadName":  s.Name, "HeadURL": a.bookingURL(s, "/"), // Kopf und Fuß: Salon statt Kammzeit
+		"Initial": initial(s.Name),
+		"Accent":  s.Accent, "OnAccent": onAccent(s.Accent),
 		"Pri":          salonButton(s.Accent),
 		"Branding":     !a.cfg.SingleTenant && s.Plan == "free", // wie auf der Buchungsseite
 		"SalonImprint": extURL(s.ImprintURL),

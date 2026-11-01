@@ -3,8 +3,8 @@
      Sprache über .Lang ("de"/"en"), kurze Texte mit {{mt .Lang "deutsch" "english"}}.
      HTML: Tabellen-Layout, Inline-CSS, max. 600px, keine externen Fonts/Skripte,
      kein Tracking-Pixel, keine Klick-Tracking-Links. Bilder absolut von .Img.
-     Kunden-Mails (Daten mit .S = Salon) tragen den Salon im Kopf und seine Akzentfarbe,
-     alle anderen tragen Kammzeit.
+     Kunden-Mails (Daten mit .HeadName = Salon-Name, siehe mail.go) tragen den Salon im
+     Kopf und seine Akzentfarbe, alle anderen tragen Kammzeit.
      Im Textteil keine spitzen Klammern und kein "&" im festen Text: html/template
      maskiert, renderMail wandelt Entities zurück. */}}
 
@@ -64,10 +64,10 @@ a { color: #1E6BFF; }
 {{mso true}}
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;">
 <tr><td style="padding:0 4px 16px;">
-{{- if .S}}
+{{- if .HeadName}}
 <table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
 <td width="40" height="40" align="center" valign="middle" bgcolor="{{.Accent}}" style="width:40px;height:40px;border-radius:12px;background:{{.Accent}};font-size:19px;line-height:40px;font-weight:800;color:{{.OnAccent}};">{{.Initial}}</td>
-<td class="kz-t" style="padding-left:12px;font-size:20px;line-height:26px;font-weight:800;letter-spacing:-0.3px;color:#13294B;"><a href="{{.Book}}" target="_blank" class="kz-t" style="color:#13294B;text-decoration:none;">{{.S.Name}}</a></td>
+<td class="kz-t" style="padding-left:12px;font-size:20px;line-height:26px;font-weight:800;letter-spacing:-0.3px;color:#13294B;">{{if .HeadURL}}<a href="{{.HeadURL}}" target="_blank" class="kz-t" style="color:#13294B;text-decoration:none;">{{.HeadName}}</a>{{else}}{{.HeadName}}{{end}}</td>
 </tr></table>
 {{- else}}
 <table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
@@ -76,15 +76,15 @@ a { color: #1E6BFF; }
 </tr></table>
 {{- end}}
 </td></tr>
-<tr><td class="kz-card kz-t" bgcolor="#ffffff" style="background:#ffffff;border-radius:20px;border-top:6px solid {{if .S}}{{.Accent}}{{else}}#FFC93C{{end}};padding:34px 36px 32px;font-size:16px;line-height:25px;color:#13294B;">
+<tr><td class="kz-card kz-t" bgcolor="#ffffff" style="background:#ffffff;border-radius:20px;border-top:6px solid {{if .HeadName}}{{.Accent}}{{else}}#FFC93C{{end}};padding:34px 36px 32px;font-size:16px;line-height:25px;color:#13294B;">
 {{end}}
 
 {{/* Ende der Karte, Fuß, Ende der Seite. */}}
 {{define "mail-end"}}
 </td></tr>
 <tr><td class="kz-m" align="center" style="padding:22px 16px 0;font-size:13px;line-height:20px;color:#4B5E7E;">
-{{- if .S}}
-{{if eq .Lang "en"}}This email is from {{.S.Name}} about your appointment.{{else}}Diese Mail kommt von {{.S.Name}} zu deinem Termin.{{end}}{{with .SalonImprint}} <a href="{{.}}" target="_blank" class="kz-m" style="color:#4B5E7E;">{{mt $.Lang "Impressum" "Imprint"}}</a>{{end}}
+{{- if .HeadName}}
+{{mt .Lang "Diese Mail kommt von" "This email is from"}} {{.HeadName}}.{{with .SalonImprint}} <a href="{{.}}" target="_blank" class="kz-m" style="color:#4B5E7E;">{{mt $.Lang "Impressum" "Imprint"}}</a>{{end}}
 {{- if .Branding}}<br>{{mt .Lang "Online-Termine mit" "Online booking with"}} <a href="{{.Site}}" target="_blank" class="kz-m" style="color:#4B5E7E;">Kammzeit</a>{{end}}
 {{- else}}
 <a href="{{.Site}}" target="_blank" class="kz-m" style="color:#4B5E7E;font-weight:700;text-decoration:none;">Kammzeit</a> &middot; {{mt .Lang "Online-Terminbuchung für Salons" "Online booking for salons"}}
@@ -125,9 +125,9 @@ a { color: #1E6BFF; }
 {{define "mail-termin"}}<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-box" bgcolor="#E3F3FF" style="background:#E3F3FF;border-radius:16px;">
 <tr><td style="padding:14px 20px;">
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0">
-{{- with .Old}}{{template "mail-row" (mailArgs "K" (mt $.Lang "Bisher" "Previously") "V" (date $.Lang .) "Strike" true)}}{{end}}
+{{- with .Old}}{{template "mail-row" (mailArgs "K" (mt $.Lang "Bisher" "Before") "V" (date $.Lang .) "Strike" true)}}{{end}}
 {{template "mail-row" (mailArgs "K" (mt .Lang "Wann" "When") "V" (date .Lang .B.Start))}}
-{{template "mail-row" (mailArgs "K" (mt .Lang "Leistung" "Service") "V" (printf "%s (%d %s)" .B.Service .Min (mt .Lang "Min." "min")))}}
+{{template "mail-row" (mailArgs "K" (mt .Lang "Leistung" "Service") "V" (printf "%s (%d\u00a0%s)" .B.Service .Min (mt .Lang "Min." "min")))}}
 {{template "mail-row" (mailArgs "K" (mt .Lang "Bei" "With") "V" .B.Staff)}}
 {{- if .ForSalon}}
 {{template "mail-row" (mailArgs "K" (mt .Lang "Kunde" "Customer") "V" .B.Customer)}}
@@ -152,9 +152,9 @@ a { color: #1E6BFF; }
 {{end}}
 
 {{/* Gruß und Adresse des Salons. */}}
-{{define "mail-cust-sign"}}<p class="kz-t" style="margin:26px 0 0;color:#13294B;">{{.Greeting}}<br><strong>{{.S.Name}}</strong></p>
+{{define "mail-cust-sign"}}<p class="kz-t" style="margin:26px 0 24px;color:#13294B;">{{.Greeting}}<br><strong>{{.S.Name}}</strong></p>
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td class="kz-hr" style="border-top:1px solid #CFE3F5;padding:20px 0 0;font-size:15px;line-height:23px;">
-<p class="kz-t" style="margin:26px 0 4px;font-weight:700;color:#13294B;">{{mt .Lang "So findest du uns" "Where to find us"}}</p>
+<p class="kz-t" style="margin:0 0 4px;font-weight:700;color:#13294B;">{{mt .Lang "So findest du uns" "Where to find us"}}</p>
 <p class="kz-t" style="margin:0;color:#13294B;">{{.S.Name}}{{range .Address}}<br>{{.}}{{end}}
 {{- with .S.Phone}}<br>{{mt $.Lang "Telefon" "Phone"}}: {{if $.Tel}}<a href="{{$.Tel}}" class="kz-a" style="color:#1E6BFF;">{{.}}</a>{{else}}{{.}}{{end}}{{end}}</p>
 </td></tr></table>
@@ -166,7 +166,7 @@ a { color: #1E6BFF; }
 
 {{/* ===== Bausteine für den Textteil ===== */}}
 
-{{define "mail-termin-text"}}{{if eq .Lang "en"}}{{with .Old}}Previously: {{date $.Lang .}}
+{{define "mail-termin-text"}}{{if eq .Lang "en"}}{{with .Old}}Before:   {{date $.Lang .}}
 {{end}}When:     {{date .Lang .B.Start}}
 Service:  {{.B.Service}} ({{.Min}} min)
 With:     {{.B.Staff}}
@@ -407,7 +407,7 @@ Best wishes
 {{.S.Name}}
 {{else}}Hallo {{.B.Customer}},
 
-deine Absage ist angekommen, danke für Bescheid. Dieser Termin ist storniert:
+deine Absage ist angekommen, danke, dass du Bescheid gesagt hast. Dieser Termin ist storniert:
 
 {{template "mail-termin-text" .}}
 Neuen Termin buchen:
@@ -419,7 +419,7 @@ Viele Grüße
 
 {{define "mail-cancel-customer-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s · %s" (date .Lang .B.Start) .B.Service)}}{{template "mail-frame" .}}
 {{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Deine Absage ist angekommen" "Your cancellation is confirmed"))}}
-<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, thanks for letting us know. This appointment is now cancelled:{{else}}Hallo {{.B.Customer}}, danke für Bescheid. Dieser Termin ist storniert:{{end}}</p>
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.B.Customer}}, thanks for letting us know. This appointment is now cancelled:{{else}}Hallo {{.B.Customer}}, danke, dass du Bescheid gesagt hast. Dieser Termin ist storniert:{{end}}</p>
 {{template "mail-termin" .}}
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
 {{template "mail-btn" (mailArgs "URL" .Book "Label" (mt .Lang "Neuen Termin buchen" "Book a new appointment") "C" .Pri)}}
@@ -520,4 +520,41 @@ Kammzeit
 </td></tr></table>
 <p class="kz-m" style="margin:16px 0 0;font-size:14px;line-height:22px;color:#4B5E7E;">{{mt .Lang "Der Link ist 7 Tage gültig. Abmelden kannst du dich jederzeit in den Einstellungen oder über den Link in jeder News-Mail." "The link is valid for 7 days. You can unsubscribe at any time in your settings or via the link in every news email."}}</p>
 {{template "mail-fallback" (mailArgs "Lang" .Lang "URL" .ConfirmURL)}}
+{{template "mail-end" .}}{{end}}
+
+{{/* ===== Warteschlange: Kunde wird aufgerufen (Daten: Name, Number, SalonName, StatusURL; optional Accent; Sprache der Buchungsseite) ===== */}}
+
+{{define "mail-queue-called-subject"}}{{mt .Lang "Du bist dran:" "It's your turn:"}} {{.SalonName}}{{end}}
+
+{{define "mail-queue-called-text"}}{{if eq .Lang "en"}}Hello {{.Name}},
+
+your number {{.Number}} has just been called at {{.SalonName}}. Please come to the salon now.
+
+Your place in the queue:
+{{.StatusURL}}
+
+See you in a moment!
+{{.SalonName}}
+{{else}}Hallo {{.Name}},
+
+deine Nummer {{.Number}} wurde bei {{.SalonName}} gerade aufgerufen. Bitte komm jetzt in den Salon.
+
+Dein Platz in der Warteschlange:
+{{.StatusURL}}
+
+Bis gleich!
+{{.SalonName}}
+{{end}}{{end}}
+
+{{define "mail-queue-called-html"}}{{template "mail-head" .}}{{template "mail-pre" (printf "%s %v" (mt .Lang "Bitte komm jetzt in den Salon. Deine Nummer:" "Please come to the salon now. Your number:") .Number)}}{{template "mail-frame" .}}
+{{template "mail-h1" (mailArgs "Lang" .Lang "Text" (mt .Lang "Du bist dran!" "It's your turn!"))}}
+<p class="kz-t" style="margin:16px 0 20px;color:#13294B;">{{if eq .Lang "en"}}Hello {{.Name}}, your number has just been called. Please come to the salon now.{{else}}Hallo {{.Name}}, deine Nummer wurde gerade aufgerufen. Bitte komm jetzt in den Salon.{{end}}</p>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="kz-box" bgcolor="#E3F3FF" style="background:#E3F3FF;border-radius:16px;"><tr><td align="center" style="padding:18px 20px 20px;">
+<p class="kz-m" style="margin:0;font-size:14px;line-height:20px;color:#4B5E7E;">{{mt .Lang "Deine Nummer" "Your number"}}</p>
+<p class="kz-t" style="margin:4px 0 0;font-size:48px;line-height:56px;font-weight:800;letter-spacing:-1px;color:#13294B;">{{.Number}}</p>
+</td></tr></table>
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:22px 0 0;">
+{{template "mail-btn" (mailArgs "URL" .StatusURL "Label" (mt .Lang "Status ansehen" "View status") "C" .Pri)}}
+</td></tr></table>
+<p class="kz-t" style="margin:18px 0 0;color:#13294B;">{{mt .Lang "Bis gleich!" "See you in a moment!"}}<br><strong>{{.SalonName}}</strong></p>
 {{template "mail-end" .}}{{end}}
