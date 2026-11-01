@@ -61,8 +61,40 @@
 .landing-spots .card > :not(img) { margin-inline: 1.6rem; }
 .landing-spots .card img { aspect-ratio: 5 / 4; background: var(--sky-50); }
 .landing-spots .card h3 { margin-top: 1.4rem; }
+.landing-shot { max-width: 62rem; }
+.landing-shot img { aspect-ratio: 16 / 9; object-fit: cover; object-position: top; }
+.landing-setup-cta { margin-top: 2.25rem; }
 .landing-features, .landing-shot { margin-top: clamp(3.5rem, 2rem + 4vw, 6rem); }
 .landing-more { margin-top: 2.5rem; }
 .landing-fine { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-top: 1.75rem; }
 .landing-trust p + p { margin-top: .4rem; }
 .landing-faq { max-width: 52rem; }
+.landing-setup-split { align-items: start; }
+.landing-phone { justify-self: center; width: min(100%, 20rem); }
+@media (min-width: 64rem) { .landing-setup-split { grid-template-columns: minmax(0, 7fr) minmax(0, 4fr); } }
+
+/* Funktionen */
+.fn-jump { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: clamp(1rem, .5rem + 2vw, 2rem); }
+.fn-jump a { padding: .5rem 1.1rem; border: 2px solid var(--line); border-radius: 999px; font-weight: 700; font-size: .9375rem; text-decoration: none; }
+.fn-jump a:hover { border-color: var(--blue); }
+.fn-jump + .section { padding-top: clamp(3.5rem, 2rem + 4vw, 6rem); }
+.fn-split { display: grid; gap: 3rem; align-items: start; }
+.fn-phone { justify-self: center; width: min(100%, 20rem); }
+@media (min-width: 64rem) { .fn-split { grid-template-columns: minmax(0, 1fr) 20rem; gap: 4.5rem; } .fn-phone { position: sticky; top: 2rem; } }
+.fn-rows { display: grid; gap: clamp(3.5rem, 2rem + 5vw, 7rem); }
+.fn-row h3 { font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); color: var(--blue); }
+.fn-checks { display: grid; gap: .75rem; margin: 1.25rem 0 0; padding: 0; list-style: none; }
+.fn-checks li { display: grid; grid-template-columns: 1.5rem minmax(0, 1fr); gap: .75rem; }
+.fn-checks li::before { content: ""; width: 1.5rem; height: 1.5rem; margin-top: .1rem; border-radius: 50%; background: var(--mint) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m7 12.5 3.2 3.2L17 9' fill='none' stroke='%2313294B' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat; }
+.section-alt .fn-planned, .fn-planned { border-style: dashed; border-color: var(--sky); }
+.fn-tag { justify-self: start; display: inline-block; padding: .2rem .75rem; border-radius: 999px; background: var(--sky-50); font-weight: 800; font-size: .875rem; }
+.fn-not { max-width: 44rem; margin-top: 2.5rem; }
+
+/* Preise */
+.pr-plans .price { font-size: clamp(4rem, 2rem + 6vw, 7rem); }
+.pr-plans .actions { margin-top: 2rem; }
+.pr-year { margin-top: 1.25rem; padding: .9rem 1.1rem; border-radius: 14px; background: var(--blue-deep); }
+.pr-how { margin-top: 1.75rem; font-size: .9375rem; }
+.pr-tax { margin-top: 1.75rem; font-weight: 700; }
+.pr-terms-more { margin-top: 2rem; }
+.section-alt .card .icon-lg { margin-bottom: .5rem; }

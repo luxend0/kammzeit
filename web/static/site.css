@@ -59,8 +59,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body.site { margin: 0; overflow-x: hidden; font: 400 1.0625rem/1.65 var(--font-text); color: var(--night); background: #fff; }
 @media (min-width: 64rem) { body.site { font-size: 1.125rem; } }
-.site :where(h1, h2, h3, h4, p, figure, blockquote, dl, dd) { margin: 0; }
-.site :where(ul, ol)[class] { margin: 0; padding: 0; list-style: none; }
+:where(.site) :where(h1, h2, h3, h4, p, figure, blockquote, dl, dd) { margin: 0; }
+:where(.site ul[class], .site ol[class]) { margin: 0; padding: 0; list-style: none; } /* Null-Spezifität: jede Klasse gewinnt */
 img { display: block; max-width: 100%; height: auto; }
 a { color: inherit; text-decoration-color: var(--blue); text-decoration-thickness: 2px; text-underline-offset: .2em; }
 a:hover { color: var(--blue); }
@@ -87,7 +87,7 @@ strong, b { font-weight: 700; }
 .site-head { position: relative; z-index: 2; background: #fff; }
 .site-head-in { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 2.25rem; padding-block: .85rem; }
 .site-logo { display: flex; align-items: center; gap: .6rem; padding-block: .25rem; font-weight: 800; font-size: 1.375rem; letter-spacing: -.03em; color: var(--night); text-decoration: none; }
-.site-logo svg { flex: none; }
+.site-logo img { flex: none; }
 .site-nav { display: flex; gap: 1.75rem; font-size: .9375rem; font-weight: 700; }
 .site-nav a { padding-block: .55rem; text-decoration: none; white-space: nowrap; }
 .site-nav a[aria-current="page"] { color: var(--blue); box-shadow: inset 0 -3px var(--sun); }
@@ -105,7 +105,8 @@ strong, b { font-weight: 700; }
 .site-foot-claim { max-width: 14ch; font-weight: 800; font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.25rem); line-height: 1.04; letter-spacing: -.03em; color: #fff; }
 .site-foot-claim span { color: var(--sun); }
 .site-foot-top p:not(.site-foot-claim) { margin-top: 1rem; max-width: 30em; color: #c9d6ea; }
-.site-foot-kammi { width: min(15rem, 55%); justify-self: end; }
+.site-foot-kammi { position: relative; width: min(15rem, 55%); justify-self: end; }
+.site-foot-kammi .blob { inset: 0 8% 30% 30%; border-radius: 50%; } /* Mond hinter dem schlafenden Kammi */
 .site-foot-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2.5rem 1.5rem; margin-top: clamp(3rem, 2rem + 3vw, 4.5rem); padding-top: 2.5rem; border-top: 1px solid #2c4470; }
 @media (min-width: 56rem) { .site-foot-cols { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .site-foot-cols h2 { margin-bottom: .75rem; font-size: 1rem; letter-spacing: 0; color: var(--sun); }
@@ -284,7 +285,8 @@ a.card:hover { border-color: var(--blue); color: var(--night); }
 
 /* Abschluss-Aufruf am Seitenende: blaues Band mit Welle oben, Text weiß, optional Kammi rechts.
    <section class="cta-band"><div class="wrap cta-band-in"><div><h2>..</h2><p>..</p><p class="actions">..</p></div>
-   <img class="cta-band-ill" src="/static/img/ill/kammi-winkt.webp" width="800" height="800" alt=""></div></section> */
+   <div class="cta-band-media"><div class="blob blob-sun" aria-hidden="true"></div><img class="ill" src=".." ..></div></div></section>
+   Kammi ist blau: auf Blau immer mit hellem Blob dahinter. */
 .cta-band {
   position: relative; overflow: hidden; margin-top: calc(-1 * var(--wave)); padding-block: calc(var(--wave) + clamp(3.5rem, 2rem + 5vw, 7rem)) calc(var(--wave) + clamp(3.5rem, 2rem + 5vw, 7rem));
   background: var(--blue); color: #fff;
@@ -295,8 +297,9 @@ a.card:hover { border-color: var(--blue); color: var(--night); }
 .cta-band h2 { max-width: 14ch; color: #fff; font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4rem); }
 .cta-band h2 + p { margin-top: 1.1rem; max-width: 32em; font-size: 1.125rem; }
 .cta-band p + .actions { margin-top: 2rem; }
-.cta-band-ill { justify-self: center; width: min(19rem, 70%); }
-@media (min-width: 64rem) { .cta-band-in { grid-template-columns: minmax(0, 1fr) 20rem; } .cta-band-ill { width: 100%; } }
+.cta-band-media { position: relative; justify-self: center; width: min(19rem, 70%); }
+.cta-band-media .blob { inset: 8% 4% 6% 6%; }
+@media (min-width: 64rem) { .cta-band-in { grid-template-columns: minmax(0, 1fr) 20rem; } .cta-band-media { width: 100%; } }
 .cta-band + .site-foot { margin-top: calc(-2 * var(--wave)); }
 
 /* 5 Größere Muster ---------------------------------------------------------- */
