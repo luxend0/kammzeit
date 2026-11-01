@@ -4,7 +4,7 @@
      HTML: Tabellen-Layout, Inline-CSS, max. 600px, keine externen Fonts/Skripte,
      kein Tracking-Pixel, keine Klick-Tracking-Links. Bilder absolut von .Img.
      Kunden-Mails (Daten mit .HeadName = Salon-Name, siehe mail.go) tragen den Salon im
-     Kopf und seine Akzentfarbe, alle anderen tragen Kammzeit.
+     Kopf (Logo aus .Logo oder Initiale) und seine Akzentfarbe, alle anderen tragen Kammzeit.
      Im Textteil keine spitzen Klammern und kein "&" im festen Text: html/template
      maskiert, renderMail wandelt Entities zurück. */}}
 
@@ -66,7 +66,11 @@ a { color: #1E6BFF; }
 <tr><td style="padding:0 4px 16px;">
 {{- if .HeadName}}
 <table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
+{{- with .Logo}}
+<td width="{{.W}}" valign="middle" bgcolor="#ffffff" style="background:#ffffff;border-radius:8px;"><img src="{{.URL}}" width="{{.W}}" height="{{.H}}" alt="" style="display:block;width:{{.W}}px;height:{{.H}}px;border:0;border-radius:8px;"></td>
+{{- else}}
 <td width="40" height="40" align="center" valign="middle" bgcolor="{{.Accent}}" style="width:40px;height:40px;border-radius:12px;background:{{.Accent}};font-size:19px;line-height:40px;font-weight:800;color:{{.OnAccent}};">{{.Initial}}</td>
+{{- end}}
 <td class="kz-t" style="padding-left:12px;font-size:20px;line-height:26px;font-weight:800;letter-spacing:-0.3px;color:#13294B;">{{if .HeadURL}}<a href="{{.HeadURL}}" target="_blank" class="kz-t" style="color:#13294B;text-decoration:none;">{{.HeadName}}</a>{{else}}{{.HeadName}}{{end}}</td>
 </tr></table>
 {{- else}}

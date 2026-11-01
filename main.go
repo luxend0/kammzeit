@@ -232,11 +232,22 @@ func (m mailer) sendHTML(to, subject, body, html string) error {
 
 // --- Erinnerungen ---
 
+// purgeOldQueue löscht Warteschlangen-Einträge vergangener Tage, spätestens am
+// Folgetag (Datenschutz: Vorname und Mail der Wartenden bleiben nicht liegen).
+// Vergleich mit dem UTC-Datum: für Salons in Europa (UTC bis UTC+3) trifft das
+// nie einen Eintrag des laufenden Salon-Tages.
+func (a *app) purgeOldQueue(now time.Time) {
+	if _, err := a.db.Exec(`DELETE FROM queue_entries WHERE day < ?`, now.UTC().Format(time.DateOnly)); err != nil {
+		log.Printf("Warteschlange aufräumen: %v", err)
+	}
+}
+
 func (a *app) reminderLoop(ctx context.Context) {
 	tick := time.NewTicker(time.Minute)
 	defer tick.Stop()
 	for {
 		a.sendReminders(time.Now())
+		a.purgeOldQueue(time.Now())
 		select {
 		case <-ctx.Done():
 			return

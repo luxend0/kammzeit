@@ -55,6 +55,9 @@ func TestLanding(t *testing.T) {
 		`14,90&nbsp;€`,
 		`149&nbsp;€`,
 		`§&nbsp;19&nbsp;UStG`,
+		`Warteschlange für Laufkundschaft`,
+		`Logins fürs Team`,
+		`Gibt es Kammzeit als App?`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("Landing enthält nicht %q", want)

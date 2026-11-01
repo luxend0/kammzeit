@@ -79,6 +79,7 @@ func (a *app) routes() http.Handler {
 	a.routesStaff(mux)     // staff.go: Mitarbeiter-Logins, /dashboard/meine-zeiten
 	a.routesSite(mux)      // site.go: öffentliche Seiten, sitemap.xml, robots.txt
 	a.routesPWA(mux)       // pwa.go: /manifest.webmanifest, /sw.js, /offline
+	a.routesMedia(mux)     // media.go: /media/{hash} (Logo, Titelbild, Galerie)
 	return securityHeaders(a.langRedirect(mux))
 }
 
@@ -157,6 +158,7 @@ func (a *app) page(s *salon, title string) map[string]any {
 		d["Branding"] = !a.cfg.SingleTenant && s.Plan == "free"
 		d["Imprint"] = extURL(s.ImprintURL)
 		d["Tel"] = telURL(s.Phone)
+		d["Theme"] = a.themeClass(s) // Design der Buchungsseite (custom.go)
 	}
 	return d
 }
@@ -254,6 +256,10 @@ func (a *app) home(w http.ResponseWriter, r *http.Request) {
 		d["CancelNotice"] = noticeFor(s.Lang, s.CancelNoticeMin)
 	}
 	d["QueueLink"] = a.queueBookingLink(s)
+	if err := a.bookingExtras(s, d); err != nil { // Social-Links, Öffnungszeiten, Galerie (custom.go)
+		a.serverError(w, s, err)
+		return
+	}
 	a.render(w, http.StatusOK, "book", d)
 }
 

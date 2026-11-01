@@ -51,19 +51,24 @@ func TestSiteENMain(t *testing.T) {
 		want       []string
 	}{
 		{"kammzeit-en.test", "/", []string{`<html lang="en">`, alt("en", en+"/"), alt("de", de+"/"), sw(de + "/"), ">Deutsch</a>",
-			`content="en_GB"`, `href="/features"`, `href="/pricing"`, `href="/for/hairdressers"`, `href="/privacy"`, "€14.90", "€149", "reverse charge"}},
+			`content="en_GB"`, `href="/features"`, `href="/pricing"`, `href="/for/hairdressers"`, `href="/privacy"`, "€14.90", "€149", "reverse charge",
+			`href="/signup"`, `href="https://demo-en.kammzeit.com"`, "A queue for walk-ins", "Logins for your team", "Is there a Kammzeit app?"}},
 		{"kammzeit-en.test", "/features", []string{`<html lang="en">`, "<title>Features - Kammzeit</title>", `<link rel="canonical" href="` + en + `/features">`,
-			alt("en", en+"/features"), alt("de", de+"/funktionen"), sw(de + "/funktionen"), `aria-current="page">Features`, "shown in German"}},
+			alt("en", en+"/features"), alt("de", de+"/funktionen"), sw(de + "/funktionen"), `aria-current="page">Features`, "shown in German",
+			`href="/signup"`, `href="https://demo-en.kammzeit.com"`, "A queue for walk-ins", "Logins for your team", "Install it as an app", "A tour on your first login", "Kammzeit news"}},
 		{"kammzeit-en.test", "/pricing", []string{"<title>Pricing - Kammzeit</title>", alt("de", de+"/preise"), sw(de + "/preise"),
-			`aria-current="page">Pricing`, "€14.90", "€149", "§&nbsp;19&nbsp;UStG", "reverse charge procedure may apply", `<table class="compare">`}},
+			`aria-current="page">Pricing`, "€14.90", "€149", "§&nbsp;19&nbsp;UStG", "reverse charge procedure may apply", `<table class="compare">`,
+			`href="/signup"`, `href="https://demo-en.kammzeit.com"`, "Staff logins (owner and staff member roles)</th><td>No</td>", "staff logins are paused, the queue is off", "Nothing is deleted"}},
 		{"kammzeit.test", "/", []string{`<html lang="de">`, alt("de", de+"/"), alt("en", en+"/"), sw(en + "/?lang=en"), ">English</a>", `content="de_DE"`}},
 		{"kammzeit.test", "/funktionen", []string{`<html lang="de">`, alt("en", en+"/features"), sw(en + "/features"), `aria-current="page">Funktionen`}},
 		{"kammzeit.test", "/preise", []string{alt("en", en+"/pricing"), sw(en + "/pricing"), `href="/datenschutz"`}},
 	}
 	descRe := regexp.MustCompile(`<meta name="description" content="([^"]*)">`)
 	linkRe := regexp.MustCompile(`(?:href|src)="(/[^"#?]*)`)
-	// ponytail: die englischen Hilfeseiten gibt es erst nach dem Zusammenführen.
-	elsewhere := regexp.MustCompile(`^/(help|open-source|security|faq)`)
+	// ponytail: die englischen Hilfeseiten und den Alias /signup (Docs-Agent) gibt es erst nach dem Zusammenführen.
+	elsewhere := regexp.MustCompile(`^/(help|open-source|security|faq|signup)`)
+	// Was es inzwischen gibt, darf nicht mehr als fehlend dastehen.
+	gone := []string{"separate staff logins", ", an app.", "only you can see", `href="/registrieren"`}
 	german := regexp.MustCompile(`\b(und|der|die|das|für|mit|Kostenlos|Anmelden|Funktionen|Preise|Mitarbeiter|Kunden)\b`)
 	tags := regexp.MustCompile(`(?s)<[^>]*>`)
 	checked := map[string]bool{}
@@ -84,6 +89,12 @@ func TestSiteENMain(t *testing.T) {
 		}
 		if c.host != "kammzeit-en.test" {
 			continue
+		}
+		inner := body[strings.Index(body, "<main"):strings.Index(body, "</main>")]
+		for _, g := range gone {
+			if strings.Contains(inner, g) {
+				t.Errorf("%s%s enthält noch %q", c.host, c.path, g)
+			}
 		}
 		text := tags.ReplaceAllString(body[strings.Index(body, "<body"):], " ")
 		if m := german.FindAllString(text, 5); m != nil {

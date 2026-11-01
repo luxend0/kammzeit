@@ -2,7 +2,10 @@ module github.com/luxend0/kammzeit
 
 go 1.26.0
 
-require modernc.org/sqlite v1.61.1
+require (
+	golang.org/x/image v0.46.0
+	modernc.org/sqlite v1.61.1
+)
 
 require (
 	github.com/dustin/go-humanize v1.1.0 // indirect

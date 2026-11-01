@@ -12,9 +12,9 @@ import (
 
 func (a *app) routesSiteENMain(mux *http.ServeMux) {
 	a.addPageEN(mux, "/features", "/funktionen", "en-features", "Features - Kammzeit",
-		"Booking page without an app, email reminders and cancellation links, calendar, customer records and staff with breaks. EU servers, data export, open source.")
+		"Booking page without an app, email reminders, calendar, customer records, dashboard as an app. With Pro: walk-in queue and staff logins. EU servers.")
 	a.addPageEN(mux, "/pricing", "/preise", "en-pricing", "Pricing - Kammzeit",
-		"Free for one staff member. Pro is €14.90 per month or €149 per year with unlimited staff. No VAT charged under § 19 UStG, cancel monthly or yearly.")
+		"Free for one staff member. Pro is €14.90 per month or €149 per year: unlimited staff, staff logins, walk-in queue. No VAT charged under § 19 UStG.")
 	if a.tpl != nil {
 		// ponytail: die Platzhalter aus init() an diese App binden, weil Hreflang und
 		// Sprachumschalter die konfigurierten Domains brauchen.

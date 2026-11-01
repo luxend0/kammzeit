@@ -8,7 +8,7 @@
   <img class="page-head-icon" src="/static/img/icons/pro.svg" width="48" height="48" alt="">
   <div class="page-head-text">
     <h1>{{.PageTitle}}</h1>
-    <p>{{t .Lang "Dein Plan:"}} {{if .Salon.Pro}}<strong>Pro</strong>. {{t .Lang "Unbegrenzt Mitarbeiter, ohne Kammzeit-Hinweis."}}{{else}}<strong>{{t .Lang "Gratis"}}</strong>. {{t .Lang "Pro brauchst du ab dem zweiten aktiven Mitarbeiter."}}{{end}}</p>
+    <p>{{t .Lang "Dein Plan:"}} {{if .Salon.Pro}}<strong>Pro</strong>. {{t .Lang "Unbegrenzt Mitarbeiter, Mitarbeiter-Logins und Warteschlange, ohne Kammzeit-Hinweis."}}{{else}}<strong>{{t .Lang "Gratis"}}</strong>. {{t .Lang "Pro brauchst du ab dem zweiten aktiven Mitarbeiter, für Mitarbeiter-Logins und für die Warteschlange."}}{{end}}</p>
   </div>
 </div>
 <style>
@@ -61,6 +61,7 @@
     <ul class="abo-list">
       <li>{{t .Lang "1 aktiver Mitarbeiter"}}</li>
       <li>{{t .Lang "Buchungsseite, Kalender, Kundenkartei, Erinnerungen und Export"}}</li>
+      <li>{{t .Lang "Logo, Social-Links und Öffnungszeiten auf deiner Buchungsseite"}}</li>
       <li>{{t .Lang "Hinweis „Online-Termine mit Kammzeit“ auf deiner Buchungsseite"}}</li>
     </ul>
   </section>
@@ -76,8 +77,11 @@
     <p class="abo-year"><b class="abo-price-small">{{t .Lang "oder 149 € im Jahr"}}</b>{{t .Lang ", das sind 2 Monate geschenkt."}}</p>
     <ul class="abo-list">
       <li>{{t .Lang "Unbegrenzt Mitarbeiter"}}</li>
-      <li>{{t .Lang "Alles aus Gratis"}}</li>
+      <li>{{t .Lang "Mitarbeiter-Logins für dein Team"}}</li>
+      <li>{{t .Lang "Warteschlange für Laufkundschaft"}}</li>
+      <li>{{t .Lang "Titelbild, Design und Fotogalerie auf deiner Buchungsseite"}}</li>
       <li>{{t .Lang "Ohne Kammzeit-Hinweis auf deiner Buchungsseite"}}</li>
+      <li>{{t .Lang "Alles aus Gratis"}}</li>
     </ul>
     <div class="abo-kauf">
     {{if .Salon.Pro}}
@@ -106,7 +110,7 @@
   <img src="/static/img/ill/kammi-handy.webp" width="800" height="800" alt="">
   <div>
     <h2 id="abo-h-info">{{t .Lang "Gut zu wissen"}}</h2>
-    <p>{{t .Lang "Gekündigt wird zum Ende des bezahlten Monats oder Jahres. Bis dahin bleibt Pro aktiv, danach läuft dein Salon im Gratis-Plan weiter. Deine Daten bleiben erhalten."}}</p>
+    <p>{{t .Lang "Gekündigt wird zum Ende des bezahlten Monats oder Jahres. Bis dahin bleibt Pro aktiv, danach läuft dein Salon im Gratis-Plan weiter: Mitarbeiter-Logins sind pausiert, die Warteschlange ist aus, Titelbild, Design und Galerie sind ausgeblendet. Gelöscht wird nichts, mit Pro ist alles wieder da."}}</p>
     <p class="muted small">{{t .Lang "Alle Preise sind Endpreise. Als Kleinunternehmer nach § 19 UStG berechnen wir keine Umsatzsteuer."}}</p>
   </div>
 </section>

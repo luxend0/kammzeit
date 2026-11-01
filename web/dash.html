@@ -24,7 +24,7 @@
 <a class="skip" href="#inhalt">{{t .Lang "Zum Inhalt"}}</a>
 <header class="topbar">
   <div class="topbar-in">
-    <a class="brand" href="/dashboard"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34"><span class="brand-text"><span class="brand-word">Kammzeit</span><span class="salon-name">{{.Salon.Name}}</span></span></a>
+    <a class="brand" href="/dashboard"><img src="/static/img/kammzeit.svg" alt="" width="34" height="34"><span class="brand-text"><span class="brand-word">Kammzeit</span><span class="salon-name">{{with .Salon.Logo}}<img src="/media/{{.}}" alt="" height="18" style="display:inline-block;width:auto;height:18px;max-width:54px;margin:0 5px 0 0;vertical-align:-4px;border-radius:4px;object-fit:contain;">{{end}}{{.Salon.Name}}</span></span></a>
     <nav class="topnav" aria-label="{{t .Lang "Hauptmenü"}}">
       <a href="/dashboard"{{if eq .Nav "kalender"}} aria-current="page"{{end}}>{{template "dash-icon" "kalender"}}{{t .Lang "Kalender"}}</a>
       <a href="/dashboard/kunden"{{if eq .Nav "kunden"}} aria-current="page"{{end}}>{{template "dash-icon" "kartei"}}{{t .Lang "Kunden"}}</a>

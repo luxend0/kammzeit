@@ -5,6 +5,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/mail"
@@ -24,6 +25,9 @@ func (a *app) routesSettings(mux *http.ServeMux) {
 	mux.HandleFunc("GET /dashboard/einstellungen/loeschen", a.dashOwner(a.deletePage))
 	mux.HandleFunc("POST /dashboard/einstellungen/loeschen", a.dashOwner(a.deleteSalon))
 	mux.HandleFunc("POST /dashboard/einstellungen/news", a.dashOwner(a.settingsNews))
+	mux.HandleFunc("GET /dashboard/einstellungen/galerie", a.dashOwner(a.galleryPage))
+	mux.HandleFunc("POST /dashboard/einstellungen/galerie", a.dashOwner(a.galleryUpload))
+	mux.HandleFunc("POST /dashboard/einstellungen/galerie/{id}", a.dashOwner(a.galleryEdit))
 }
 
 // choice ist ein Eintrag einer Auswahlliste. Nur diese Werte werden gespeichert.
@@ -168,8 +172,12 @@ func parseSettings(f url.Values) (salon, map[string]string) {
 	if !allowed(horizonChoices, s.HorizonDays) {
 		errs["horizon"] = "Bitte einen Wert aus der Liste wählen."
 	}
+	parseCustom(f, &s, errs) // Social-Links, Öffnungszeiten-Box, Design (custom.go)
 	return s, errs
 }
+
+// einstSocial = ein Eingabefeld im Abschnitt Social-Links (Label = Markenname, unübersetzt).
+type einstSocial struct{ Key, Label, Value, Placeholder, Hint, Error string }
 
 func (a *app) renderSettings(w http.ResponseWriter, r *http.Request, c *dctx, status int, form salon, errs map[string]string) {
 	d := a.dashPage(c, r, "einstellungen", "Einstellungen")
@@ -178,6 +186,24 @@ func (a *app) renderSettings(w http.ResponseWriter, r *http.Request, c *dctx, st
 	d["SavedMsg"] = einstGespeichert[r.URL.Query().Get("gespeichert")]
 	d["Timezones"], d["MinNotice"], d["CancelNotice"], d["Horizon"] = timezoneChoices, minNoticeChoices, cancelNoticeChoices, horizonChoices
 	d["Langs"], d["News"] = langChoices, a.marketingState(c.User.ID)
+	d["Pro"], d["Fonts"], d["Radii"], d["Modes"] = a.proFeatures(c.Salon), fontChoices, radiusChoices, modeChoices
+	wa := form.WhatsApp
+	if wa != "" && errs["whatsapp"] == "" {
+		wa = "+" + wa // gespeichert ohne +
+	}
+	d["SocialFields"] = []einstSocial{
+		{"instagram", "Instagram", form.Instagram, "@deinsalon", "Dein Name auf Instagram oder der Link zu deinem Profil.", errs["instagram"]},
+		{"tiktok", "TikTok", form.TikTok, "@deinsalon", "Dein Name auf TikTok oder der Link zu deinem Profil.", errs["tiktok"]},
+		{"facebook", "Facebook", form.Facebook, "facebook.com/deinsalon", "Name oder Link deiner Facebook-Seite.", errs["facebook"]},
+		{"google", "Google Maps", form.Google, "maps.app.goo.gl/...", "Link zu deinem Eintrag bei Google Maps, dort sehen Kunden auch deine Bewertungen. In Google Maps: Teilen, dann Link kopieren.", errs["google"]},
+		{"whatsapp", "WhatsApp", wa, "+49 170 1234567", "Nummer mit Ländervorwahl. Kunden können dir dann direkt schreiben.", errs["whatsapp"]},
+	}
+	var n int
+	a.db.QueryRow(`SELECT COUNT(*) FROM salon_media WHERE salon_id = ? AND kind = 'gallery'`, c.Salon.ID).Scan(&n)
+	d["GalleryCount"], d["GalleryMax"], d["Theme"] = n, galleryMax, ""
+	if a.proFeatures(c.Salon) {
+		d["Theme"] = themeClasses(&form)
+	}
 	a.render(w, status, "einst-seite", d)
 }
 
@@ -185,21 +211,62 @@ func (a *app) settingsPage(w http.ResponseWriter, r *http.Request, c *dctx) {
 	a.renderSettings(w, r, c, http.StatusOK, *c.Salon, nil)
 }
 
+// settingsSave speichert das Einstellungsformular. Mit Bildern kommt es als
+// multipart/form-data (Logo, Titelbild), sonst urlencoded.
 func (a *app) settingsSave(w http.ResponseWriter, r *http.Request, c *dctx) {
-	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
-	if err := r.ParseForm(); err != nil {
-		a.dashError(w, r, c, http.StatusBadRequest, "Das Formular war unvollständig.")
+	r.Body = http.MaxBytesReader(w, r.Body, 2*mediaMaxBytes+64<<10)
+	if err := r.ParseMultipartForm(64 << 10); err != nil && !errors.Is(err, http.ErrNotMultipart) {
+		a.dashError(w, r, c, http.StatusBadRequest, uploadError(err, "Die Bilder sind zusammen zu groß. Höchstens 5 MB je Bild."))
 		return
 	}
+	pro := a.proFeatures(c.Salon)
 	s, errs := parseSettings(r.PostForm)
+	if !pro {
+		keepPro(&s, c.Salon) // Design-Felder sind im Gratis-Plan gesperrt
+	}
+	s.Logo, s.Cover = c.Salon.Logo, c.Salon.Cover // Vorschau, falls das Formular zurückkommt
+	imgs := map[string]*mediaImage{}
+	for _, kind := range []string{"logo", "cover"} {
+		if len(errs) > 0 || kind == "cover" && !pro {
+			continue // bei Fehlern wird ohnehin nichts gespeichert
+		}
+		img, err := a.formImage(r, kind, c.Salon.ID)
+		if err != nil {
+			errs[kind] = err.Error()
+		} else if img != nil {
+			imgs[kind] = img
+		}
+	}
 	if len(errs) > 0 {
 		a.renderSettings(w, r, c, http.StatusUnprocessableEntity, s, errs)
 		return
 	}
-	_, err := a.db.Exec(`UPDATE salons SET name = ?, email = ?, phone = ?, address = ?, website = ?, imprint_url = ?, about = ?,
-		accent = ?, timezone = ?, min_notice_min = ?, cancel_notice_min = ?, booking_horizon_days = ?, lang = ? WHERE id = ?`,
+	tx, err := a.db.Begin()
+	if err != nil {
+		a.dashServerError(w, r, c, err)
+		return
+	}
+	defer tx.Rollback()
+	_, err = tx.Exec(`UPDATE salons SET name = ?, email = ?, phone = ?, address = ?, website = ?, imprint_url = ?, about = ?,
+		accent = ?, timezone = ?, min_notice_min = ?, cancel_notice_min = ?, booking_horizon_days = ?, lang = ?,
+		instagram = ?, tiktok = ?, facebook = ?, google = ?, whatsapp = ?, show_hours = ?,
+		theme_font = ?, theme_radius = ?, theme_mode = ?, welcome_text = ? WHERE id = ?`,
 		s.Name, s.Email, s.Phone, s.Address, s.Website, s.ImprintURL, s.About,
-		s.Accent, s.TZ, s.MinNoticeMin, s.CancelNoticeMin, s.HorizonDays, s.Lang, c.Salon.ID)
+		s.Accent, s.TZ, s.MinNoticeMin, s.CancelNoticeMin, s.HorizonDays, s.Lang,
+		s.Instagram, s.TikTok, s.Facebook, s.Google, s.WhatsApp, s.ShowHours,
+		s.ThemeFont, s.ThemeRadius, s.ThemeMode, s.Welcome, c.Salon.ID)
+	for _, kind := range []string{"logo", "cover"} {
+		switch {
+		case err != nil:
+		case imgs[kind] != nil:
+			_, err = mediaPut(tx, c.Salon.ID, kind, imgs[kind])
+		case r.PostFormValue(kind+"_weg") == "1": // Entfernen geht auch ohne Pro
+			_, err = tx.Exec(`DELETE FROM salon_media WHERE salon_id = ? AND kind = ?`, c.Salon.ID, kind)
+		}
+	}
+	if err == nil {
+		err = tx.Commit()
+	}
 	if err != nil {
 		a.dashServerError(w, r, c, err)
 		return
@@ -249,7 +316,8 @@ func (a *app) settingsNews(w http.ResponseWriter, r *http.Request, c *dctx) {
 // Stripe-IDs und ohne Storno-Token (damit könnte man Termine absagen).
 var exportQueries = []struct{ key, query string }{
 	{"salon", `SELECT id, slug, name, email, phone, address, website, imprint_url, about, accent, timezone, lang, plan,
-		min_notice_min, cancel_notice_min, booking_horizon_days, created_at FROM salons WHERE id = ?1`},
+		min_notice_min, cancel_notice_min, booking_horizon_days, instagram, tiktok, facebook, google, whatsapp, show_hours,
+		theme_font, theme_radius, theme_mode, welcome_text, created_at FROM salons WHERE id = ?1`},
 	{"staff", `SELECT id, name, sort, active FROM staff WHERE salon_id = ?1 ORDER BY id`},
 	{"services", `SELECT id, name, description, duration_min, price_cents, sort, active FROM services WHERE salon_id = ?1 ORDER BY id`},
 	{"staff_services", `SELECT ss.staff_id, ss.service_id FROM staff_services ss JOIN staff st ON st.id = ss.staff_id
@@ -259,6 +327,9 @@ var exportQueries = []struct{ key, query string }{
 	{"customers", `SELECT id, name, email, phone, notes, created_at FROM customers WHERE salon_id = ?1 ORDER BY id`},
 	{"appointments", `SELECT id, staff_id, service_id, customer_id, starts_at, ends_at, status, source, note,
 		reminder_sent_at, created_at FROM appointments WHERE salon_id = ?1 ORDER BY starts_at, id`},
+	// Bilder als Liste mit Pfad (/media/...), die Dateien selbst nicht im JSON.
+	{"media", `SELECT id, kind, mime, width, height, alt, sort, '/media/' || hash AS path, created_at
+		FROM salon_media WHERE salon_id = ?1 ORDER BY kind, sort, id`},
 }
 
 // exportRows liest eine Abfrage als Liste von Objekten (Spaltenname -> Wert).

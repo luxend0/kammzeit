@@ -1,5 +1,7 @@
 {{/* Öffentliche Seiten: gemeinsames Layout (top/bottom), Buchungsseite eines Salons, Storno.
-     Daten aus a.page(): Title, Lang (Sprache des Salons), Salon, Accent, OnAccent, Branding, Imprint, Tel.
+     Daten aus a.page(): Title, Lang (Sprache des Salons), Salon, Accent, OnAccent, Branding, Imprint, Tel,
+     Theme (Design-Klassen, nur Pro). Buchungsseite zusätzlich (custom.go bookingExtras): Social, Hours,
+     Cover, Welcome, Gallery; Logo = .Salon.Logo (Hash, Bild unter /media/).
      Texte über t/tf (deutscher Text = Schlüssel, englisch in i18n_public.go). */}}
 {{define "top"}}<!doctype html>
 <html lang="{{or .Lang "de"}}">
@@ -10,9 +12,9 @@
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/htmx.min.js" defer></script>
 </head>
-<body{{if .Salon}} class="salon"{{end}}{{with .Accent}} style="--accent: {{.}}{{with $.OnAccent}}; --on-accent: {{.}}{{end}}"{{end}}>
+<body{{if .Salon}} class="salon{{with .Theme}} {{.}}{{end}}"{{end}}{{with .Accent}} style="--accent: {{.}}{{with $.OnAccent}}; --on-accent: {{.}}{{end}}"{{end}}>
 <main>
-{{if and .Salon (not .Home)}}<p class="crumb"><a href="/">{{.Salon.Name}}</a></p>{{end}}
+{{if and .Salon (not .Home)}}<p class="crumb"><a href="/">{{with .Salon.Logo}}<img src="/media/{{.}}" alt="" height="28">{{end}}{{.Salon.Name}}</a></p>{{end}}
 {{end}}
 
 {{define "bottom"}}</main>
@@ -23,8 +25,14 @@
 
 {{define "book"}}{{template "top" .}}
 <header class="salon-head">
-  <h1>{{.Salon.Name}}</h1>
+  {{with .Cover}}<img class="cover" src="/media/{{.}}" alt="" fetchpriority="high">{{end}}
+  <div class="salon-title">
+    {{with .Salon.Logo}}<img class="salon-logo" src="/media/{{.}}" alt="">{{end}}
+    <h1>{{.Salon.Name}}</h1>
+  </div>
+  {{with .Welcome}}<p class="welcome">{{.}}</p>{{end}}
   {{with .Salon.About}}<p class="about">{{.}}</p>{{end}}
+  <div class="salon-info">
   <address class="contact">
     {{with .Salon.Address}}<span class="addr">{{.}}</span>{{end}}
     <span class="contact-links">
@@ -33,6 +41,14 @@
       {{with .Imprint}}<a href="{{.}}" rel="noopener">{{t $.Lang "Impressum"}}</a>{{end}}
     </span>
   </address>
+  {{with .Hours}}<section class="hours" aria-labelledby="hours-title">
+    <h2 id="hours-title">{{t $.Lang "Öffnungszeiten"}}</h2>
+    <dl>{{range .}}<div{{if .Today}} class="today"{{end}}><dt>{{.Days}}{{if .Today}} <span class="today-mark">{{t $.Lang "heute"}}</span>{{end}}</dt><dd{{if .Closed}} class="closed"{{end}}>{{range .Times}}<span>{{.}}</span>{{end}}</dd></div>{{end}}</dl>
+  </section>{{end}}
+  </div>
+  {{with .Social}}<ul class="social" aria-label="{{t $.Lang "Social Media"}}">
+    {{range .}}<li><a href="{{.URL}}" rel="noopener" target="_blank"><svg width="20" height="20" aria-hidden="true" focusable="false"><use href="/static/img/social.svg#s-{{.Net}}"/></svg>{{.Label}}</a></li>
+    {{end}}</ul>{{end}}
 </header>
 {{if .QueueLink}}<p class="notice">{{t .Lang "Ohne Termin vorbeikommen?"}} <a href="/warteschlange">{{t .Lang "Online anstellen"}}</a></p>{{end}}
 {{if .Services}}
@@ -72,6 +88,10 @@
 {{else}}
 <p>{{t .Lang "Für diesen Salon sind noch keine Termine online buchbar."}}{{if .Tel}} {{t .Lang "Ruf gern an:"}} <a href="{{.Tel}}">{{.Salon.Phone}}</a>{{end}}</p>
 {{end}}
+{{with .Gallery}}<section class="gallery" aria-labelledby="gallery-title">
+  <h2 id="gallery-title">{{t $.Lang "Einblicke"}}</h2>
+  <ul>{{range .}}<li><img src="/media/{{.Hash}}" width="{{.Width}}" height="{{.Height}}" alt="{{.Alt}}" loading="lazy" decoding="async"></li>{{end}}</ul>
+</section>{{end}}
 {{template "bottom" .}}{{end}}
 
 {{define "book-staff"}}{{if .Staff}}

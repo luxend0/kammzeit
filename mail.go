@@ -105,6 +105,7 @@ func (a *app) customerMailData(s *salon, b *booking, now time.Time) map[string]a
 		"Pri":          salonButton(s.Accent),
 		"Branding":     !a.cfg.SingleTenant && s.Plan == "free", // wie auf der Buchungsseite
 		"SalonImprint": extURL(s.ImprintURL),
+		"Logo":         a.mailLogo(s), // statt Initiale, falls vorhanden (custom.go)
 	}
 	if s.CancelNoticeMin > 0 {
 		d["Deadline"] = deadline
