@@ -39,6 +39,7 @@
       {{end}}
     </nav>
     <div class="topbar-end">
+      <a href="{{sitePath .Lang "/hilfe"}}" data-tour-start title="{{t .Lang "Tour starten"}}">{{template "dash-icon" "hilfe"}}<span class="vh">{{t .Lang "Tour starten"}}</span></a>
       <a href="{{.BookingURL}}" target="_blank" rel="noopener">{{template "dash-icon" "link"}}<span class="topbar-label">{{t .Lang "Buchungsseite"}}</span></a>
       {{if .IsStaff}}<span class="chip chip-grey" style="margin-inline: .4rem"><span class="topbar-label">{{.User.StaffName}} · </span>{{t .Lang "Mitarbeiter"}}</span>{{end}}
       <form method="post" action="/logout"><button class="link" type="submit">{{t .Lang "Abmelden"}}</button></form>
@@ -57,6 +58,7 @@
 {{define "dash-icon"}}<svg width="24" height="24" aria-hidden="true" focusable="false"><use href="/static/img/icons/sprite.svg#i-{{.}}-24"/></svg>{{end}}
 
 {{define "dash-bottom"}}{{template "pwa-install-hint" .}}</main>
+{{template "tour" .}}
 </body>
 </html>{{end}}
 
